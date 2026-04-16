@@ -41,20 +41,6 @@ services:
       - /src/obj
       - dpkeys:/root/.aspnet/DataProtection-Keys
 
-  webclient:
-    profiles: ["frontend"]
-    build:
-      context: ./webclient
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:5002
-    volumes:
-      - ./webclient:/app
-      - /app/node_modules
-    depends_on:
-      - web
-
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: always
