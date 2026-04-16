@@ -1,0 +1,78 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-reciptdb}
+    ports:
+      - "5434:5432" # host:container (was 5433; keep as 5434 to avoid WSL conflict)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-myuser} -d ${POSTGRES_DB:-reciptdb}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-reciptdb};Username=${POSTGRES_USER:-myuser};Password=${POSTGRES_PASSWORD:-mypassword}
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+      Jwt__Key: ${JWT_KEY:-change-me-in-.env}
+      Jwt__Issuer: ${JWT_ISSUER:-recipt-api}
+      Jwt__Audience: ${JWT_AUDIENCE:-recipt-api-users}
+    ports:
+      - "5002:8080" # was 5001:8080
+    volumes:
+      - ./:/src
+      - /src/bin
+      - /src/obj
+      - dpkeys:/root/.aspnet/DataProtection-Keys
+
+  webclient:
+    profiles: ["frontend"]
+    build:
+      context: ./webclient
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5002
+    volumes:
+      - ./webclient:/app
+      - /app/node_modules
+    depends_on:
+      - web
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+    ports:
+      - "5051:80"  # changed from 5050:80
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./servers.json:/pgadmin4/servers.json:ro
+
+volumes:
+  pgdata:
+  dpkeys:
+  pgadmin_data:

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: erp-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: erp-db
+          property: connectionString
+      - key: Jwt__Key
+        value: "8K#mP9$vL2@nQ7&hF4!jR5%tY8*wE3^uI6(oA9)sD1#gH7$kL4@mN2&pQ5!rT8%vW3^xZ6"
+      - key: Jwt__Issuer
+        value: erp-api
+      - key: Jwt__Audience
+        value: erp-api-users
+      - key: Cors__AllowedOrigins
+        value: https://erp-client-flame.vercel.app,http://localhost:5173
+
+databases:
+  - name: erp-db
+    plan: basic-256mb
