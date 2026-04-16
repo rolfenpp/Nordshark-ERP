@@ -64,14 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null)
       },
       logout: () => {
-        axios
+        // Clear client auth immediately so UI (e.g. AI assistant) updates before navigation.
+        // Server logout still runs to clear the HttpOnly refresh cookie.
+        setAccessToken(null)
+        setToken(null)
+        setError(null)
+        void axios
           .post(`${API_URL}/Account/logout`, {}, { withCredentials: true })
           .catch(() => {})
-          .finally(() => {
-            setAccessToken(null)
-            setToken(null)
-            setError(null)
-          })
       },
     }),
     [token, ready, error],
