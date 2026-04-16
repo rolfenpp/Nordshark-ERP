@@ -294,7 +294,6 @@ function LoginRoute() {
               />
             </Fade>
             
-            {/* TEMP: green Sign In = deploy smoke test. Revert sx background/boxShadow/hover/disabled to purple gradient (see git history or ask). */}
             <Fade in={true} timeout={1600}>
               <Button 
                 type="submit" 
@@ -308,23 +307,23 @@ function LoginRoute() {
                   fontWeight: 600,
                   fontSize: '1.1rem',
                   textTransform: 'none',
-                  background: 'linear-gradient(135deg, #2e7d32 0%, #43a047 50%, #66bb6a 100%)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                   color: '#ffffff',
                   borderRadius: 3,
                   position: 'relative',
                   overflow: 'hidden',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 8px 25px rgba(46, 125, 50, 0.35)',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
                   '&:hover': {
                     transform: 'none',
-                    boxShadow: '0 8px 25px rgba(46, 125, 50, 0.5)',
-                    background: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%)',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.5)',
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #ec4899 100%)',
                   },
                   '&:disabled': {
                     color: '#ffffff',
                     opacity: 0.7,
                     transform: 'none',
-                    boxShadow: '0 4px 15px rgba(46, 125, 50, 0.25)',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.2)',
                   },
                   '&::before': {
                     content: '""',

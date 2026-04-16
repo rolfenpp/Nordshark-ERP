@@ -22,9 +22,6 @@ yarn-error.log*
 .env.*.local
 env.development
 
-# Routes to ignore
-src/routes/register.tsx
-
 # Coverage
 coverage/
 
