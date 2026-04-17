@@ -1,0 +1,12 @@
+# Root tooling (concurrently, wait-on, etc.)
+node_modules/
+
+# Logs & env
+*.log
+npm-debug.log*
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
