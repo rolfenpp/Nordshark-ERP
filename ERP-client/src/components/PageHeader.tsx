@@ -19,7 +19,7 @@ export function SectionHeader({ title, actions }: { title: string; actions?: Rea
         mb: 3,
       }}
     >
-      <Typography variant="h6" component="h2">
+      <Typography variant="h6" component="h2" sx={{ fontWeight: 300 }}>
         {title}
       </Typography>
       {actions != null && (
@@ -59,6 +59,7 @@ export function PageHeader({ title, actions, sx }: PageHeaderProps) {
         component="h1"
         variant="h4"
         sx={{
+          fontWeight: 300,
           fontSize: { xs: '1.35rem', sm: '2rem' },
           lineHeight: 1.25,
           wordBreak: 'break-word',

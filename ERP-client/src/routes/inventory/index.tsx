@@ -155,8 +155,12 @@ function InventoryIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <InventoryIcon color="primary" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{inventoryItems.length}</Typography>
-                <Typography variant="body2" color="text.secondary">Total Items</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {inventoryItems.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Total Items
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -166,8 +170,12 @@ function InventoryIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <InventoryIcon color="success" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{totalItems}</Typography>
-                <Typography variant="body2" color="text.secondary">Total Quantity</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {totalItems}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Total Quantity
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -177,8 +185,12 @@ function InventoryIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Warning color="warning" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{lowStockItems}</Typography>
-                <Typography variant="body2" color="text.secondary">Low Stock Items</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {lowStockItems}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Low Stock Items
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -188,8 +200,12 @@ function InventoryIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AttachMoney color="info" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">${totalValue.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary">Total Value</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  ${totalValue.toLocaleString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Total Value
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -218,34 +234,42 @@ function InventoryIndexComponent() {
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>Item</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>Item</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     Category
                   </TableCell>
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     SKU
                   </TableCell>
 
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>Quantity</TableCell>
+                  <TableCell align="right" sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>
+                    Quantity
+                  </TableCell>
 
                   <TableCell
                     align="right"
-                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
                   >
                     Price
                   </TableCell>
 
-                  <TableCell>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Status</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}>
                     Description
                   </TableCell>
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}>
                     Last Updated
                   </TableCell>
 
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 300 }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

@@ -160,8 +160,12 @@ function ProjectsIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Assignment color="primary" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{projects.length}</Typography>
-                <Typography variant="body2" color="text.secondary">Total Projects</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {projects.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Total Projects
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -171,8 +175,12 @@ function ProjectsIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <TrendingUp color="success" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{activeProjects}</Typography>
-                <Typography variant="body2" color="text.secondary">Active Projects</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {activeProjects}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Active Projects
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -182,8 +190,12 @@ function ProjectsIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Schedule color="info" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{completedProjects}</Typography>
-                <Typography variant="body2" color="text.secondary">Completed</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {completedProjects}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Completed
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -193,8 +205,12 @@ function ProjectsIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AttachMoney color="warning" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">${(totalBudget / 1000).toFixed(0)}k</Typography>
-                <Typography variant="body2" color="text.secondary">Total Budget</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  ${(totalBudget / 1000).toFixed(0)}k
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                  Total Budget
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -243,29 +259,35 @@ function ProjectsIndexComponent() {
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>Project Name</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>Project Name</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     Client
                   </TableCell>
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     Manager
                   </TableCell>
 
-                  <TableCell>Status</TableCell>
-                  <TableCell>Progress</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Progress</TableCell>
 
                   <TableCell
                     align="right"
-                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
                   >
                     Budget
                   </TableCell>
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}>
                     Timeline
                   </TableCell>
 
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 300 }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

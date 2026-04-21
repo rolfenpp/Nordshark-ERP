@@ -41,6 +41,7 @@ export function DetailPageHeader({ backLabel, onBack, title, children }: DetailP
             component="h1"
             variant="h4"
             sx={{
+              fontWeight: 300,
               fontSize: { xs: '1.35rem', sm: '2rem' },
               lineHeight: 1.25,
               wordBreak: 'break-word',

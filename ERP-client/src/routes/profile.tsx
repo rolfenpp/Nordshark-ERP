@@ -13,7 +13,7 @@ function ProfileComponent() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 300 }}>
             Profile
           </Typography>
 

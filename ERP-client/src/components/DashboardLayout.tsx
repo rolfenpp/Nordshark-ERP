@@ -169,7 +169,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 px: 3,
                 py: 1,
                 fontSize: '0.75rem',
-                fontWeight: 600,
+                fontWeight: 300,
                 color: 'text.secondary',
                 letterSpacing: '0.5px',
                 textTransform: 'uppercase'
@@ -214,7 +214,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         sx={{ 
                           color: 'inherit',
                           '& .MuiTypography-root': {
-                            fontWeight: isActive ? 600 : 400
+                            fontWeight: 300,
                           }
                         }}
                       />
@@ -292,6 +292,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   color: 'text.primary',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  fontWeight: 300,
                   fontSize: { xs: '1rem', sm: '1.25rem' },
                   lineHeight: 1.25,
                 }}

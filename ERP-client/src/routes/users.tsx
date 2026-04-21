@@ -100,8 +100,10 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Person color="primary" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{totalUsers}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {totalUsers}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Total Users
                 </Typography>
               </Box>
@@ -113,8 +115,10 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <PersonAdd color="success" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{activeUsers}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {activeUsers}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Active Users
                 </Typography>
               </Box>
@@ -126,8 +130,10 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AdminPanelSettings color="error" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{adminUsers}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {adminUsers}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Admins
                 </Typography>
               </Box>
@@ -139,8 +145,10 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <SupervisorAccount color="warning" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{managerUsers}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {managerUsers}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Managers
                 </Typography>
               </Box>
@@ -171,18 +179,24 @@ function UsersComponent() {
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>Name</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>Name</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>Email</TableCell>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
+                    Email
+                  </TableCell>
 
-                  <TableCell>Role</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Role</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Status</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}>
                     Last Login
                   </TableCell>
 
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 300 }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

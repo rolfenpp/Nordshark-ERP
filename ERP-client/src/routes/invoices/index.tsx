@@ -344,8 +344,10 @@ function InvoicesIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Receipt color="primary" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{totalInvoices.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {totalInvoices.toLocaleString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Total Invoices
                 </Typography>
               </Box>
@@ -357,8 +359,10 @@ function InvoicesIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <CheckCircle color="success" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{paidInvoices.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {paidInvoices.toLocaleString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Paid
                 </Typography>
               </Box>
@@ -370,10 +374,10 @@ function InvoicesIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Schedule color="info" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
                   {mockInvoices.filter((i) => i.status === 'pending').length.toLocaleString()}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Pending
                 </Typography>
               </Box>
@@ -385,8 +389,10 @@ function InvoicesIndexComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Warning color="warning" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4">{overdueInvoices.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                  {overdueInvoices.toLocaleString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Overdue
                 </Typography>
               </Box>
@@ -442,35 +448,41 @@ function InvoicesIndexComponent() {
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>Invoice #</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>Invoice #</TableCell>
 
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     Date
                   </TableCell>
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}>
+                  <TableCell
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
+                  >
                     Due Date
                   </TableCell>
 
-                  <TableCell>Client</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Client</TableCell>
 
                   <TableCell
                     align="right"
-                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
                   >
                     Amount
                   </TableCell>
                   <TableCell
                     align="right"
-                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
+                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
                   >
                     Tax
                   </TableCell>
 
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                  <TableCell align="right" sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>
                     Total
                   </TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 300 }}>Status</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 300 }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

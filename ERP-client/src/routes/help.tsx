@@ -72,7 +72,7 @@ function HelpComponent() {
       <DashboardLayout>
         <Box>
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 300 }}>
               Help & Support
             </Typography>
             <Typography variant="body1" color="text.secondary">
