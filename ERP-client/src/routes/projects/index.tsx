@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { PageHeader } from '../../components/PageHeader'
 import {
   Box,
   Typography,
@@ -152,19 +153,18 @@ function ProjectsIndexComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4" component="h1">
-                Projects
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => navigate({ to: '/projects/create' })}
-              >
-                Create New Project
-              </Button>
-            </Box>
+            <PageHeader
+              title="Projects"
+              actions={
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => navigate({ to: '/projects/create' })}
+                >
+                  Create New Project
+                </Button>
+              }
+            />
 
             {/* Stats Cards */}
             <Box sx={{ 

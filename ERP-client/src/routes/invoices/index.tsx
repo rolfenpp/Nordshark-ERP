@@ -3,6 +3,7 @@ import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { TableSkeleton } from '../../components/Skeletons'
 import { FadeInContent } from '../../components/FadeInContent'
+import { PageHeader } from '../../components/PageHeader'
 import {
   Box,
   Typography,
@@ -309,36 +310,38 @@ function InvoicesIndexComponent() {
                 }
               `}
             </style>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">Invoice Management</Typography>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Download />}
-                  onClick={handleExportClick}
-                  disabled={filteredInvoices.length === 0}
-                  sx={{
-                    borderColor: 'success.main',
-                    color: 'success.main',
-                    '&:hover': {
+            <PageHeader
+              title="Invoice Management"
+              actions={
+                <>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Download />}
+                    onClick={handleExportClick}
+                    disabled={filteredInvoices.length === 0}
+                    sx={{
                       borderColor: 'success.main',
-                      backgroundColor: 'success.main',
-                      color: 'white'
-                    },
-                    '&:disabled': {
-                      borderColor: 'action.disabled',
-                      color: 'action.disabled'
-                    }
-                  }}
-                  ref={exportBtnRef}
-                >
-                  Export Excel
-                </Button>
-                <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: '/invoices/create' })}>
-                  New Invoice
-                </Button>
-              </Box>
-            </Box>
+                      color: 'success.main',
+                      '&:hover': {
+                        borderColor: 'success.main',
+                        backgroundColor: 'success.main',
+                        color: 'white'
+                      },
+                      '&:disabled': {
+                        borderColor: 'action.disabled',
+                        color: 'action.disabled'
+                      }
+                    }}
+                    ref={exportBtnRef}
+                  >
+                    Export Excel
+                  </Button>
+                  <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: '/invoices/create' })}>
+                    New Invoice
+                  </Button>
+                </>
+              }
+            />
 
             <Box
               sx={{

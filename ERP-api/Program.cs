@@ -70,8 +70,12 @@ namespace ErpApi
                 }
             });
 
-            var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:5173")
-                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            // JSON array in appsettings (Cors:AllowedOrigins) is bound via GetSection; scalar fallback supports comma-separated env override
+            var corsFromSection = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+            var allowedOrigins = corsFromSection is { Length: > 0 }
+                ? corsFromSection
+                : (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:5173")
+                    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             builder.Services.AddCors(opt =>
             {
@@ -124,6 +128,10 @@ namespace ErpApi
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 db.Database.Migrate();
                 SeedRolesAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                if (app.Environment.IsDevelopment())
+                {
+                    SeedDevelopmentDemoUserAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                }
             }
 
             if (app.Environment.IsDevelopment())
@@ -159,6 +167,43 @@ namespace ErpApi
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
+        }
+
+        /// <summary>
+        /// Matches ERP-client login hint so local <c>dotnet run</c> can sign in without production data.
+        /// </summary>
+        private static async Task SeedDevelopmentDemoUserAsync(IServiceProvider services)
+        {
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            var db = services.GetRequiredService<ApplicationDbContext>();
+
+            const string email = "guest@nordshark.com";
+            const string password = "Password123!";
+
+            if (await userManager.FindByEmailAsync(email) != null)
+                return;
+
+            var company = await db.Companies.FirstOrDefaultAsync();
+            if (company == null)
+            {
+                company = new Company { Name = "Local Development" };
+                db.Companies.Add(company);
+                await db.SaveChangesAsync();
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                CompanyId = company.Id,
+            };
+
+            var create = await userManager.CreateAsync(user, password);
+            if (!create.Succeeded)
+                return;
+
+            await userManager.AddToRoleAsync(user, "Admin");
         }
     }
 }

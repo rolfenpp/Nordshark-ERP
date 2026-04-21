@@ -3,6 +3,7 @@ import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { TableSkeleton } from '../../components/Skeletons'
 import { FadeInContent } from '../../components/FadeInContent'
+import { PageHeader } from '../../components/PageHeader'
 import { 
   Box, 
   Typography, 
@@ -104,14 +105,14 @@ function InventoryIndexComponent() {
       <ProtectedRoute>
         <DashboardLayout>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">
-                Inventory Management
-              </Typography>
-              <Button variant="contained" startIcon={<Add />} disabled>
-                Add New Item
-              </Button>
-            </Box>
+            <PageHeader
+              title="Inventory Management"
+              actions={
+                <Button variant="contained" startIcon={<Add />} disabled>
+                  Add New Item
+                </Button>
+              }
+            />
             <TableSkeleton rows={8} columns={9} />
           </Box>
         </DashboardLayout>
@@ -124,18 +125,18 @@ function InventoryIndexComponent() {
       <ProtectedRoute>
         <DashboardLayout>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">
-                Inventory Management
-              </Typography>
-              <Button 
-                variant="contained" 
-                startIcon={<Add />}
-                onClick={() => navigate({ to: '/inventory/create' })}
-              >
-                Add New Item
-              </Button>
-            </Box>
+            <PageHeader
+              title="Inventory Management"
+              actions={
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => navigate({ to: '/inventory/create' })}
+                >
+                  Add New Item
+                </Button>
+              }
+            />
             <Paper sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="h6" color="error" gutterBottom>
                 Failed to load inventory
@@ -155,18 +156,18 @@ function InventoryIndexComponent() {
       <DashboardLayout>
         <FadeInContent delay={100} duration={600}>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">
-                Inventory Management
-              </Typography>
-              <Button 
-                variant="contained" 
-                startIcon={<Add />}
-                onClick={() => navigate({ to: '/inventory/create' })}
-              >
-                Add New Item
-              </Button>
-            </Box>
+            <PageHeader
+              title="Inventory Management"
+              actions={
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => navigate({ to: '/inventory/create' })}
+                >
+                  Add New Item
+                </Button>
+              }
+            />
 
             {/* Stats Cards */}
             <Box sx={{ 

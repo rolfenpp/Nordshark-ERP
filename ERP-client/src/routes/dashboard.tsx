@@ -221,16 +221,24 @@ function DashboardComponent() {
                     </ResponsiveContainer>
                   </Box>
                   
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'space-between',
+                      gap: 2,
+                      mt: 2,
+                    }}
+                  >
+                    <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
                       <Typography variant="body2" color="text.secondary">This Month</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>$12,450</Typography>
                     </Box>
-                    <Box>
+                    <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
                       <Typography variant="body2" color="text.secondary">Last Month</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>$11,200</Typography>
                     </Box>
-                    <Box>
+                    <Box sx={{ minWidth: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'left', sm: 'inherit' } }}>
                       <Typography variant="body2" color="text.secondary">Growth</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>+11.2%</Typography>
                     </Box>
@@ -347,19 +355,37 @@ function DashboardComponent() {
                   <List>
                     {recentActivities.map((activity, index) => (
                       <Box key={activity.id}>
-                        <ListItem sx={{ px: 0, py: 1.5, minHeight: 54 }}> 
-                          <ListItemIcon sx={{ minWidth: 40 }}>
+                        <ListItem
+                          sx={{
+                            px: 0,
+                            py: 1.5,
+                            minHeight: 54,
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 40, mt: 0.25 }}>
                             {getStatusIcon(activity.status)}
                           </ListItemIcon>
-                          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500, flex: 1, mr: 2 }}>
+                          <Box
+                            sx={{
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              alignItems: { xs: 'flex-start', sm: 'center' },
+                              justifyContent: 'space-between',
+                              gap: { xs: 1, sm: 0 },
+                              minWidth: 0,
+                              width: '100%',
+                            }}
+                          >
+                            <Typography variant="body2" sx={{ fontWeight: 500, flex: 1, mr: { xs: 0, sm: 2 }, wordBreak: 'break-word' }}>
                               {activity.action}
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: { xs: 0, sm: 0 }, alignSelf: { xs: 'flex-start', sm: 'center' } }}>
                               <Avatar sx={{ width: 20, height: 20, mr: 1, fontSize: '0.75rem' }}>
                                 {activity.user.charAt(0)}
                               </Avatar>
-                              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' } }}>
                                 {activity.user} • {activity.time}
                               </Typography>
                             </Box>
