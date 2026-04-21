@@ -341,7 +341,12 @@ function ProjectDetailComponent() {
               title={project.name}
             >
               <IconButton
-                onClick={() => navigate({ to: `/projects/${projectId}/edit` })}
+                onClick={() =>
+                  navigate({
+                    to: '/projects/edit/$projectId',
+                    params: { projectId },
+                  })
+                }
                 color="primary"
                 aria-label="Edit project"
               >

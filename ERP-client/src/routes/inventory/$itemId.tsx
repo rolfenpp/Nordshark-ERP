@@ -74,7 +74,7 @@ function InventoryItemComponent() {
   }
 
   const handleEdit = () => {
-    navigate({ to: `/inventory/${itemId}/edit` })
+    navigate({ to: '/inventory/edit/$itemId', params: { itemId: String(itemId) } })
   }
 
   const handleDelete = () => {

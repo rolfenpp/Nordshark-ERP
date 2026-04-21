@@ -91,7 +91,7 @@ function InvoiceViewComponent() {
   }
 
   const handleEdit = () => {
-    navigate({ to: `/invoices/${invoiceId}/edit` })
+    navigate({ to: '/invoices/edit/$invoiceId', params: { invoiceId } })
   }
 
   const handleDelete = () => {
