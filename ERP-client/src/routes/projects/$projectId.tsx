@@ -2,12 +2,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
 import {
   Box,
   Typography,
   Paper,
   Chip,
-  Button,
   LinearProgress,
   List,
   ListItem,
@@ -26,7 +26,6 @@ import {
   TableRow
 } from '@mui/material'
 import {
-  ArrowBack,
   Edit,
   Delete,
   Assignment,
@@ -144,11 +143,13 @@ function ProjectDetailComponent() {
                   </Box>
                 </Box>
 
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(2, 1fr)', 
-                  gap: 2 
-                }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                    gap: 2,
+                  }}
+                >
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Start Date
@@ -172,7 +173,7 @@ function ProjectDetailComponent() {
                 <Typography variant="h6" gutterBottom>
                   Recent Tasks
                 </Typography>
-                <TableContainer>
+                <TableContainer sx={{ overflowX: 'auto' }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -334,47 +335,35 @@ function ProjectDetailComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button
-                  startIcon={<ArrowBack />}
-                  onClick={() => navigate({ to: '/projects/' })}
-                  sx={{ mr: 2 }}
-                >
-                  Back to Projects
-                </Button>
-                <Typography variant="h4" component="h1">
-                  {project.name}
-                </Typography>
-              </Box>
-              <Box>
-                <IconButton
-                  onClick={() => navigate({ to: `/projects/${projectId}/edit` })}
-                  color="primary"
-                  sx={{ mr: 1 }}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  onClick={() => console.log('Share project')}
-                  color="info"
-                  sx={{ mr: 1 }}
-                >
-                  <Share />
-                </IconButton>
-                <IconButton
-                  onClick={() => console.log('Delete project')}
-                  color="error"
-                >
-                  <Delete />
-                </IconButton>
-              </Box>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Projects"
+              onBack={() => navigate({ to: '/projects/' })}
+              title={project.name}
+            >
+              <IconButton
+                onClick={() => navigate({ to: `/projects/${projectId}/edit` })}
+                color="primary"
+                aria-label="Edit project"
+              >
+                <Edit />
+              </IconButton>
+              <IconButton onClick={() => console.log('Share project')} color="info" aria-label="Share project">
+                <Share />
+              </IconButton>
+              <IconButton onClick={() => console.log('Delete project')} color="error" aria-label="Delete project">
+                <Delete />
+              </IconButton>
+            </DetailPageHeader>
 
             {/* Tabs */}
             <Paper sx={{ mb: 3 }}>
-              <Tabs value={activeTab} onChange={handleTabChange} centered>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+              >
                 <Tab label="Overview" />
                 <Tab label="Milestones" />
                 <Tab label="Files" />

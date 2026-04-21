@@ -37,7 +37,19 @@ function LoginRoute() {
           navigate({ to: '/dashboard' })
         },
         onError: (error: any) => {
-          const errorMessage = error.response?.data || 'Invalid email or password'
+          if (!error.response) {
+            showError(
+              `Cannot reach the API at ${CONFIG.apiBaseUrl}. Start the ERP-api (e.g. dotnet run from ERP-api) or set VITE_API_BASE_URL in .env. ${error.code ? `[${error.code}] ` : ''}${error.message || ''}`
+            )
+            return
+          }
+          const data = error.response.data
+          const errorMessage =
+            typeof data === 'string'
+              ? data
+              : (data as { title?: string; detail?: string })?.detail ||
+                (data as { title?: string })?.title ||
+                'Invalid email or password'
           showError(errorMessage)
         },
       }
@@ -55,28 +67,38 @@ function LoginRoute() {
   return (
     <Box 
       sx={{ 
-        minHeight: '100vh',
+        minHeight: { xs: '100dvh', sm: '100vh' },
+        height: { xs: '100dvh', sm: 'auto' },
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 2,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'stretch', sm: 'center' },
+        justifyContent: { xs: 'stretch', sm: 'center' },
+        p: { xs: 0, sm: 2 },
         position: 'relative',
         background: 'linear-gradient(135deg, #f8f9fa 0%,rgb(156, 150, 156) 100%)',
       }}
     >
       <Box
         sx={{
+          display: { xs: 'none', sm: 'block' },
           position: 'absolute',
           bottom: '3%',
           left: '2%',
           zIndex: 0,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
         }}
       >
         <NordsharkBrand size="large" showSubtitle={false} />
       </Box>
       <Box
         sx={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: { xs: 'stretch', sm: 'center' },
+          flex: { xs: 1, sm: 'none' },
+          minHeight: { xs: 0, sm: 'auto' },
           animation: 'slideUpFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           '@keyframes slideUpFromBottom': {
             '0%': {
@@ -92,21 +114,31 @@ function LoginRoute() {
       >
         <Paper  
           sx={{ 
-            p: { xs: 4, sm: 5, md: 6 }, 
-            width: '100%', 
-            maxWidth: 480,
+            p: { xs: 3, sm: 5, md: 6 },
+            pt: { xs: 'max(20px, env(safe-area-inset-top, 0px))' },
+            pb: { xs: 'max(20px, env(safe-area-inset-bottom, 0px))' },
+            width: '100%',
+            maxWidth: { xs: 'none', sm: 480 },
+            minHeight: { xs: '100%', sm: 'auto' },
+            height: { xs: '100%', sm: 'auto' },
+            flex: { xs: '1 1 auto', sm: 'none' },
+            display: 'flex',
+            flexDirection: 'column',
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: `
+            border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.2)' },
+            boxShadow: {
+              xs: 'none',
+              sm: `
               0 20px 40px rgba(0, 0, 0, 0.1),
               0 0 0 1px rgba(255, 255, 255, 0.05),
               inset 0 1px 0 rgba(255, 255, 255, 0.1)
             `,
+            },
             position: 'relative',
             zIndex: 1,
-            borderRadius: 4,
-            overflow: 'hidden',
+            borderRadius: { xs: 0, sm: 4 },
+            overflow: 'auto',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -347,31 +379,17 @@ function LoginRoute() {
         </Box>
 
         <Fade in={true} timeout={1800}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <Box sx={{ 
-              flex: 1, 
-              height: 1, 
-              background: 'linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent)',
-              borderRadius: 1,
-            }} />
-            <Typography sx={{ 
-              px: 3, 
-              color: '#666666', 
+          <Typography
+            sx={{
+              textAlign: 'center',
+              mb: 4,
+              color: '#666666',
               fontSize: '0.9rem',
               fontWeight: 500,
-              background: 'rgba(255, 255, 255, 0.8)',
-              borderRadius: 2,
-              py: 0.5,
-            }}>
-              or
-            </Typography>
-            <Box sx={{ 
-              flex: 1, 
-              height: 1, 
-              background: 'linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent)',
-              borderRadius: 1,
-            }} />
-          </Box>
+            }}
+          >
+            or
+          </Typography>
         </Fade>
 
         <Fade in={true} timeout={2000}>

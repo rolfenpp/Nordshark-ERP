@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -27,7 +28,6 @@ import {
 import {
   Save,
   Cancel,
-  ArrowBack,
   AttachMoney,
   Add
 } from '@mui/icons-material'
@@ -170,18 +170,11 @@ function CreateInventoryComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Button
-                startIcon={<ArrowBack />}
-                onClick={() => navigate({ to: '/inventory/' })}
-                sx={{ mr: 2 }}
-              >
-                Back to Inventory
-              </Button>
-              <Typography variant="h4" component="h1">
-                Add New Inventory Item
-              </Typography>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Inventory"
+              onBack={() => navigate({ to: '/inventory/' })}
+              title="Add New Inventory Item"
+            />
 
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
@@ -511,12 +504,16 @@ function CreateInventoryComponent() {
               </Card>
             </Paper>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                startIcon={<Cancel />}
-              >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column-reverse', sm: 'row' },
+                justifyContent: 'space-between',
+                gap: 2,
+                '& > .MuiButton-root': { width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } },
+              }}
+            >
+              <Button variant="outlined" onClick={handleCancel} startIcon={<Cancel />}>
                 Cancel
               </Button>
               <Button

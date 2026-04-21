@@ -166,9 +166,18 @@ export function InventorySkeleton() {
 export function InvoicesSkeleton() {
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Skeleton variant="text" width="40%" height={48} />
-        <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: 1 }} />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <Skeleton variant="text" width="40%" height={48} sx={{ minWidth: { xs: '60%', sm: '40%' } }} />
+        <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: 1, alignSelf: { xs: 'stretch', sm: 'auto' } }} />
       </Box>
       <TableSkeleton rows={6} columns={6} />
     </Box>

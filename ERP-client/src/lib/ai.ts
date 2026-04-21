@@ -1,8 +1,21 @@
 import { GoogleGenAI } from "@google/genai"
 
-const ai = new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY
-})
+const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim()
+
+let aiClient: GoogleGenAI | null = null
+
+function getGenAI(): GoogleGenAI | null {
+  if (!apiKey) return null
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({ apiKey })
+  }
+  return aiClient
+}
+
+/** True when `VITE_GEMINI_API_KEY` is set (see `.env` / Vite env). */
+export function isAIConfigured(): boolean {
+  return Boolean(apiKey)
+}
 
 const erpKnowledge = {
   inventory: {
@@ -33,6 +46,14 @@ const erpKnowledge = {
 }
 
 export const askAI = async (question: string, context: any) => {
+  const ai = getGenAI()
+  if (!ai) {
+    return (
+      "The AI assistant is not configured for this environment. " +
+      "Create a file `ERP-client/.env` with `VITE_GEMINI_API_KEY=your_key` (from Google AI Studio) and restart the dev server."
+    )
+  }
+
   try {
     const prompt = `You are Nordshark ERP's AI assistant. Help users navigate the system effectively.
 

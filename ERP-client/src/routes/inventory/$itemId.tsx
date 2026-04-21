@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -14,7 +15,6 @@ import {
 import {
   Edit,
   Delete,
-  ArrowBack,
   Warning,
   CheckCircle,
   Error,
@@ -111,37 +111,18 @@ function InventoryItemComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button
-                  startIcon={<ArrowBack />}
-                  onClick={() => navigate({ to: '/inventory/' })}
-                  sx={{ mr: 2 }}
-                >
-                  Back to Inventory
-                </Button>
-                <Typography variant="h4" component="h1">
-                  {item.name}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  onClick={handleEdit}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<Delete />}
-                  onClick={handleDelete}
-                >
-                  Delete
-                </Button>
-              </Box>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Inventory"
+              onBack={() => navigate({ to: '/inventory/' })}
+              title={item.name}
+            >
+              <Button variant="outlined" startIcon={<Edit />} onClick={handleEdit}>
+                Edit
+              </Button>
+              <Button variant="outlined" color="error" startIcon={<Delete />} onClick={handleDelete}>
+                Delete
+              </Button>
+            </DetailPageHeader>
 
             <Alert 
               severity={statusDisplay.color as any} 

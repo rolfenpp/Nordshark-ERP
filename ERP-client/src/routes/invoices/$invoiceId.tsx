@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -20,7 +21,6 @@ import {
 import {
   Edit,
   Delete,
-  ArrowBack,
   Warning,
   CheckCircle,
   Schedule,
@@ -136,52 +136,24 @@ function InvoiceViewComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button
-                  startIcon={<ArrowBack />}
-                  onClick={() => navigate({ to: '/invoices/' })}
-                  sx={{ mr: 2 }}
-                >
-                  Back to Invoices
-                </Button>
-                <Typography variant="h4" component="h1">
-                  Invoice {invoice.invoiceNumber}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  onClick={handleEdit}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Download />}
-                  onClick={handleDownload}
-                >
-                  Download
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Email />}
-                  onClick={handleSendEmail}
-                >
-                  Send Email
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<Delete />}
-                  onClick={handleDelete}
-                >
-                  Delete
-                </Button>
-              </Box>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Invoices"
+              onBack={() => navigate({ to: '/invoices/' })}
+              title={`Invoice ${invoice.invoiceNumber}`}
+            >
+              <Button variant="outlined" startIcon={<Edit />} onClick={handleEdit}>
+                Edit
+              </Button>
+              <Button variant="outlined" startIcon={<Download />} onClick={handleDownload}>
+                Download
+              </Button>
+              <Button variant="outlined" startIcon={<Email />} onClick={handleSendEmail}>
+                Send Email
+              </Button>
+              <Button variant="outlined" color="error" startIcon={<Delete />} onClick={handleDelete}>
+                Delete
+              </Button>
+            </DetailPageHeader>
 
             <Alert 
               severity={statusDisplay.color as any} 

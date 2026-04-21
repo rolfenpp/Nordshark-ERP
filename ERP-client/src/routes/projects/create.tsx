@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -25,7 +26,6 @@ import {
 import {
   Save,
   Cancel,
-  ArrowBack,
   AttachMoney
 } from '@mui/icons-material'
 import { useState } from 'react'
@@ -306,22 +306,14 @@ function CreateProjectComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            {/* Header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Button
-                startIcon={<ArrowBack />}
-                onClick={() => navigate({ to: '/projects/' })}
-                sx={{ mr: 2 }}
-              >
-                Back to Projects
-              </Button>
-              <Typography variant="h4" component="h1">
-                Create New Project
-              </Typography>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Projects"
+              onBack={() => navigate({ to: '/projects/' })}
+              title="Create New Project"
+            />
 
             {/* Stepper */}
-            <Paper sx={{ p: 3, mb: 3 }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
               <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                   <Step key={label}>
@@ -337,35 +329,40 @@ function CreateProjectComponent() {
             </Paper>
 
             {/* Navigation */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+              }}
+            >
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
+                sx={{ width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } }}
               >
                 Back
               </Button>
-              <Box>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate({ to: '/projects/' })}
-                  sx={{ mr: 1 }}
-                  startIcon={<Cancel />}
-                >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 1,
+                  width: { xs: '100%', sm: 'auto' },
+                  '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } },
+                }}
+              >
+                <Button variant="outlined" onClick={() => navigate({ to: '/projects/' })} startIcon={<Cancel />}>
                   Cancel
                 </Button>
                 {activeStep === steps.length - 1 ? (
-                  <Button
-                    variant="contained"
-                    onClick={handleSubmit}
-                    startIcon={<Save />}
-                  >
+                  <Button variant="contained" onClick={handleSubmit} startIcon={<Save />}>
                     Create Project
                   </Button>
                 ) : (
-                  <Button
-                    variant="contained"
-                    onClick={handleNext}
-                  >
+                  <Button variant="contained" onClick={handleNext}>
                     Next
                   </Button>
                 )}

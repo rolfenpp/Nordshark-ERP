@@ -25,6 +25,7 @@ import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useEffect, useMemo } from 'react'
 import { FadeInContent } from '../components/FadeInContent'
+import { PageHeader } from '../components/PageHeader'
 
 export const Route = createFileRoute('/users')({
   component: UsersComponent,
@@ -87,18 +88,18 @@ function UsersComponent() {
       <DashboardLayout>
         <FadeInContent delay={100} duration={600}>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4" component="h1">
-                Users Management
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => console.log('Add user clicked')}
-              >
-                Add User
-              </Button>
-            </Box>
+            <PageHeader
+              title="Users Management"
+              actions={
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => console.log('Add user clicked')}
+                >
+                  Add User
+                </Button>
+              }
+            />
 
             <Box sx={{ 
               display: 'grid', 

@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DashboardLayout } from '../../components/DashboardLayout'
 import { ProtectedRoute } from '../../components/ProtectedRoute'
 import { FadeInContent } from '../../components/FadeInContent'
+import { DetailPageHeader } from '../../components/DetailPageHeader'
+import { SectionHeader } from '../../components/PageHeader'
 import {
   Box,
   Typography,
@@ -28,7 +30,6 @@ import {
 import {
   Save,
   Cancel,
-  ArrowBack,
   Add,
   Delete,
   AttachMoney,
@@ -190,18 +191,11 @@ function EditInvoiceComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Button
-                startIcon={<ArrowBack />}
-                onClick={() => navigate({ to: `/invoices/${invoiceId}` })}
-                sx={{ mr: 2 }}
-              >
-                Back to Invoice
-              </Button>
-              <Typography variant="h4" component="h1">
-                Edit Invoice
-              </Typography>
-            </Box>
+            <DetailPageHeader
+              backLabel="Back to Invoice"
+              onBack={() => navigate({ to: `/invoices/${invoiceId}` })}
+              title="Edit Invoice"
+            />
 
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
@@ -350,21 +344,17 @@ function EditInvoiceComponent() {
               </Box>
             </Paper>
 
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6">
-                  Invoice Items
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  onClick={addItem}
-                >
-                  Add Item
-                </Button>
-              </Box>
-              
-              <TableContainer>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+              <SectionHeader
+                title="Invoice Items"
+                actions={
+                  <Button variant="outlined" startIcon={<Add />} onClick={addItem}>
+                    Add Item
+                  </Button>
+                }
+              />
+
+              <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -472,8 +462,8 @@ function EditInvoiceComponent() {
               </Box>
             </Paper>
 
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+              <Typography variant="h6" gutterBottom component="h2">
                 Invoice Summary
               </Typography>
               <Card variant="outlined">
@@ -485,11 +475,13 @@ function EditInvoiceComponent() {
                     <Chip label={`${formData.taxRate}% Tax`} color="warning" />
                   </Box>
                   <Divider sx={{ my: 2 }} />
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(3, 1fr)', 
-                    gap: 2 
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                      gap: 2,
+                    }}
+                  >
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Subtotal: <strong>${calculateSubtotal().toFixed(2)}</strong>
@@ -527,19 +519,19 @@ function EditInvoiceComponent() {
               </Card>
             </Paper>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                startIcon={<Cancel />}
-              >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column-reverse', sm: 'row' },
+                justifyContent: 'space-between',
+                gap: 2,
+                '& > .MuiButton-root': { minHeight: { xs: 44, sm: 36 } },
+              }}
+            >
+              <Button variant="outlined" onClick={handleCancel} startIcon={<Cancel />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
                 Cancel
               </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                startIcon={<Save />}
-              >
+              <Button variant="contained" onClick={handleSubmit} startIcon={<Save />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
                 Save Changes
               </Button>
             </Box>

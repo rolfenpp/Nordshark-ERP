@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import { Save, Notifications, Security, Palette } from '@mui/icons-material'
 import { useState } from 'react'
+import { PageHeader } from '../components/PageHeader'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsComponent,
@@ -43,18 +44,14 @@ function SettingsComponent() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" component="h1">
-              Settings
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleSave}
-            >
-              Save Changes
-            </Button>
-          </Box>
+          <PageHeader
+            title="Settings"
+            actions={
+              <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
+                Save Changes
+              </Button>
+            }
+          />
 
           <Box sx={{ 
             display: 'grid', 

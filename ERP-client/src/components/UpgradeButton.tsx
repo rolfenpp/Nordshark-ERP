@@ -62,12 +62,15 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
 
       <Button
         variant="outlined"
+        aria-label="Upgrade plans"
         startIcon={
           <Diamond sx={{ fill: `url(#${BRAND_GRADIENT_ID})` }} />
         }
         onClick={handleClick}
         sx={{
-          mr: 2,
+          mr: { xs: 0.5, sm: 2 },
+          minWidth: { xs: 44, sm: undefined },
+          px: { xs: 1, sm: 2 },
           border: 'none',
           color: 'text.primary',
           background: 'transparent',
@@ -97,7 +100,9 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
           }
         }}
       >
-        Upgrade
+        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+          Upgrade
+        </Box>
       </Button>
 
       <Menu
@@ -108,7 +113,9 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         sx={{
           '& .MuiPaper-root': {
-            minWidth: 340,
+            minWidth: { xs: 0, sm: 340 },
+            maxWidth: { xs: 'calc(100vw - 24px)', sm: 380 },
+            width: { xs: '100%', sm: 'auto' },
             mt: 1,
             backgroundColor: 'background.paper',
             borderRadius: 2,
