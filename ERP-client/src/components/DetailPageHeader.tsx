@@ -5,13 +5,9 @@ export interface DetailPageHeaderProps {
   backLabel: string
   onBack: () => void
   title: React.ReactNode
-  /** Toolbar area: outline buttons, icon buttons, etc. */
   children?: React.ReactNode
 }
 
-/**
- * Detail page heading with back navigation — stacks cleanly on narrow viewports.
- */
 export function DetailPageHeader({ backLabel, onBack, title, children }: DetailPageHeaderProps) {
   return (
     <Box sx={{ mb: 3 }}>

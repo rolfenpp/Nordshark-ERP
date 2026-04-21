@@ -7,17 +7,12 @@ import { PageHeader } from './PageHeader'
 
 export type ResourceListPageProps = {
   title: ReactNode
-  /** Buttons / actions next to the title (Excel export, Create, etc.) */
   actions?: ReactNode
   children: ReactNode
-  /** Passed to FadeInContent (matches prior per-route values). */
   fadeDelay?: number
   fadeDuration?: number
 }
 
-/**
- * Standard shell for dashboard list routes: auth → layout → fade → header + body.
- */
 export function ResourceListPage({
   title,
   actions,

@@ -47,7 +47,6 @@ function ProjectDetailComponent() {
   const { projectId } = Route.useParams()
   const [activeTab, setActiveTab] = useState(0)
 
-  // Mock data for demonstration
   const project = {
     id: projectId,
     name: 'Website Redesign',
@@ -360,7 +359,6 @@ function ProjectDetailComponent() {
               </IconButton>
             </DetailPageHeader>
 
-            {/* Tabs */}
             <Paper sx={{ mb: 3 }}>
               <Tabs
                 value={activeTab}
@@ -375,7 +373,6 @@ function ProjectDetailComponent() {
               </Tabs>
             </Paper>
 
-            {/* Tab Content */}
             {renderTabContent(activeTab)}
           </Box>
         </FadeInContent>

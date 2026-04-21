@@ -3,12 +3,10 @@ import type { SxProps, Theme } from '@mui/material/styles'
 
 export interface PageHeaderProps {
   title: React.ReactNode
-  /** Primary actions (buttons); full-width on extra-small screens */
   actions?: React.ReactNode
   sx?: SxProps<Theme>
 }
 
-/** Smaller heading row inside a Paper (e.g. section title + action). */
 export function SectionHeader({ title, actions }: { title: string; actions?: React.ReactNode }) {
   return (
     <Box
@@ -44,9 +42,6 @@ export function SectionHeader({ title, actions }: { title: string; actions?: Rea
   )
 }
 
-/**
- * Page title row: stacks on narrow viewports so titles and CTAs do not overflow.
- */
 export function PageHeader({ title, actions, sx }: PageHeaderProps) {
   return (
     <Box
