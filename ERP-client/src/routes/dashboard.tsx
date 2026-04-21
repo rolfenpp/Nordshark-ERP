@@ -118,8 +118,12 @@ function DashboardComponent() {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Receipt color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h4">{stats.totalInvoices.toLocaleString()}</Typography>
-                      <Typography variant="body2" color="text.secondary">Total Invoices</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                        {stats.totalInvoices.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Total Invoices
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -129,8 +133,12 @@ function DashboardComponent() {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AttachMoney color="success" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h4">${stats.totalValue.toLocaleString()}</Typography>
-                      <Typography variant="body2" color="text.secondary">Total Revenue</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                        ${stats.totalValue.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Total Revenue
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -140,8 +148,12 @@ function DashboardComponent() {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <People color="info" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h4">{stats.activeUsers}</Typography>
-                      <Typography variant="body2" color="text.secondary">Active Users</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                        {stats.activeUsers}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Active Users
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -151,8 +163,12 @@ function DashboardComponent() {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Schedule color="warning" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h4">${stats.pendingAmount.toLocaleString()}</Typography>
-                      <Typography variant="body2" color="text.secondary">Pending Amount</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
+                        ${stats.pendingAmount.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Pending Amount
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -168,7 +184,7 @@ function DashboardComponent() {
               <Card>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
                       Revenue Overview
                     </Typography>
                     <IconButton size="small">
@@ -207,7 +223,7 @@ function DashboardComponent() {
                             color: theme.palette.text.primary
                           }}
                           formatter={(value: any) => [`$${value.toLocaleString()}`, 'Revenue']}
-                          labelStyle={{ fontWeight: 'bold' }}
+                          labelStyle={{ fontWeight: 300 }}
                         />
                         <Area 
                           type="monotone" 
@@ -231,16 +247,28 @@ function DashboardComponent() {
                     }}
                   >
                     <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
-                      <Typography variant="body2" color="text.secondary">This Month</Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>$12,450</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        This Month
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 300 }}>
+                        $12,450
+                      </Typography>
                     </Box>
                     <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
-                      <Typography variant="body2" color="text.secondary">Last Month</Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>$11,200</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Last Month
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 300 }}>
+                        $11,200
+                      </Typography>
                     </Box>
                     <Box sx={{ minWidth: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'left', sm: 'inherit' } }}>
-                      <Typography variant="body2" color="text.secondary">Growth</Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>+11.2%</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
+                        Growth
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 300, color: 'success.main' }}>
+                        +11.2%
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -249,7 +277,7 @@ function DashboardComponent() {
               <Card>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
                       Invoice Status
                     </Typography>
                     <IconButton size="small">
@@ -300,10 +328,10 @@ function DashboardComponent() {
                       textAlign: 'center',
                       pointerEvents: 'none'
                     }}>
-                      <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      <Typography variant="h4" sx={{ fontWeight: 300, color: 'text.primary' }}>
                         {invoiceStatusData.reduce((sum, item) => sum + item.value, 0)}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                         Total
                       </Typography>
                     </Box>
@@ -324,7 +352,7 @@ function DashboardComponent() {
                         <Typography variant="body2" sx={{ flex: 1 }}>
                           {item.name}
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 300 }}>
                           {item.value}%
                         </Typography>
                       </Box>
@@ -344,7 +372,7 @@ function DashboardComponent() {
               <Card>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
                       Recent Activity
                     </Typography>
                     <IconButton size="small">
@@ -400,7 +428,7 @@ function DashboardComponent() {
 
               <Card>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 300, mb: 3 }}>
                     Top Clients
                   </Typography>
                   
