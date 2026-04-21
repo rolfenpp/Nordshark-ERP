@@ -57,14 +57,17 @@ function getPageTitle(pathname: string): string {
   if (exact[p]) return exact[p]
 
   if (p === '/invoices/create') return 'New Invoice'
+  if (/^\/invoices\/edit\/[^/]+$/.test(p)) return 'Edit Invoice'
   if (p.startsWith('/invoices/') && p.endsWith('/edit')) return 'Edit Invoice'
   if (/^\/invoices\/[^/]+$/.test(p)) return 'Invoice'
 
   if (p === '/inventory/create') return 'New Item'
+  if (/^\/inventory\/edit\/[^/]+$/.test(p)) return 'Edit Item'
   if (p.startsWith('/inventory/') && p.endsWith('/edit')) return 'Edit Item'
   if (/^\/inventory\/[^/]+$/.test(p)) return 'Item'
 
   if (p === '/projects/create') return 'New Project'
+  if (/^\/projects\/edit\/[^/]+$/.test(p)) return 'Edit Project'
   if (p.startsWith('/projects/') && p.endsWith('/edit')) return 'Edit Project'
   if (/^\/projects\/[^/]+$/.test(p)) return 'Project'
 
