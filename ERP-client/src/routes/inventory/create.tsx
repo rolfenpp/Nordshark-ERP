@@ -170,11 +170,7 @@ function CreateInventoryComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-            <DetailPageHeader
-              backLabel="Back to Inventory"
-              onBack={() => navigate({ to: '/inventory/' })}
-              title="Add New Inventory Item"
-            />
+            <DetailPageHeader showBack={false} title="Add New Inventory Item" />
 
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>

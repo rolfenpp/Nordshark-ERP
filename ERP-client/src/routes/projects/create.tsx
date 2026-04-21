@@ -305,11 +305,7 @@ function CreateProjectComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            <DetailPageHeader
-              backLabel="Back to Projects"
-              onBack={() => navigate({ to: '/projects/' })}
-              title="Create New Project"
-            />
+            <DetailPageHeader showBack={false} title="Create New Project" />
 
             <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
               <Stepper activeStep={activeStep} alternativeLabel>

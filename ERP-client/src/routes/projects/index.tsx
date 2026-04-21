@@ -143,7 +143,7 @@ function ProjectsIndexComponent() {
     <ResourceListPage
       fadeDelay={200}
       fadeDuration={800}
-      title="Projects"
+      title="Projects Management"
       actions={
         <Button
           variant="contained"

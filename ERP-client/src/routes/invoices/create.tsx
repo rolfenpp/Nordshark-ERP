@@ -135,11 +135,7 @@ function CreateInvoiceComponent() {
       <DashboardLayout>
         <FadeInContent delay={200} duration={800}>
           <Box>
-            <DetailPageHeader
-              backLabel="Back to Invoices"
-              onBack={() => navigate({ to: '/invoices/' })}
-              title="Create New Invoice"
-            />
+            <DetailPageHeader showBack={false} title="Create New Invoice" />
 
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>

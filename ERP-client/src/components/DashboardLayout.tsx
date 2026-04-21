@@ -32,11 +32,12 @@ import {
   Help,
   LightMode,
   DarkMode,
-  InfoOutlined
+  InfoOutlined,
 } from '@mui/icons-material'
 import { useAuth } from '../auth/AuthProvider'
 import { NordsharkBrand } from './NordsharkBrand'
 import { UpgradeButton } from './UpgradeButton'
+import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
 import { useTheme as useAppTheme } from '../theme/ThemeProvider'
 import { colors } from '../theme/theme'
 
@@ -44,39 +45,6 @@ const DRAWER_WIDTH = 240
 
 const DEMONSTRATION_DISCLAIMER =
   'Demonstration only. Not a commercial product or live service.'
-
-function getPageTitle(pathname: string): string {
-  const p = pathname.replace(/\/$/, '') || '/'
-
-  const exact: Record<string, string> = {
-    '/dashboard': 'Dashboard',
-    '/invoices': 'Invoices',
-    '/inventory': 'Inventory',
-    '/projects': 'Projects',
-    '/users': 'Users',
-    '/settings': 'Settings',
-    '/help': 'Help',
-    '/profile': 'Profile',
-  }
-  if (exact[p]) return exact[p]
-
-  if (p === '/invoices/create') return 'New Invoice'
-  if (/^\/invoices\/edit\/[^/]+$/.test(p)) return 'Edit Invoice'
-  if (p.startsWith('/invoices/') && p.endsWith('/edit')) return 'Edit Invoice'
-  if (/^\/invoices\/[^/]+$/.test(p)) return 'Invoice'
-
-  if (p === '/inventory/create') return 'New Item'
-  if (/^\/inventory\/edit\/[^/]+$/.test(p)) return 'Edit Item'
-  if (p.startsWith('/inventory/') && p.endsWith('/edit')) return 'Edit Item'
-  if (/^\/inventory\/[^/]+$/.test(p)) return 'Item'
-
-  if (p === '/projects/create') return 'New Project'
-  if (/^\/projects\/edit\/[^/]+$/.test(p)) return 'Edit Project'
-  if (p.startsWith('/projects/') && p.endsWith('/edit')) return 'Edit Project'
-  if (/^\/projects\/[^/]+$/.test(p)) return 'Project'
-
-  return 'Dashboard'
-}
 
 const getMenuItems = (userRole: string) => {
   const categories = [
@@ -282,23 +250,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 minWidth: 0,
               }}
             >
-              <Typography
-                variant="h6"
-                noWrap
-                component="div"
-                sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  color: 'text.primary',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  fontWeight: 300,
-                  fontSize: { xs: '1rem', sm: '1.25rem' },
-                  lineHeight: 1.25,
-                }}
-              >
-                {getPageTitle(location.pathname)}
-              </Typography>
+              <AppToolbarBreadcrumbs pathname={location.pathname} />
               <Tooltip
                 title={DEMONSTRATION_DISCLAIMER}
                 placement="bottom"

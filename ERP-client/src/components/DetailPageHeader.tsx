@@ -2,13 +2,21 @@ import { ArrowBack } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/material'
 
 export interface DetailPageHeaderProps {
-  backLabel: string
-  onBack: () => void
+  /** When false, the back button is hidden (e.g. create flows). Default true. */
+  showBack?: boolean
+  backLabel?: string
+  onBack?: () => void
   title: React.ReactNode
   children?: React.ReactNode
 }
 
-export function DetailPageHeader({ backLabel, onBack, title, children }: DetailPageHeaderProps) {
+export function DetailPageHeader({
+  showBack = true,
+  backLabel,
+  onBack,
+  title,
+  children,
+}: DetailPageHeaderProps) {
   return (
     <Box sx={{ mb: 3 }}>
       <Box
@@ -30,13 +38,15 @@ export function DetailPageHeader({ backLabel, onBack, title, children }: DetailP
             flex: '1 1 auto',
           }}
         >
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={onBack}
-            sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, flexShrink: 0 }}
-          >
-            {backLabel}
-          </Button>
+          {showBack && backLabel != null && onBack != null && (
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={onBack}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, flexShrink: 0 }}
+            >
+              {backLabel}
+            </Button>
+          )}
           <Typography
             component="h1"
             variant="h4"
