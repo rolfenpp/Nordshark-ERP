@@ -52,7 +52,6 @@ function EditProjectComponent() {
   })
   const [loading, setLoading] = useState(true)
 
-  // Mock data for demonstration
   const mockProject = {
     id: projectId,
     name: 'Website Redesign',
@@ -69,12 +68,11 @@ function EditProjectComponent() {
   }
 
   useEffect(() => {
-    // Set project data immediately
     setFormData({
       name: mockProject.name,
       description: mockProject.description,
       client: mockProject.client,
-      manager: 'John Doe', // This would come from the project data
+      manager: 'John Doe',
       status: mockProject.status,
       priority: mockProject.priority,
       startDate: mockProject.startDate,
@@ -96,7 +94,6 @@ function EditProjectComponent() {
 
   const handleSubmit = () => {
     console.log('Updated project data:', formData)
-    // Here you would typically update the backend
     navigate({ to: `/projects/${projectId}` })
   }
 
@@ -127,7 +124,6 @@ function EditProjectComponent() {
               title="Edit Project"
             />
 
-            {/* Form */}
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
                 Project Information
@@ -256,7 +252,6 @@ function EditProjectComponent() {
               </Box>
             </Paper>
 
-            {/* Settings */}
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
                 Project Settings
@@ -298,7 +293,6 @@ function EditProjectComponent() {
               </Box>
             </Paper>
 
-            {/* Summary Card */}
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Project Summary
@@ -345,7 +339,6 @@ function EditProjectComponent() {
               </Card>
             </Paper>
 
-            {/* Actions */}
             <Box
               sx={{
                 display: 'flex',
@@ -363,7 +356,6 @@ function EditProjectComponent() {
               </Button>
             </Box>
 
-            {/* Info Alert */}
             <Alert severity="info" sx={{ mt: 3 }}>
               Changes will be applied immediately. You can always revert changes from the project history.
             </Alert>

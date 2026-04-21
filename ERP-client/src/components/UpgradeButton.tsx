@@ -1,6 +1,14 @@
 import { Button, Menu, Typography, Box } from '@mui/material'
 import { Diamond } from '@mui/icons-material'
 import { useState } from 'react'
+import {
+  DEFAULT_UPGRADE_TARGET_ID,
+  getOrganizationPlan,
+  ORGANIZATION_PLANS,
+  PLAN_FEATURE_ROWS,
+  PLANS_FOR_COMPARISON,
+  type OrganizationPlanId,
+} from '../lib/subscriptionPlans'
 
 const BRAND_GRADIENT_ID = 'diamondGradient'
 
@@ -14,31 +22,23 @@ const BRAND_GRADIENT = (
   </linearGradient>
 )
 
-const upgradePlans = {
-  basic: {
-    name: 'Basic',
-    price: 'Free',
-    featured: false
-  },
-  pro: {
-    name: 'Pro',
-    price: '$9',
-    featured: true
-  }
-}
+const ACCENT = '#667eea'
 
-const features = [
-  { name: 'Users', basic: '5', pro: '50' },
-  { name: 'Storage', basic: '1 GB', pro: '100 GB' },
-  { name: 'Invoices per month', basic: '10', pro: 'Unlimited' },
-  { name: 'Email support', basic: '✓', pro: '✓' },
-  { name: 'Advanced reporting', basic: '–', pro: '✓' },
-  { name: 'Custom integrations', basic: '–', pro: '✓' }
-]
+function featureCellSx(value: string, isRecommendedColumn: boolean) {
+  const muted = value === '–' || value === '-'
+  const check = value === '✓'
+  return {
+    color: muted ? 'text.disabled' : isRecommendedColumn ? ACCENT : 'text.secondary',
+    fontWeight: check ? 600 : 400,
+    lineHeight: 1.35,
+  } as const
+}
 
 export function UpgradeButton({ onClick }: { onClick?: () => void }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
+
+  const businessPlan = ORGANIZATION_PLANS[DEFAULT_UPGRADE_TARGET_ID]
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -49,8 +49,8 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
     setAnchorEl(null)
   }
 
-  const handlePlanSelect = (planName: string) => {
-    console.log(`Selected plan: ${planName}`)
+  const handlePlanSelect = (planId: OrganizationPlanId) => {
+    console.info('[subscription] Selected organization plan:', planId, getOrganizationPlan(planId))
     handleClose()
   }
 
@@ -62,10 +62,8 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
 
       <Button
         variant="outlined"
-        aria-label="Upgrade plans"
-        startIcon={
-          <Diamond sx={{ fill: `url(#${BRAND_GRADIENT_ID})` }} />
-        }
+        aria-label="Organization plans and upgrades"
+        startIcon={<Diamond sx={{ fill: `url(#${BRAND_GRADIENT_ID})` }} />}
         onClick={handleClick}
         sx={{
           mr: { xs: 0.5, sm: 2 },
@@ -91,13 +89,28 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
             maskComposite: 'exclude',
             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             WebkitMaskComposite: 'xor',
-            zIndex: -1
+            zIndex: -1,
           },
           '&:hover': {
             backgroundColor: 'transparent',
             boxShadow: 'none',
-            transform: 'none'
-          }
+            transform: 'none',
+          },
+          '@media (max-width: 599.95px)': {
+            px: 0,
+            py: 0,
+            minWidth: 44,
+            width: 44,
+            height: 44,
+            justifyContent: 'center',
+            alignItems: 'center',
+            '&::before': {
+              display: 'none',
+            },
+            '& .MuiButton-startIcon': {
+              margin: 0,
+            },
+          },
         }}
       >
         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
@@ -113,97 +126,120 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         sx={{
           '& .MuiPaper-root': {
-            minWidth: { xs: 0, sm: 340 },
-            maxWidth: { xs: 'calc(100vw - 24px)', sm: 380 },
+            minWidth: { xs: 0, sm: 400 },
+            maxWidth: { xs: 'calc(100vw - 24px)', sm: 440 },
             width: { xs: '100%', sm: 'auto' },
             mt: 1,
             backgroundColor: 'background.paper',
             borderRadius: 2,
             border: '1px solid',
-            borderColor: 'divider'
-          }
+            borderColor: 'divider',
+          },
         }}
       >
         <Box sx={{ p: 3, pb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-            Upgrade your productivity
+            Grow your organization
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            for <Box component="span" sx={{ color: '#667eea', fontWeight: 600 }}>$9</Box> with Pro
+            <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>{businessPlan.displayName}</Box>
+            {' '}
+            <Box component="span" sx={{ color: ACCENT, fontWeight: 600 }}>{businessPlan.pricePrimary}/month</Box>
+            {' '}
+            per company.
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', px: 3, pb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'stretch', px: 3, pb: 2, gap: 1.5 }}>
           <Box sx={{ flex: 1 }} />
-          <Box sx={{ 
-            width: 80, 
-            textAlign: 'center',
-            mr: 2,
-            py: 1
-          }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {upgradePlans.basic.name}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 80, 
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '8px',
-            py: 1,
-            px: 1,
-            boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
-          }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'white' }}>
-              {upgradePlans.pro.name}
-            </Typography>
-          </Box>
+          {PLANS_FOR_COMPARISON.map((planId) => {
+            const plan = getOrganizationPlan(planId)
+            return (
+              <Box
+                key={planId}
+                sx={{
+                  width: 100,
+                  flexShrink: 0,
+                  textAlign: 'center',
+                  py: 1,
+                  px: 0.5,
+                  borderRadius: '8px',
+                  ...(plan.recommended
+                    ? {
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+                      }
+                    : {
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }),
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: plan.recommended ? 'common.white' : 'text.primary',
+                  }}
+                >
+                  {plan.shortLabel}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mt: 0.5,
+                    color: plan.recommended ? 'rgba(255,255,255,0.92)' : 'text.secondary',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {plan.pricePrimary}
+                </Typography>
+              </Box>
+            )
+          })}
         </Box>
 
         <Box sx={{ px: 3 }}>
-          {features.map((feature, index) => (
-            <Box key={feature.name} sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              py: 1,
-              borderTop: index === 0 ? 'none' : '1px solid',
-              borderColor: 'divider'
-            }}>
-              <Typography variant="body2" sx={{ 
-                flex: 1, 
-                fontWeight: 500,
-                color: 'text.primary'
-              }}>
-                {feature.name}
+          {PLAN_FEATURE_ROWS.map((row, index) => (
+            <Box
+              key={row.id}
+              sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                py: 1,
+                gap: 1.5,
+                borderTop: index === 0 ? 'none' : '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Typography variant="body2" sx={{ flex: 1, fontWeight: 500, color: 'text.primary', pt: 0.5 }}>
+                {row.label}
               </Typography>
-              
-              <Box sx={{ 
-                width: 80, 
-                textAlign: 'center',
-                mr: 2
-              }}>
-                <Typography variant="body2" sx={{ 
-                  color: feature.basic === '–' ? 'text.disabled' : 'text.secondary',
-                  fontWeight: feature.basic === '✓' ? 600 : 400
-                }}>
-                  {feature.basic}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ 
-                width: 80, 
-                textAlign: 'center',
-                backgroundColor: 'rgba(102, 126, 234, 0.08)',
-                borderRadius: '6px',
-                py: 0.5
-              }}>
-                <Typography variant="body2" sx={{ 
-                  color: feature.pro === '–' ? 'text.disabled' : '#667eea',
-                  fontWeight: feature.pro === '✓' ? 600 : 500
-                }}>
-                  {feature.pro}
-                </Typography>
-              </Box>
+
+              {PLANS_FOR_COMPARISON.map((planId) => {
+                const plan = getOrganizationPlan(planId)
+                const value = row[planId]
+                const recommended = plan.recommended
+                return (
+                  <Box
+                    key={planId}
+                    sx={{
+                      width: 100,
+                      flexShrink: 0,
+                      textAlign: 'center',
+                      borderRadius: '6px',
+                      py: 0.5,
+                      px: 0.5,
+                      backgroundColor: recommended ? 'rgba(102, 126, 234, 0.08)' : 'transparent',
+                    }}
+                  >
+                    <Typography variant="body2" sx={featureCellSx(value, recommended)}>
+                      {value}
+                    </Typography>
+                  </Box>
+                )
+              })}
             </Box>
           ))}
         </Box>
@@ -212,7 +248,7 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => handlePlanSelect('Professional')}
+            onClick={() => handlePlanSelect(DEFAULT_UPGRADE_TARGET_ID)}
             sx={{
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
@@ -223,21 +259,21 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
               boxShadow: 'none',
               '&:hover': {
                 background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                boxShadow: 'none'
-              }
+                boxShadow: 'none',
+              },
             }}
           >
-            Get Pro
+            Get {businessPlan.displayName}
           </Button>
-          
+
           <Button
             fullWidth
             variant="text"
             onClick={handleClose}
             sx={{
-              color: '#667eea',
+              color: ACCENT,
               textTransform: 'none',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             Maybe later

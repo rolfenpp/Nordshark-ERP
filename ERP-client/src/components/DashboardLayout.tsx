@@ -15,6 +15,7 @@ import {
   Divider,
   Menu,
   MenuItem,
+  Tooltip,
   useTheme,
   useMediaQuery
 } from '@mui/material'
@@ -30,7 +31,8 @@ import {
   Assignment as ProjectIcon,
   Help,
   LightMode,
-  DarkMode
+  DarkMode,
+  InfoOutlined
 } from '@mui/icons-material'
 import { useAuth } from '../auth/AuthProvider'
 import { NordsharkBrand } from './NordsharkBrand'
@@ -40,7 +42,9 @@ import { colors } from '../theme/theme'
 
 const DRAWER_WIDTH = 240
 
-/** Short label for the app bar from the current path */
+const DEMONSTRATION_DISCLAIMER =
+  'Demonstration only. Not a commercial product or live service.'
+
 function getPageTitle(pathname: string): string {
   const p = pathname.replace(/\/$/, '') || '/'
 
@@ -235,69 +239,143 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           bgcolor: 'background.secondary',
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            minHeight: { xs: 72, sm: 76 },
+            py: { xs: 1, sm: 1.25 },
+            pr: 1,
+          }}
+        >
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ 
-              mr: 2, 
+            sx={{
+              mr: 1,
               display: { md: 'none' },
-              color: mode === 'light' ? lightIconColor : 'text.primary'
+              color: mode === 'light' ? lightIconColor : 'text.primary',
+              alignSelf: 'center',
             }}
           >
             <MenuIcon />
           </IconButton>
-          
-          <Typography 
-            variant="h6" 
-            noWrap 
-            component="div" 
-            sx={{ 
+
+          <Box
+            sx={{
               flexGrow: 1,
               minWidth: 0,
-              color: 'text.primary',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: { xs: '1rem', sm: '1.25rem' },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
             }}
           >
-            {getPageTitle(location.pathname)}
-          </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                width: '100%',
+                minWidth: 0,
+              }}
+            >
+              <Typography
+                variant="h6"
+                noWrap
+                component="div"
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  color: 'text.primary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  lineHeight: 1.25,
+                }}
+              >
+                {getPageTitle(location.pathname)}
+              </Typography>
+              <Tooltip
+                title={DEMONSTRATION_DISCLAIMER}
+                placement="bottom"
+                enterTouchDelay={0}
+                leaveTouchDelay={4000}
+                describeChild
+              >
+                <IconButton
+                  size="small"
+                  aria-label="Show demonstration disclaimer"
+                  sx={{
+                    display: { xs: 'inline-flex', sm: 'none' },
+                    flexShrink: 0,
+                    color: 'text.secondary',
+                    p: 0.4,
+                    border: '1px solid transparent',
+                    borderRadius: '50%',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                >
+                  <InfoOutlined sx={{ fontSize: '1rem' }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <Typography
+              variant="caption"
+              component="div"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.65rem',
+                lineHeight: 1.3,
+                mt: 0.25,
+                display: { xs: 'none', sm: 'block' },
+                width: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {DEMONSTRATION_DISCLAIMER}
+            </Typography>
+          </Box>
 
-          <UpgradeButton 
-            onClick={() => {}}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, gap: 0.5 }}>
+            <UpgradeButton onClick={() => {}} />
 
-          <IconButton
-            onClick={toggleTheme}
-            color="inherit"
-            sx={{ 
-              mr: 1,
-              color: mode === 'light' ? lightIconColor : 'text.primary',
-              '&:hover': {
-                backgroundColor: 'action.hover',
-              }
-            }}
-            title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {mode === 'light' ? <DarkMode /> : <LightMode />}
-          </IconButton>
+            <IconButton
+              onClick={toggleTheme}
+              color="inherit"
+              sx={{
+                mr: 0.5,
+                color: mode === 'light' ? lightIconColor : 'text.primary',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+              title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {mode === 'light' ? <DarkMode /> : <LightMode />}
+            </IconButton>
 
-          <IconButton
-            size="large"
-            edge="end"
-            aria-label="account of current user"
-            aria-controls="profile-menu"
-            aria-haspopup="true"
-            onClick={handleProfileMenuOpen}
-            sx={{
-              color: mode === 'light' ? lightIconColor : 'text.primary'
-            }}
-          >
-            <AccountCircle />
-          </IconButton>
+            <IconButton
+              size="large"
+              edge="end"
+              aria-label="account of current user"
+              aria-controls="profile-menu"
+              aria-haspopup="true"
+              onClick={handleProfileMenuOpen}
+              sx={{
+                color: mode === 'light' ? lightIconColor : 'text.primary',
+              }}
+            >
+              <AccountCircle />
+            </IconButton>
+          </Box>
+
           <Menu
             id="profile-menu"
             anchorEl={anchorEl}
@@ -382,7 +460,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           minWidth: 0,
           maxWidth: '100%',
           p: { xs: 2, sm: 3 },
-          mt: '64px',
+          mt: { xs: '80px', sm: '84px' },
         }}
       >
         {children}

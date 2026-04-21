@@ -72,7 +72,6 @@ function CreateProjectComponent() {
 
   const handleSubmit = () => {
     console.log('Project data:', formData)
-    // Here you would typically submit to backend
     navigate({ to: '/projects/' })
   }
 
@@ -312,7 +311,6 @@ function CreateProjectComponent() {
               title="Create New Project"
             />
 
-            {/* Stepper */}
             <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
               <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
@@ -323,12 +321,10 @@ function CreateProjectComponent() {
               </Stepper>
             </Paper>
 
-            {/* Form Content */}
             <Paper sx={{ p: 3, mb: 3 }}>
               {renderStepContent(activeStep)}
             </Paper>
 
-            {/* Navigation */}
             <Box
               sx={{
                 display: 'flex',
@@ -369,7 +365,6 @@ function CreateProjectComponent() {
               </Box>
             </Box>
 
-            {/* Info Alert */}
             <Alert severity="info" sx={{ mt: 3 }}>
               You can always edit these details later from the project settings.
             </Alert>
