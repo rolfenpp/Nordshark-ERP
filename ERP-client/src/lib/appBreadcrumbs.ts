@@ -36,9 +36,9 @@ export function getAppBreadcrumbs(pathname: string): AppBreadcrumbItem[] {
     if (m && m[1] !== 'create') return [list, { label: m[1] }]
   }
 
-  if (p === '/projects') return [{ label: 'Projects Management' }]
+  if (p === '/projects') return [{ label: 'Projects' }]
   if (p.startsWith('/projects')) {
-    const list: AppBreadcrumbItem = { label: 'Projects Management', to: '/projects' }
+    const list: AppBreadcrumbItem = { label: 'Projects', to: '/projects' }
     if (p === '/projects/create') return [list, { label: 'New Project' }]
     if (/^\/projects\/edit\/[^/]+$/.test(p)) return [list, { label: 'Edit Project' }]
     const m = /^\/projects\/([^/]+)$/.exec(p)
