@@ -15,6 +15,25 @@ namespace ErpApi
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
+        [MaxLength(200)]
+        public string? Client { get; set; }
+
+        [MaxLength(200)]
+        public string? Manager { get; set; }
+
+        [MaxLength(32)]
+        public string? Status { get; set; }
+
+        [MaxLength(32)]
+        public string? Priority { get; set; }
+
+        public int Progress { get; set; }
+
+        public decimal? Budget { get; set; }
+
+        [MaxLength(500)]
+        public string? Tags { get; set; }
+
         public int CompanyId { get; set; } = 0;
 
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;

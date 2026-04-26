@@ -18,6 +18,15 @@ public class InventoryItem
     [MaxLength(100)]
     public string? Category { get; set; }
 
+    [MaxLength(200)]
+    public string? Location { get; set; }
+
+    [MaxLength(200)]
+    public string? Supplier { get; set; }
+
+    [MaxLength(500)]
+    public string? Tags { get; set; }
+
     public int QuantityOnHand { get; set; }
 
     public decimal UnitPrice { get; set; }
