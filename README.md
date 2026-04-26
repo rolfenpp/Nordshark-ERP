@@ -4,6 +4,8 @@
 
 A **business system dashboard**: **backend API** (ASP.NET Core) and **web client** (React + Vite).
 
+**AI-assisted development:** [Claude](https://www.anthropic.com/claude) (including **Claude Code** in the editor) was used for much of the **backend** work in `ERP-api`—API controllers, EF Core models and migrations, demo seeding, and related C#—while the React client and UX were built with a mix of other tooling and manual work.
+
 ## Nordshark business system
 
 The web client is a light themed **Nordshark** admin UI with left navigation, headline KPIs (invoices, revenue, users, pending amounts), a revenue trend chart, invoice status breakdown, recent activity, and top clients: typical ERP style monitoring in one view.
