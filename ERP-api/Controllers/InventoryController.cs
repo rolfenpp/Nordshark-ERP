@@ -36,6 +36,9 @@ public class InventoryController : ControllerBase
                 Name = i.Name,
                 Description = i.Description,
                 Category = i.Category,
+                Location = i.Location,
+                Supplier = i.Supplier,
+                Tags = i.Tags,
                 QuantityOnHand = i.QuantityOnHand,
                 UnitPrice = i.UnitPrice,
                 ReorderLevel = i.ReorderLevel,
@@ -62,6 +65,9 @@ public class InventoryController : ControllerBase
                 Name = i.Name,
                 Description = i.Description,
                 Category = i.Category,
+                Location = i.Location,
+                Supplier = i.Supplier,
+                Tags = i.Tags,
                 QuantityOnHand = i.QuantityOnHand,
                 UnitPrice = i.UnitPrice,
                 ReorderLevel = i.ReorderLevel,
@@ -95,6 +101,9 @@ public class InventoryController : ControllerBase
             Name = dto.Name.Trim(),
             Description = dto.Description,
             Category = dto.Category?.Trim(),
+            Location = dto.Location?.Trim(),
+            Supplier = dto.Supplier?.Trim(),
+            Tags = dto.Tags?.Trim(),
             QuantityOnHand = dto.QuantityOnHand,
             UnitPrice = dto.UnitPrice,
             ReorderLevel = dto.ReorderLevel,
@@ -112,6 +121,9 @@ public class InventoryController : ControllerBase
             Name = entity.Name,
             Description = entity.Description,
             Category = entity.Category,
+            Location = entity.Location,
+            Supplier = entity.Supplier,
+            Tags = entity.Tags,
             QuantityOnHand = entity.QuantityOnHand,
             UnitPrice = entity.UnitPrice,
             ReorderLevel = entity.ReorderLevel,
@@ -150,6 +162,9 @@ public class InventoryController : ControllerBase
         entity.Name = dto.Name.Trim();
         entity.Description = dto.Description;
         entity.Category = dto.Category?.Trim();
+        if (dto.Location is not null) entity.Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim();
+        if (dto.Supplier is not null) entity.Supplier = string.IsNullOrWhiteSpace(dto.Supplier) ? null : dto.Supplier.Trim();
+        if (dto.Tags is not null) entity.Tags = string.IsNullOrWhiteSpace(dto.Tags) ? null : dto.Tags.Trim();
         entity.QuantityOnHand = dto.QuantityOnHand;
         entity.UnitPrice = dto.UnitPrice;
         entity.ReorderLevel = dto.ReorderLevel;
@@ -181,6 +196,9 @@ public class InventoryItemDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Category { get; set; }
+    public string? Location { get; set; }
+    public string? Supplier { get; set; }
+    public string? Tags { get; set; }
     public int QuantityOnHand { get; set; }
     public decimal UnitPrice { get; set; }
     public int? ReorderLevel { get; set; }
@@ -201,6 +219,15 @@ public class CreateInventoryItemDto
 
     [MaxLength(100)]
     public string? Category { get; set; }
+
+    [MaxLength(200)]
+    public string? Location { get; set; }
+
+    [MaxLength(200)]
+    public string? Supplier { get; set; }
+
+    [MaxLength(500)]
+    public string? Tags { get; set; }
 
     [Range(0, int.MaxValue)]
     public int QuantityOnHand { get; set; }
@@ -225,6 +252,15 @@ public class UpdateInventoryItemDto
 
     [MaxLength(100)]
     public string? Category { get; set; }
+
+    [MaxLength(200)]
+    public string? Location { get; set; }
+
+    [MaxLength(200)]
+    public string? Supplier { get; set; }
+
+    [MaxLength(500)]
+    public string? Tags { get; set; }
 
     [Range(0, int.MaxValue)]
     public int QuantityOnHand { get; set; }

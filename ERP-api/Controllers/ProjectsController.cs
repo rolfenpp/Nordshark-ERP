@@ -35,6 +35,13 @@ public class ProjectsController : ControllerBase
                 Description = p.Description,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
+                Client = p.Client,
+                Manager = p.Manager,
+                Status = p.Status,
+                Priority = p.Priority,
+                Progress = p.Progress,
+                Budget = p.Budget,
+                Tags = p.Tags,
                 CreatedUtc = p.CreatedUtc,
                 UpdatedUtc = p.UpdatedUtc
             })
@@ -57,6 +64,13 @@ public class ProjectsController : ControllerBase
                 Description = x.Description,
                 StartDate = x.StartDate,
                 EndDate = x.EndDate,
+                Client = x.Client,
+                Manager = x.Manager,
+                Status = x.Status,
+                Priority = x.Priority,
+                Progress = x.Progress,
+                Budget = x.Budget,
+                Tags = x.Tags,
                 CreatedUtc = x.CreatedUtc,
                 UpdatedUtc = x.UpdatedUtc
             })
@@ -78,6 +92,13 @@ public class ProjectsController : ControllerBase
             Description = dto.Description,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
+            Client = dto.Client?.Trim(),
+            Manager = dto.Manager?.Trim(),
+            Status = dto.Status?.Trim(),
+            Priority = dto.Priority?.Trim(),
+            Progress = dto.Progress,
+            Budget = dto.Budget,
+            Tags = dto.Tags?.Trim(),
             CompanyId = companyId,
             CreatedUtc = DateTime.UtcNow
         };
@@ -92,6 +113,13 @@ public class ProjectsController : ControllerBase
             Description = entity.Description,
             StartDate = entity.StartDate,
             EndDate = entity.EndDate,
+            Client = entity.Client,
+            Manager = entity.Manager,
+            Status = entity.Status,
+            Priority = entity.Priority,
+            Progress = entity.Progress,
+            Budget = entity.Budget,
+            Tags = entity.Tags,
             CreatedUtc = entity.CreatedUtc,
             UpdatedUtc = entity.UpdatedUtc
         };
@@ -112,6 +140,13 @@ public class ProjectsController : ControllerBase
         entity.Description = dto.Description;
         entity.StartDate = dto.StartDate;
         entity.EndDate = dto.EndDate;
+        entity.Client = dto.Client?.Trim();
+        entity.Manager = dto.Manager?.Trim();
+        entity.Status = dto.Status?.Trim();
+        entity.Priority = dto.Priority?.Trim();
+        entity.Progress = dto.Progress;
+        entity.Budget = dto.Budget;
+        entity.Tags = dto.Tags?.Trim();
         entity.UpdatedUtc = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
@@ -140,6 +175,13 @@ public class ProjectDto
     public string? Description { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public string? Client { get; set; }
+    public string? Manager { get; set; }
+    public string? Status { get; set; }
+    public string? Priority { get; set; }
+    public int Progress { get; set; }
+    public decimal? Budget { get; set; }
+    public string? Tags { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime? UpdatedUtc { get; set; }
 }
@@ -154,6 +196,26 @@ public class CreateProjectDto
 
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+
+    [MaxLength(200)]
+    public string? Client { get; set; }
+
+    [MaxLength(200)]
+    public string? Manager { get; set; }
+
+    [MaxLength(32)]
+    public string? Status { get; set; }
+
+    [MaxLength(32)]
+    public string? Priority { get; set; }
+
+    [Range(0, 100)]
+    public int Progress { get; set; }
+
+    public decimal? Budget { get; set; }
+
+    [MaxLength(500)]
+    public string? Tags { get; set; }
 }
 
 public class UpdateProjectDto
@@ -166,4 +228,24 @@ public class UpdateProjectDto
 
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+
+    [MaxLength(200)]
+    public string? Client { get; set; }
+
+    [MaxLength(200)]
+    public string? Manager { get; set; }
+
+    [MaxLength(32)]
+    public string? Status { get; set; }
+
+    [MaxLength(32)]
+    public string? Priority { get; set; }
+
+    [Range(0, 100)]
+    public int Progress { get; set; }
+
+    public decimal? Budget { get; set; }
+
+    [MaxLength(500)]
+    public string? Tags { get; set; }
 }

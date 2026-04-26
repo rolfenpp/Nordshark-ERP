@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("users")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -24,18 +24,28 @@ public class UsersController : ControllerBase
     {
         var companyId = GetCompanyId();
 
-        var users = await _userManager.Users
+        var baseUsers = await _userManager.Users
             .Where(u => u.CompanyId == companyId)
             .OrderBy(u => u.Email)
-            .Select(u => new UserDto
+            .Select(u => new { u.Id, u.Email, u.EmailConfirmed })
+            .ToListAsync();
+
+        var list = new List<UserDto>(baseUsers.Count);
+        foreach (var u in baseUsers)
+        {
+            var appUser = await _userManager.FindByIdAsync(u.Id);
+            if (appUser is null) continue;
+            var roles = await _userManager.GetRolesAsync(appUser);
+            list.Add(new UserDto
             {
                 Id = u.Id,
                 Email = u.Email ?? string.Empty,
-                EmailConfirmed = u.EmailConfirmed
-            })
-            .ToListAsync();
+                EmailConfirmed = u.EmailConfirmed,
+                Roles = roles.ToArray()
+            });
+        }
 
-        return Ok(users);
+        return Ok(list);
     }
 
     [HttpGet("{id}")]
@@ -43,18 +53,17 @@ public class UsersController : ControllerBase
     {
         var companyId = GetCompanyId();
 
-        var user = await _userManager.Users
-            .Where(u => u.Id == id && u.CompanyId == companyId)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email ?? string.Empty,
-                EmailConfirmed = u.EmailConfirmed
-            })
-            .FirstOrDefaultAsync();
+        var u = await _userManager.FindByIdAsync(id);
+        if (u is null || u.CompanyId != companyId) return NotFound();
 
-        if (user is null) return NotFound();
-        return Ok(user);
+        var roles = await _userManager.GetRolesAsync(u);
+        return Ok(new UserDto
+        {
+            Id = u.Id,
+            Email = u.Email ?? string.Empty,
+            EmailConfirmed = u.EmailConfirmed,
+            Roles = roles.ToArray()
+        });
     }
 }
 
@@ -63,4 +72,5 @@ public class UserDto
     public string Id { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public bool EmailConfirmed { get; set; }
+    public IReadOnlyList<string> Roles { get; set; } = Array.Empty<string>();
 }
