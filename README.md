@@ -1,6 +1,6 @@
 # ERP monorepo
 
-**Demo (web client):** [https://erp-client-flame.vercel.app](https://erp-client-flame.vercel.app)
+**Demo:** [https://erp-client-flame.vercel.app](https://erp-client-flame.vercel.app)
 
 A **business system dashboard** — **backend API** (`ERP-api`, ASP.NET Core) and **web client** (`ERP-client`, React + Vite).
 
