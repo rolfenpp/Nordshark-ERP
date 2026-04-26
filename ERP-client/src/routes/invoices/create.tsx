@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useCreateInvoice, type CreateInvoiceDto } from '../../api/invoices'
 
 export const Route = createFileRoute('/invoices/create')({
   component: CreateInvoiceComponent,
@@ -51,6 +52,7 @@ interface InvoiceItem {
 
 function CreateInvoiceComponent() {
   const navigate = useNavigate()
+  const create = useCreateInvoice()
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     date: new Date().toISOString().split('T')[0],
@@ -61,7 +63,8 @@ function CreateInvoiceComponent() {
     notes: '',
     terms: 'Net 30',
     taxRate: 10,
-    currency: 'USD'
+    currency: 'USD',
+    status: 'draft' as const,
   })
   
   const [items, setItems] = useState<InvoiceItem[]>([
@@ -89,8 +92,9 @@ function CreateInvoiceComponent() {
   }
 
   const addItem = () => {
-    const newId = (Math.max(...items.map(item => parseInt(item.id))) + 1).toString()
-    setItems(prev => [...prev, { id: newId, description: '', quantity: 1, rate: 0, amount: 0 }])
+    const maxId = items.length ? Math.max(...items.map((item) => parseInt(item.id, 10) || 0), 0) : 0
+    const newId = String(maxId + 1)
+    setItems((prev) => [...prev, { id: newId, description: '', quantity: 1, rate: 0, amount: 0 }])
   }
 
   const removeItem = (id: string) => {
@@ -112,15 +116,34 @@ function CreateInvoiceComponent() {
   }
 
   const handleSubmit = () => {
-    const invoiceData = {
-      ...formData,
-      items,
-      subtotal: calculateSubtotal(),
-      tax: calculateTax(),
-      total: calculateTotal()
+    const number = formData.invoiceNumber.trim() || `INV-${Date.now()}`
+    const body: CreateInvoiceDto = {
+      invoiceNumber: number,
+      issueDate: new Date(formData.date + 'T12:00:00.000Z').toISOString(),
+      dueDate: new Date(formData.dueDate + 'T12:00:00.000Z').toISOString(),
+      clientName: formData.client.trim() || 'Client',
+      clientEmail: formData.clientEmail || undefined,
+      clientAddress: formData.clientAddress || undefined,
+      status: formData.status,
+      taxRatePercent: formData.taxRate,
+      terms: formData.terms,
+      currency: formData.currency,
+      notes: formData.notes || undefined,
+      lines: items
+        .filter((it) => it.description.trim() !== '')
+        .map((it, i) => ({
+          lineNumber: i + 1,
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.rate,
+        })),
     }
-    console.log('New invoice:', invoiceData)
-    navigate({ to: '/invoices/' })
+    if (body.lines.length === 0) {
+      return
+    }
+    create.mutate(body, {
+      onSuccess: (res) => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(res.id) } }),
+    })
   }
 
   const handleCancel = () => {

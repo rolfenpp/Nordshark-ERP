@@ -45,116 +45,21 @@ import {
 } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { exportToExcel } from '../../lib/excelExport'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { useCompactListLayout } from '../../hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '../../lib/listBreakpoints'
+import { useInvoices, type InvoiceListDto, type InvoiceStatus } from '../../api/invoices'
 
 export const Route = createFileRoute('/invoices/')({
   component: InvoicesIndexComponent,
 })
 
-type Invoice = {
-  id: string
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  client: string
-  clientEmail: string
-  amount: number
-  tax: number
-  total: number
-  status: 'paid' | 'pending' | 'overdue' | 'draft'
-  paymentMethod: string | null
-  paidDate: string | null
-  notes: string
-  items: { description: string; quantity: number; rate: number; amount: number }[]
-}
-
-const mockInvoices: Invoice[] = [
-  {
-    id: 'INV-001',
-    invoiceNumber: 'INV-2024-001',
-    date: '2024-01-15',
-    dueDate: '2024-02-15',
-    client: 'Acme Corporation',
-    clientEmail: 'accounts@acme.com',
-    amount: 1250.0,
-    tax: 125.0,
-    total: 1375.0,
-    status: 'paid',
-    paymentMethod: 'Bank Transfer',
-    paidDate: '2024-01-20',
-    notes: 'Website development services',
-    items: [
-      { description: 'Website Design', quantity: 1, rate: 800, amount: 800 },
-      { description: 'Development Hours', quantity: 10, rate: 45, amount: 450 }
-    ]
-  },
-  {
-    id: 'INV-002',
-    invoiceNumber: 'INV-2024-002',
-    date: '2024-01-16',
-    dueDate: '2024-02-16',
-    client: 'Tech Solutions Inc.',
-    clientEmail: 'finance@techsolutions.com',
-    amount: 3450.0,
-    tax: 345.0,
-    total: 3795.0,
-    status: 'pending',
-    paymentMethod: null,
-    paidDate: null,
-    notes: 'Software licensing and support',
-    items: [
-      { description: 'Enterprise License', quantity: 5, rate: 600, amount: 3000 },
-      { description: 'Support Package', quantity: 1, rate: 450, amount: 450 }
-    ]
-  },
-  {
-    id: 'INV-003',
-    invoiceNumber: 'INV-2024-003',
-    date: '2024-01-10',
-    dueDate: '2024-02-10',
-    client: 'Global Industries',
-    clientEmail: 'ap@globalindustries.com',
-    amount: 8900.0,
-    tax: 890.0,
-    total: 9790.0,
-    status: 'overdue',
-    paymentMethod: null,
-    paidDate: null,
-    notes: 'Consulting services for Q1',
-    items: [
-      { description: 'Strategic Consulting', quantity: 40, rate: 200, amount: 8000 },
-      { description: 'Report Generation', quantity: 1, rate: 900, amount: 900 }
-    ]
-  },
-  {
-    id: 'INV-004',
-    invoiceNumber: 'INV-2024-004',
-    date: '2024-01-20',
-    dueDate: '2024-02-20',
-    client: 'StartupXYZ',
-    clientEmail: 'hello@startupxyz.com',
-    amount: 2200.0,
-    tax: 220.0,
-    total: 2420.0,
-    status: 'draft',
-    paymentMethod: null,
-    paidDate: null,
-    notes: 'Mobile app development',
-    items: [
-      { description: 'App Design', quantity: 1, rate: 1200, amount: 1200 },
-      { description: 'Development', quantity: 20, rate: 50, amount: 1000 }
-    ]
-  }
-]
-
 function buildInvoicesExportSheet(
-  invoices: Invoice[],
-  getStatusLabel: (status: Invoice['status']) => string
+  invoices: InvoiceListDto[],
+  getStatusLabel: (status: string) => string
 ): (string | number)[][] {
   const header: string[] = [
     'Invoice #',
@@ -162,27 +67,25 @@ function buildInvoicesExportSheet(
     'Due Date',
     'Client',
     'Client Email',
-    'Amount',
+    'Subtotal',
     'Tax',
     'Total',
     'Status',
     'Payment Method',
     'Paid Date',
-    'Notes'
   ]
   const rows = invoices.map((invoice) => [
     invoice.invoiceNumber,
-    new Date(invoice.date).toLocaleDateString(),
+    new Date(invoice.issueDate).toLocaleDateString(),
     new Date(invoice.dueDate).toLocaleDateString(),
-    invoice.client,
-    invoice.clientEmail,
-    invoice.amount,
-    invoice.tax,
+    invoice.clientName,
+    invoice.clientEmail ?? 'N/A',
+    invoice.subtotal,
+    invoice.taxAmount,
     invoice.total,
     getStatusLabel(invoice.status),
     invoice.paymentMethod || 'N/A',
     invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'N/A',
-    invoice.notes,
   ])
   return [header, ...rows]
 }
@@ -196,37 +99,38 @@ function InvoicesIndexComponent() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebouncedValue(searchTerm, LIST_SEARCH_DEBOUNCE_MS)
-  const [filterStatus, setFilterStatus] = useState<'all' | Invoice['status']>('all')
-  const [isLoading, setIsLoading] = useState(true)
+  const [filterStatus, setFilterStatus] = useState<'all' | InvoiceStatus>('all')
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
   const exportBtnRef = useRef<HTMLButtonElement | null>(null)
+  const { data: list = [], isLoading, isError, error: listError } = useInvoices()
 
   const filteredInvoices = useMemo(() => {
-    let filtered = mockInvoices
+    let filtered = list
 
     if (filterStatus !== 'all') {
       filtered = filtered.filter((invoice) => invoice.status === filterStatus)
     }
 
     if (debouncedSearchTerm.trim()) {
+      const q = debouncedSearchTerm.toLowerCase()
       filtered = filtered.filter(
         (invoice) =>
-          invoice.invoiceNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-          invoice.client.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-          invoice.clientEmail.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+          invoice.invoiceNumber.toLowerCase().includes(q) ||
+          invoice.clientName.toLowerCase().includes(q) ||
+          (invoice.clientEmail ?? '').toLowerCase().includes(q)
       )
     }
 
     return filtered
-  }, [debouncedSearchTerm, filterStatus])
+  }, [list, debouncedSearchTerm, filterStatus])
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
   }
 
-  const handleStatusFilter = (status: 'all' | Invoice['status']) => {
+  const handleStatusFilter = (status: 'all' | InvoiceStatus) => {
     setFilterStatus(status)
   }
 
@@ -234,7 +138,7 @@ function InvoicesIndexComponent() {
     setShowExportDialog(true)
   }
 
-  const getStatusLabel = (status: Invoice['status']) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case 'paid':
         return 'Paid'
@@ -271,7 +175,7 @@ function InvoicesIndexComponent() {
     setShowExportDialog(false)
   }
 
-  const getStatusColor = (status: Invoice['status']) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
         return 'success'
@@ -286,15 +190,10 @@ function InvoicesIndexComponent() {
     }
   }
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const totalInvoices = mockInvoices.length
-  const totalAmount = mockInvoices.reduce((sum, invoice) => sum + invoice.total, 0)
-  const paidInvoices = mockInvoices.filter((invoice) => invoice.status === 'paid').length
-  const overdueInvoices = mockInvoices.filter((invoice) => invoice.status === 'overdue').length
+  const totalInvoices = list.length
+  const totalAmount = list.reduce((sum, invoice) => sum + invoice.total, 0)
+  const paidInvoices = list.filter((invoice) => invoice.status === 'paid').length
+  const overdueInvoices = list.filter((invoice) => invoice.status === 'overdue').length
 
   return (
     <ResourceListPage
@@ -375,7 +274,7 @@ function InvoicesIndexComponent() {
               <Schedule color="info" sx={{ mr: 2 }} />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {mockInvoices.filter((i) => i.status === 'pending').length.toLocaleString()}
+                  {list.filter((i) => i.status === 'pending').length.toLocaleString()}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
                   Pending
@@ -400,6 +299,12 @@ function InvoicesIndexComponent() {
           </CardContent>
         </Card>
       </ListStatsGrid>
+
+      {isError && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {(listError as Error)?.message || 'Failed to load invoices.'}
+        </Typography>
+      )}
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box
@@ -428,7 +333,7 @@ function InvoicesIndexComponent() {
             <Select
               value={filterStatus}
               label="Status Filter"
-              onChange={(e) => handleStatusFilter(e.target.value as 'all' | Invoice['status'])}
+              onChange={(e) => handleStatusFilter(e.target.value as 'all' | InvoiceStatus)}
             >
               <MenuItem value="all">All Statuses</MenuItem>
               <MenuItem value="paid">Paid</MenuItem>
@@ -492,14 +397,14 @@ function InvoicesIndexComponent() {
                       <Typography
                         variant="subtitle2"
                         sx={{ cursor: 'pointer' }}
-                        onClick={() => navigate({ to: `/invoices/${invoice.id}` })}
+                        onClick={() => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(invoice.id) } })}
                       >
                         {invoice.invoiceNumber}
                       </Typography>
                     </TableCell>
 
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
-                      {new Date(invoice.date).toLocaleDateString()}
+                      {new Date(invoice.issueDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
                       {new Date(invoice.dueDate).toLocaleDateString()}
@@ -508,7 +413,7 @@ function InvoicesIndexComponent() {
                     <TableCell>
                       <Box>
                         <Typography variant="body2" fontWeight="medium">
-                          {invoice.client}
+                          {invoice.clientName}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -524,13 +429,13 @@ function InvoicesIndexComponent() {
                       align="right"
                       sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
                     >
-                      ${invoice.amount.toFixed(2)}
+                      ${invoice.subtotal.toFixed(2)}
                     </TableCell>
                     <TableCell
                       align="right"
                       sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
                     >
-                      ${invoice.tax.toFixed(2)}
+                      ${invoice.taxAmount.toFixed(2)}
                     </TableCell>
 
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
@@ -540,7 +445,11 @@ function InvoicesIndexComponent() {
                     </TableCell>
 
                     <TableCell>
-                      <Chip label={getStatusLabel(invoice.status)} color={getStatusColor(invoice.status)} size="small" />
+                      <Chip
+                        label={getStatusLabel(invoice.status)}
+                        color={getStatusColor(invoice.status) as 'success' | 'default' | 'warning' | 'error'}
+                        size="small"
+                      />
                     </TableCell>
 
                     <TableCell align="center">
@@ -549,7 +458,7 @@ function InvoicesIndexComponent() {
                           <IconButton
                             size="small"
                             color="primary"
-                            onClick={() => navigate({ to: `/invoices/${invoice.id}` })}
+                            onClick={() => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(invoice.id) } })}
                           >
                             <Visibility />
                           </IconButton>
@@ -563,7 +472,7 @@ function InvoicesIndexComponent() {
                               onClick={() =>
                               navigate({
                                 to: '/invoices/edit/$invoiceId',
-                                params: { invoiceId: invoice.id },
+                                params: { invoiceId: String(invoice.id) },
                               })
                             }
                             >
@@ -601,9 +510,13 @@ function InvoicesIndexComponent() {
               <CardContent sx={{ display: 'grid', gap: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="subtitle1">{inv.invoiceNumber}</Typography>
-                  <Chip label={getStatusLabel(inv.status)} color={getStatusColor(inv.status)} size="small" />
+                  <Chip
+                    label={getStatusLabel(inv.status)}
+                    color={getStatusColor(inv.status) as 'success' | 'default' | 'warning' | 'error'}
+                    size="small"
+                  />
                 </Box>
-                <Typography variant="body2">{inv.client}</Typography>
+                <Typography variant="body2">{inv.clientName}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   Due {new Date(inv.dueDate).toLocaleDateString()}
                 </Typography>
@@ -613,7 +526,7 @@ function InvoicesIndexComponent() {
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button
                     size="small"
-                    onClick={() => navigate({ to: `/invoices/${inv.id}` })}
+                    onClick={() => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(inv.id) } })}
                     startIcon={<Visibility />}
                   >
                     View
@@ -623,7 +536,7 @@ function InvoicesIndexComponent() {
                     onClick={() =>
                       navigate({
                         to: '/invoices/edit/$invoiceId',
-                        params: { invoiceId: inv.id },
+                        params: { invoiceId: String(inv.id) },
                       })
                     }
                     startIcon={<Edit />}
@@ -641,7 +554,7 @@ function InvoicesIndexComponent() {
         <ListSummaryFooter
           primary={
             <Typography variant="body2" color="text.secondary">
-              Showing {filteredInvoices.length} of {mockInvoices.length} invoices
+              Showing {filteredInvoices.length} of {list.length} invoices
             </Typography>
           }
         >

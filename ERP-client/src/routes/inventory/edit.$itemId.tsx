@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '../../api/inventory'
 
 export const Route = createFileRoute('/inventory/edit/$itemId')({
   component: EditInventoryComponent,
@@ -37,6 +38,9 @@ export const Route = createFileRoute('/inventory/edit/$itemId')({
 function EditInventoryComponent() {
   const navigate = useNavigate()
   const { itemId } = Route.useParams()
+  const id = Number(itemId)
+  const { data: item, isLoading } = useInventoryItem(id)
+  const update = useUpdateInventoryItem()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -51,52 +55,28 @@ function EditInventoryComponent() {
     isActive: true,
     trackExpiry: false,
     expiryDate: '',
-    notes: ''
+    notes: '',
   })
-  const [loading, setLoading] = useState(true)
-
-  const mockItem = {
-    id: itemId,
-    name: 'Laptop Dell XPS 13',
-    description: 'High-performance laptop with Intel i7 processor, 16GB RAM, and 512GB SSD. Perfect for professional use and development work.',
-    category: 'Electronics',
-    sku: 'LAP-DELL-XPS13',
-    quantity: 25,
-    minQuantity: 5,
-    price: 1299.99,
-    status: 'In Stock',
-    location: 'Warehouse A, Shelf B-3',
-    supplier: 'Dell Technologies',
-    tags: 'laptop, computer, dell, xps, professional',
-    lastUpdated: '2024-01-15',
-    createdDate: '2023-12-01',
-    isActive: true,
-    trackExpiry: false,
-    expiryDate: null,
-    notes: 'Premium model with extended warranty. Popular item with high demand.',
-    reorderPoint: 5,
-    reorderQuantity: 10
-  }
 
   useEffect(() => {
+    if (!item) return
     setFormData({
-      name: mockItem.name,
-      description: mockItem.description,
-      category: mockItem.category,
-      sku: mockItem.sku,
-      quantity: mockItem.quantity.toString(),
-      minQuantity: mockItem.minQuantity.toString(),
-      price: mockItem.price.toString(),
-      location: mockItem.location,
-      supplier: mockItem.supplier,
-      tags: mockItem.tags,
-      isActive: mockItem.isActive,
-      trackExpiry: mockItem.trackExpiry,
-      expiryDate: mockItem.expiryDate || '',
-      notes: mockItem.notes
+      name: item.name,
+      description: item.description ?? '',
+      category: item.category ?? '',
+      sku: item.sku,
+      quantity: String(item.quantityOnHand),
+      minQuantity: item.reorderLevel != null ? String(item.reorderLevel) : '',
+      price: String(item.unitPrice),
+      location: item.location ?? '',
+      supplier: item.supplier ?? '',
+      tags: item.tags ?? '',
+      isActive: true,
+      trackExpiry: false,
+      expiryDate: '',
+      notes: '',
     })
-    setLoading(false)
-  }, [itemId])
+  }, [item])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -106,12 +86,26 @@ function EditInventoryComponent() {
   }
 
   const handleSubmit = () => {
-    console.log('Updated inventory item:', formData)
-    navigate({ to: `/inventory/${itemId}` })
+    const body: UpdateInventoryItemDto = {
+      sku: formData.sku,
+      name: formData.name,
+      description: formData.description || undefined,
+      category: formData.category || undefined,
+      location: formData.location || undefined,
+      supplier: formData.supplier || undefined,
+      tags: formData.tags || undefined,
+      quantityOnHand: parseInt(formData.quantity, 10) || 0,
+      unitPrice: parseFloat(formData.price) || 0,
+      reorderLevel: formData.minQuantity ? parseInt(formData.minQuantity, 10) : undefined,
+    }
+    update.mutate(
+      { id, item: body },
+      { onSuccess: () => navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } }) }
+    )
   }
 
   const handleCancel = () => {
-    navigate({ to: `/inventory/${itemId}` })
+    navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } })
   }
 
   const categories = [
@@ -126,7 +120,7 @@ function EditInventoryComponent() {
     'Other'
   ]
 
-  if (loading) {
+  if (isLoading || !item) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -145,7 +139,7 @@ function EditInventoryComponent() {
           <Box>
             <DetailPageHeader
               backLabel="Back to Item"
-              onBack={() => navigate({ to: `/inventory/${itemId}` })}
+              onBack={() => navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } })}
               title="Edit Inventory Item"
             />
 

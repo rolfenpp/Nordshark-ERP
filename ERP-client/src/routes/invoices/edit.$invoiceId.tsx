@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '../../api/invoices'
 
 export const Route = createFileRoute('/invoices/edit/$invoiceId')({
   component: EditInvoiceComponent,
@@ -52,6 +53,9 @@ interface InvoiceItem {
 function EditInvoiceComponent() {
   const navigate = useNavigate()
   const { invoiceId } = Route.useParams()
+  const id = Number(invoiceId)
+  const { data: inv, isLoading } = useInvoice(id)
+  const update = useUpdateInvoice()
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     date: '',
@@ -63,53 +67,40 @@ function EditInvoiceComponent() {
     terms: 'Net 30',
     taxRate: 10,
     currency: 'USD',
-    status: 'draft'
+    status: 'draft' as string,
+    paymentMethod: '',
+    paidDate: '',
   })
-  
-  const [items, setItems] = useState<InvoiceItem[]>([])
-  const [loading, setLoading] = useState(true)
 
-  const mockInvoice = {
-    id: invoiceId,
-    invoiceNumber: 'INV-2024-001',
-    date: '2024-01-15',
-    dueDate: '2024-02-15',
-    client: 'Acme Corporation',
-    clientEmail: 'accounts@acme.com',
-    clientAddress: '123 Business St, Suite 100, New York, NY 10001',
-    amount: 1250.00,
-    tax: 125.00,
-    total: 1375.00,
-    status: 'pending',
-    paymentMethod: null,
-    paidDate: null,
-    notes: 'Website development services for Q1 2024. Includes responsive design and CMS integration.',
-    terms: 'Net 30',
-    currency: 'USD',
-    taxRate: 10,
-    items: [
-      { id: '1', description: 'Website Design & UX', quantity: 1, rate: 800, amount: 800 },
-      { id: '2', description: 'Development Hours', quantity: 10, rate: 45, amount: 450 }
-    ]
-  }
+  const [items, setItems] = useState<InvoiceItem[]>([])
 
   useEffect(() => {
+    if (!inv) return
     setFormData({
-      invoiceNumber: mockInvoice.invoiceNumber,
-      date: mockInvoice.date,
-      dueDate: mockInvoice.dueDate,
-      client: mockInvoice.client,
-      clientEmail: mockInvoice.clientEmail,
-      clientAddress: mockInvoice.clientAddress,
-      notes: mockInvoice.notes,
-      terms: mockInvoice.terms,
-      taxRate: mockInvoice.taxRate,
-      currency: mockInvoice.currency,
-      status: mockInvoice.status
+      invoiceNumber: inv.invoiceNumber,
+      date: inv.issueDate.slice(0, 10),
+      dueDate: inv.dueDate.slice(0, 10),
+      client: inv.clientName,
+      clientEmail: inv.clientEmail ?? '',
+      clientAddress: inv.clientAddress ?? '',
+      notes: inv.notes ?? '',
+      terms: inv.terms ?? 'Net 30',
+      taxRate: inv.taxRatePercent,
+      currency: inv.currency,
+      status: inv.status as 'draft' | 'pending' | 'paid' | 'overdue',
+      paymentMethod: inv.paymentMethod ?? '',
+      paidDate: inv.paidDate ? inv.paidDate.slice(0, 10) : '',
     })
-    setItems(mockInvoice.items)
-    setLoading(false)
-  }, [invoiceId])
+    setItems(
+      inv.lines.map((l) => ({
+        id: String(l.id),
+        description: l.description,
+        quantity: l.quantity,
+        rate: l.unitPrice,
+        amount: l.amount,
+      }))
+    )
+  }, [inv])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -132,8 +123,9 @@ function EditInvoiceComponent() {
   }
 
   const addItem = () => {
-    const newId = (Math.max(...items.map(item => parseInt(item.id))) + 1).toString()
-    setItems(prev => [...prev, { id: newId, description: '', quantity: 1, rate: 0, amount: 0 }])
+    const maxId = items.length ? Math.max(...items.map((item) => parseInt(item.id, 10) || 0), 0) : 0
+    const newId = String(maxId + 1)
+    setItems((prev) => [...prev, { id: newId, description: '', quantity: 1, rate: 0, amount: 0 }])
   }
 
   const removeItem = (id: string) => {
@@ -155,26 +147,42 @@ function EditInvoiceComponent() {
   }
 
   const handleSubmit = () => {
-    const invoiceData = {
-      ...formData,
-      items,
-      subtotal: calculateSubtotal(),
-      tax: calculateTax(),
-      total: calculateTotal()
+    const body: UpdateInvoiceDto = {
+      invoiceNumber: formData.invoiceNumber,
+      issueDate: new Date(formData.date + 'T12:00:00.000Z').toISOString(),
+      dueDate: new Date(formData.dueDate + 'T12:00:00.000Z').toISOString(),
+      clientName: formData.client,
+      clientEmail: formData.clientEmail || undefined,
+      clientAddress: formData.clientAddress || undefined,
+      status: formData.status,
+      taxRatePercent: formData.taxRate,
+      terms: formData.terms,
+      currency: formData.currency,
+      notes: formData.notes || undefined,
+      paymentMethod: formData.paymentMethod || undefined,
+      paidDate: formData.paidDate ? new Date(formData.paidDate + 'T12:00:00.000Z').toISOString() : undefined,
+      lines: items.map((it, i) => ({
+        lineNumber: i + 1,
+        description: it.description,
+        quantity: it.quantity,
+        unitPrice: it.rate,
+      })),
     }
-    console.log('Updated invoice:', invoiceData)
-    navigate({ to: `/invoices/${invoiceId}` })
+    update.mutate(
+      { id, body },
+      { onSuccess: () => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } }) }
+    )
   }
 
   const handleCancel = () => {
-    navigate({ to: `/invoices/${invoiceId}` })
+    navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } })
   }
 
   const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD']
   const terms = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Due on Receipt']
   const statuses = ['draft', 'pending', 'paid', 'overdue']
 
-  if (loading) {
+  if (isLoading || !inv) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -193,7 +201,7 @@ function EditInvoiceComponent() {
           <Box>
             <DetailPageHeader
               backLabel="Back to Invoice"
-              onBack={() => navigate({ to: `/invoices/${invoiceId}` })}
+              onBack={() => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } })}
               title="Edit Invoice"
             />
 

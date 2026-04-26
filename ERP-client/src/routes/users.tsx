@@ -21,25 +21,28 @@ import {
 import { Add, Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
+import { useState } from 'react'
 import { ResourceListPage } from '../components/ResourceListPage'
 import { ListStatsGrid } from '../components/ListStatsGrid'
 import { ListSummaryFooter } from '../components/ListSummaryFooter'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import { useCompactListLayout } from '../hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '../lib/listBreakpoints'
+import { useUsers } from '../api/users'
 
 export const Route = createFileRoute('/users')({
   component: UsersComponent,
 })
 
-const MOCK_USERS = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'admin', status: 'active', lastLogin: '2024-01-15' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'manager', status: 'active', lastLogin: '2024-01-14' },
-  { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'user', status: 'inactive', lastLogin: '2024-01-10' },
-  { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'user', status: 'active', lastLogin: '2024-01-15' },
-  { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', role: 'manager', status: 'active', lastLogin: '2024-01-13' },
-] as const
+function displayNameFromEmail(email: string) {
+  const local = email.split('@')[0] || email
+  return local
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    .join(' ')
+}
 
 function UsersComponent() {
   const theme = useTheme()
@@ -50,16 +53,30 @@ function UsersComponent() {
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebouncedValue(searchTerm, LIST_SEARCH_DEBOUNCE_MS)
 
-  const users = MOCK_USERS
+  const { data: apiUsers = [], isLoading, isError, error } = useUsers()
+
+  const users = useMemo(
+    () =>
+      apiUsers.map((u) => ({
+        id: u.id,
+        name: displayNameFromEmail(u.email),
+        email: u.email,
+        role: (u.roles[0] ?? 'user').toLowerCase(),
+        status: u.emailConfirmed ? 'active' : 'pending',
+        lastLogin: '—',
+      })),
+    [apiUsers]
+  )
 
   const filteredUsers = useMemo(() => {
     if (!debouncedSearchTerm.trim()) return users
 
+    const q = debouncedSearchTerm.toLowerCase()
     return users.filter(
       (user) =>
-        user.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        user.name.toLowerCase().includes(q) ||
+        user.email.toLowerCase().includes(q) ||
+        user.role.toLowerCase().includes(q)
     )
   }, [users, debouncedSearchTerm])
 
@@ -67,23 +84,21 @@ function UsersComponent() {
     switch (role) {
       case 'admin':
         return 'error'
-      case 'manager':
-        return 'warning'
       case 'user':
         return 'default'
       default:
-        return 'default'
+        return 'info'
     }
   }
 
   const getStatusColor = (status: string) => {
-    return status === 'active' ? 'success' : 'default'
+    return status === 'active' ? 'success' : 'warning'
   }
 
   const totalUsers = users.length
   const activeUsers = users.filter((user) => user.status === 'active').length
   const adminUsers = users.filter((user) => user.role === 'admin').length
-  const managerUsers = users.filter((user) => user.role === 'manager').length
+  const standardUsers = users.filter((user) => user.role === 'user').length
 
   return (
     <ResourceListPage
@@ -146,16 +161,22 @@ function UsersComponent() {
               <SupervisorAccount color="warning" sx={{ mr: 2 }} />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {managerUsers}
+                  {standardUsers}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Managers
+                  Standard users
                 </Typography>
               </Box>
             </Box>
           </CardContent>
         </Card>
       </ListStatsGrid>
+
+      {isError && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {(error as Error)?.message || 'Failed to load users (Admin only).'}
+        </Typography>
+      )}
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <TextField
@@ -173,7 +194,9 @@ function UsersComponent() {
         />
       </Paper>
 
-      {smUp ? (
+      {isLoading ? (
+        <Typography color="text.secondary">Loading users…</Typography>
+      ) : smUp ? (
         <Paper sx={{ width: '100%' }}>
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
@@ -218,7 +241,7 @@ function UsersComponent() {
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>{user.email}</TableCell>
 
                     <TableCell>
-                      <Chip label={user.role} color={getRoleColor(user.role)} size="small" />
+                      <Chip label={user.role} color={getRoleColor(user.role) as any} size="small" />
                     </TableCell>
                     <TableCell>
                       <Chip label={user.status} color={getStatusColor(user.status)} size="small" />
@@ -302,7 +325,7 @@ function UsersComponent() {
           Admins: <strong>{adminUsers}</strong>
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Managers: <strong>{managerUsers}</strong>
+          Standard: <strong>{standardUsers}</strong>
         </Typography>
       </ListSummaryFooter>
     </ResourceListPage>

@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useProject, useUpdateProject, type CreateProjectDto } from '../../api/projects'
 
 export const Route = createFileRoute('/projects/edit/$projectId')({
   component: EditProjectComponent,
@@ -36,6 +37,9 @@ export const Route = createFileRoute('/projects/edit/$projectId')({
 function EditProjectComponent() {
   const navigate = useNavigate()
   const { projectId } = Route.useParams()
+  const id = Number(projectId)
+  const { data: p, isLoading } = useProject(id)
+  const update = useUpdateProject()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -46,44 +50,30 @@ function EditProjectComponent() {
     startDate: '',
     endDate: '',
     budget: '',
+    progress: '0',
     tags: '',
     isPublic: false,
     allowComments: true
   })
-  const [loading, setLoading] = useState(true)
-
-  const mockProject = {
-    id: projectId,
-    name: 'Website Redesign',
-    description: 'Complete redesign of the company website with modern UI/UX, responsive design, and improved performance.',
-    client: 'TechCorp Inc.',
-    status: 'active',
-    priority: 'high',
-    startDate: '2024-01-15',
-    endDate: '2024-04-15',
-    budget: 25000,
-    tags: 'web, design, responsive, cms',
-    isPublic: false,
-    allowComments: true
-  }
 
   useEffect(() => {
+    if (!p) return
     setFormData({
-      name: mockProject.name,
-      description: mockProject.description,
-      client: mockProject.client,
-      manager: 'John Doe',
-      status: mockProject.status,
-      priority: mockProject.priority,
-      startDate: mockProject.startDate,
-      endDate: mockProject.endDate,
-      budget: mockProject.budget.toString(),
-      tags: mockProject.tags,
-      isPublic: mockProject.isPublic,
-      allowComments: mockProject.allowComments
+      name: p.name,
+      description: p.description ?? '',
+      client: p.client ?? '',
+      manager: p.manager ?? '',
+      status: p.status ?? 'planning',
+      priority: p.priority ?? 'medium',
+      startDate: p.startDate ? p.startDate.slice(0, 10) : '',
+      endDate: p.endDate ? p.endDate.slice(0, 10) : '',
+      budget: p.budget != null ? String(p.budget) : '',
+      progress: String(p.progress ?? 0),
+      tags: p.tags ?? '',
+      isPublic: false,
+      allowComments: true
     })
-    setLoading(false)
-  }, [projectId])
+  }, [p])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -93,15 +83,32 @@ function EditProjectComponent() {
   }
 
   const handleSubmit = () => {
-    console.log('Updated project data:', formData)
-    navigate({ to: `/projects/${projectId}` })
+    const body: CreateProjectDto = {
+      name: formData.name.trim(),
+      description: formData.description.trim() || undefined,
+      client: formData.client.trim() || undefined,
+      manager: formData.manager.trim() || undefined,
+      status: formData.status,
+      priority: formData.priority,
+      progress: Math.min(100, Math.max(0, parseInt(formData.progress, 10) || 0)),
+      startDate: formData.startDate ? new Date(formData.startDate + 'T12:00:00.000Z').toISOString() : undefined,
+      endDate: formData.endDate ? new Date(formData.endDate + 'T12:00:00.000Z').toISOString() : undefined,
+      budget: formData.budget ? parseFloat(formData.budget) : undefined,
+      tags: formData.tags.trim() || undefined,
+    }
+    update.mutate(
+      { id, body },
+      {
+        onSuccess: () => navigate({ to: '/projects/$projectId', params: { projectId: String(id) } }),
+      }
+    )
   }
 
   const handleCancel = () => {
-    navigate({ to: `/projects/${projectId}` })
+    navigate({ to: '/projects/$projectId', params: { projectId: String(id) } })
   }
 
-  if (loading) {
+  if (isLoading || !p) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -228,6 +235,17 @@ function EditProjectComponent() {
                       startAdornment: <AttachMoney />,
                     }}
                     helperText="Enter the total project budget"
+                  />
+                </Box>
+                <Box>
+                  <TextField
+                    fullWidth
+                    label="Progress (0–100)"
+                    value={formData.progress}
+                    onChange={(e) => handleInputChange('progress', e.target.value)}
+                    type="number"
+                    inputProps={{ min: 0, max: 100 }}
+                    helperText="Completion percentage for this project"
                   />
                 </Box>
                 <Box>

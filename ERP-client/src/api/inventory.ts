@@ -8,6 +8,9 @@ export interface InventoryItemDto {
   name: string
   description?: string
   category?: string
+  location?: string
+  supplier?: string
+  tags?: string
   quantityOnHand: number
   unitPrice: number
   reorderLevel?: number
@@ -20,6 +23,9 @@ export interface CreateInventoryItemDto {
   name: string
   description?: string
   category?: string
+  location?: string
+  supplier?: string
+  tags?: string
   quantityOnHand: number
   unitPrice: number
   reorderLevel?: number
@@ -30,6 +36,9 @@ export interface UpdateInventoryItemDto {
   name: string
   description?: string
   category?: string
+  location?: string
+  supplier?: string
+  tags?: string
   quantityOnHand: number
   unitPrice: number
   reorderLevel?: number

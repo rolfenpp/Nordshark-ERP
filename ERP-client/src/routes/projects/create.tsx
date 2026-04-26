@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useCreateProject, type CreateProjectDto } from '../../api/projects'
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectComponent,
@@ -37,6 +38,7 @@ export const Route = createFileRoute('/projects/create')({
 
 function CreateProjectComponent() {
   const navigate = useNavigate()
+  const create = useCreateProject()
   const [activeStep, setActiveStep] = useState(0)
   const [formData, setFormData] = useState({
     name: '',
@@ -48,6 +50,7 @@ function CreateProjectComponent() {
     startDate: '',
     endDate: '',
     budget: '',
+    progress: '0',
     tags: '',
     isPublic: false,
     allowComments: true
@@ -71,8 +74,20 @@ function CreateProjectComponent() {
   }
 
   const handleSubmit = () => {
-    console.log('Project data:', formData)
-    navigate({ to: '/projects/' })
+    const body: CreateProjectDto = {
+      name: formData.name.trim(),
+      description: formData.description.trim() || undefined,
+      client: formData.client.trim() || undefined,
+      manager: formData.manager.trim() || undefined,
+      status: formData.status,
+      priority: formData.priority,
+      progress: Math.min(100, Math.max(0, parseInt(formData.progress, 10) || 0)),
+      startDate: formData.startDate ? new Date(formData.startDate + 'T12:00:00.000Z').toISOString() : undefined,
+      endDate: formData.endDate ? new Date(formData.endDate + 'T12:00:00.000Z').toISOString() : undefined,
+      budget: formData.budget ? parseFloat(formData.budget) : undefined,
+      tags: formData.tags.trim() || undefined,
+    }
+    create.mutate(body, { onSuccess: () => navigate({ to: '/projects/' }) })
   }
 
   const renderStepContent = (step: number) => {
@@ -225,6 +240,16 @@ function CreateProjectComponent() {
                 />
               </Box>
               <Box>
+                <TextField
+                  fullWidth
+                  label="Progress (0–100)"
+                  value={formData.progress}
+                  onChange={(e) => handleInputChange('progress', e.target.value)}
+                  type="number"
+                  inputProps={{ min: 0, max: 100 }}
+                />
+              </Box>
+              <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
                 <TextField
                   fullWidth
                   label="Project Manager"

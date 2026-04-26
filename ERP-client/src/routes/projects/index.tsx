@@ -41,57 +41,11 @@ import { useNavigate } from '@tanstack/react-router'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { useCompactListLayout } from '../../hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '../../lib/listBreakpoints'
+import { useProjects } from '../../api/projects'
 
 export const Route = createFileRoute('/projects/')({
   component: ProjectsIndexComponent,
 })
-
-const MOCK_PROJECTS = [
-  {
-    id: 1,
-    name: 'Website Redesign',
-    client: 'TechCorp Inc.',
-    status: 'active',
-    progress: 75,
-    startDate: '2024-01-15',
-    endDate: '2024-04-15',
-    budget: 25000,
-    manager: 'John Doe'
-  },
-  {
-    id: 2,
-    name: 'Mobile App Development',
-    client: 'StartupXYZ',
-    status: 'planning',
-    progress: 20,
-    startDate: '2024-02-01',
-    endDate: '2024-08-01',
-    budget: 50000,
-    manager: 'Jane Smith'
-  },
-  {
-    id: 3,
-    name: 'E-commerce Platform',
-    client: 'Retail Solutions',
-    status: 'completed',
-    progress: 100,
-    startDate: '2023-09-01',
-    endDate: '2024-01-31',
-    budget: 75000,
-    manager: 'Bob Johnson'
-  },
-  {
-    id: 4,
-    name: 'Data Migration',
-    client: 'Enterprise Corp',
-    status: 'on-hold',
-    progress: 45,
-    startDate: '2024-01-01',
-    endDate: '2024-06-30',
-    budget: 30000,
-    manager: 'Alice Brown'
-  }
-] as const
 
 function ProjectsIndexComponent() {
   const navigate = useNavigate()
@@ -104,7 +58,8 @@ function ProjectsIndexComponent() {
   const debouncedSearchQuery = useDebouncedValue(searchQuery, LIST_SEARCH_DEBOUNCE_MS)
   const [filterStatus, setFilterStatus] = useState('all')
 
-  const projects = MOCK_PROJECTS
+  const { data: projectData = [], isLoading, isError, error } = useProjects()
+  const projects = projectData
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,17 +82,19 @@ function ProjectsIndexComponent() {
   }
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      const matchesSearch = project.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                           project.client.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-      const matchesStatus = filterStatus === 'all' || project.status === filterStatus
+    return projects.filter((project) => {
+      const client = (project.client ?? '').toLowerCase()
+      const matchesSearch =
+        project.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || client.includes(debouncedSearchQuery.toLowerCase())
+      const st = (project.status ?? '').toLowerCase()
+      const matchesStatus = filterStatus === 'all' || st === filterStatus
       return matchesSearch && matchesStatus
     })
   }, [projects, debouncedSearchQuery, filterStatus])
 
-  const totalBudget = projects.reduce((sum, project) => sum + project.budget, 0)
-  const activeProjects = projects.filter(project => project.status === 'active').length
-  const completedProjects = projects.filter(project => project.status === 'completed').length
+  const totalBudget = projects.reduce((sum, project) => sum + (project.budget ?? 0), 0)
+  const activeProjects = projects.filter((project) => (project.status ?? '').toLowerCase() === 'active').length
+  const completedProjects = projects.filter((project) => (project.status ?? '').toLowerCase() === 'completed').length
 
   return (
     <ResourceListPage
@@ -217,6 +174,12 @@ function ProjectsIndexComponent() {
         </Card>
       </ListStatsGrid>
 
+      {isError && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {(error as Error)?.message || 'Failed to load projects.'}
+        </Typography>
+      )}
+
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={{
           display: 'grid',
@@ -253,7 +216,9 @@ function ProjectsIndexComponent() {
         </Box>
       </Paper>
 
-      {smUp ? (
+      {isLoading ? (
+        <Typography color="text.secondary">Loading projects…</Typography>
+      ) : smUp ? (
         <Paper sx={{ width: '100%' }}>
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table stickyHeader size={compactList ? 'small' : 'medium'}>
@@ -305,10 +270,10 @@ function ProjectsIndexComponent() {
                         {compactList && (
                           <Box sx={{ mt: 0.5 }}>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                              {project.client}
+                              {project.client ?? '—'}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Manager: {project.manager}
+                              Manager: {project.manager ?? '—'}
                             </Typography>
                           </Box>
                         )}
@@ -316,16 +281,16 @@ function ProjectsIndexComponent() {
                     </TableCell>
 
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
-                      {project.client}
+                      {project.client ?? '—'}
                     </TableCell>
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
-                      {project.manager}
+                      {project.manager ?? '—'}
                     </TableCell>
 
                     <TableCell>
                       <Chip
-                        label={getStatusLabel(project.status)}
-                        color={getStatusColor(project.status)}
+                        label={getStatusLabel(project.status ?? '')}
+                        color={getStatusColor(project.status ?? '') as 'success' | 'default' | 'info' | 'warning'}
                         size="small"
                       />
                     </TableCell>
@@ -334,13 +299,13 @@ function ProjectsIndexComponent() {
                         <Box sx={{ width: '100%', mr: 1 }}>
                           <LinearProgress
                             variant="determinate"
-                            value={project.progress}
+                            value={project.progress ?? 0}
                             sx={{ height: 8, borderRadius: 4 }}
                           />
                         </Box>
                         <Box sx={{ minWidth: 35 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {project.progress}%
+                            {project.progress ?? 0}%
                           </Typography>
                         </Box>
                       </Box>
@@ -350,11 +315,12 @@ function ProjectsIndexComponent() {
                       align="right"
                       sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap' }}
                     >
-                      ${project.budget.toLocaleString()}
+                      ${(project.budget ?? 0).toLocaleString()}
                     </TableCell>
                     <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
                       <Typography variant="body2">
-                        {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+                        {project.startDate ? new Date(project.startDate).toLocaleDateString() : '—'} -{' '}
+                        {project.endDate ? new Date(project.endDate).toLocaleDateString() : '—'}
                       </Typography>
                     </TableCell>
 
@@ -405,31 +371,32 @@ function ProjectsIndexComponent() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="subtitle1">{project.name}</Typography>
                   <Chip
-                    label={getStatusLabel(project.status)}
-                    color={getStatusColor(project.status)}
+                    label={getStatusLabel(project.status ?? '')}
+                    color={getStatusColor(project.status ?? '') as 'success' | 'default' | 'info' | 'warning'}
                     size="small"
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  {project.client} • Manager: {project.manager}
+                  {project.client ?? '—'} • Manager: {project.manager ?? '—'}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: '100%' }}>
                     <LinearProgress
                       variant="determinate"
-                      value={project.progress}
+                      value={project.progress ?? 0}
                       sx={{ height: 6, borderRadius: 3 }}
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {project.progress}%
+                    {project.progress ?? 0}%
                   </Typography>
                 </Box>
                 <Typography variant="body2">
-                  Budget: <strong>${project.budget.toLocaleString()}</strong>
+                  Budget: <strong>${(project.budget ?? 0).toLocaleString()}</strong>
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+                  {project.startDate ? new Date(project.startDate).toLocaleDateString() : '—'} -{' '}
+                  {project.endDate ? new Date(project.endDate).toLocaleDateString() : '—'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button

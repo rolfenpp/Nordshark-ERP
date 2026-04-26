@@ -22,46 +22,47 @@ import {
   AttachMoney,
   Inventory as InventoryIcon
 } from '@mui/icons-material'
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useInventoryItem, useDeleteInventoryItem, type InventoryItemDto } from '../../api/inventory'
 
 export const Route = createFileRoute('/inventory/$itemId')({
   component: InventoryItemComponent,
 })
 
+function toViewModel(raw: InventoryItemDto) {
+  const min = raw.reorderLevel ?? 0
+  const q = raw.quantityOnHand
+  const status = q === 0 ? 'Out of Stock' : min > 0 && q <= min ? 'Low Stock' : 'In Stock'
+  return {
+    id: String(raw.id),
+    name: raw.name,
+    description: raw.description,
+    category: raw.category,
+    sku: raw.sku,
+    quantity: q,
+    minQuantity: min,
+    price: raw.unitPrice,
+    status,
+    location: raw.location,
+    supplier: raw.supplier,
+    tags: raw.tags,
+    lastUpdated: raw.updatedUtc ?? raw.createdUtc,
+    createdDate: raw.createdUtc,
+    isActive: true,
+    trackExpiry: false,
+    expiryDate: null as string | null,
+    notes: '' as string,
+  }
+}
+
 function InventoryItemComponent() {
   const navigate = useNavigate()
   const { itemId } = Route.useParams()
-  const [loading, setLoading] = useState(true)
-  const [item, setItem] = useState<any>(null)
-
-  const mockItem = {
-    id: itemId,
-    name: 'Laptop Dell XPS 13',
-    description: 'High-performance laptop with Intel i7 processor, 16GB RAM, and 512GB SSD. Perfect for professional use and development work.',
-    category: 'Electronics',
-    sku: 'LAP-DELL-XPS13',
-    quantity: 25,
-    minQuantity: 5,
-    price: 1299.99,
-    status: 'In Stock',
-    location: 'Warehouse A, Shelf B-3',
-    supplier: 'Dell Technologies',
-    tags: 'laptop, computer, dell, xps, professional',
-    lastUpdated: '2024-01-15',
-    createdDate: '2023-12-01',
-    isActive: true,
-    trackExpiry: false,
-    expiryDate: null,
-    notes: 'Premium model with extended warranty. Popular item with high demand.',
-    reorderPoint: 5,
-    reorderQuantity: 10
-  }
-
-  useEffect(() => {
-    setItem(mockItem)
-    setLoading(false)
-  }, [itemId])
+  const id = Number(itemId)
+  const { data: raw, isLoading, isError, error } = useInventoryItem(id)
+  const del = useDeleteInventoryItem()
+  const item = useMemo(() => (raw ? toViewModel(raw) : null), [raw])
 
   const getStatusDisplay = (status: string, quantity: number, minQuantity: number) => {
     if (status === 'Out of Stock' || quantity === 0) {
@@ -78,11 +79,12 @@ function InventoryItemComponent() {
   }
 
   const handleDelete = () => {
-    console.log('Delete item:', itemId)
-    navigate({ to: '/inventory/' })
+    if (confirm('Delete this item?')) {
+      del.mutate(id, { onSuccess: () => navigate({ to: '/inventory/' }) })
+    }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -94,11 +96,11 @@ function InventoryItemComponent() {
     )
   }
 
-  if (!item) {
+  if (isError || !item) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <Alert severity="error">Item not found</Alert>
+          <Alert severity="error">{(error as Error)?.message || 'Item not found'}</Alert>
         </DashboardLayout>
       </ProtectedRoute>
     )
@@ -221,7 +223,7 @@ function InventoryItemComponent() {
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">Reorder Point</Typography>
-                      <Typography variant="body1">{item.reorderPoint}</Typography>
+                      <Typography variant="body1">{item.minQuantity}</Typography>
                     </Box>
                   </Box>
                 </Paper>
