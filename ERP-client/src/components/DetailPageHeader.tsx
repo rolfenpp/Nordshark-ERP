@@ -2,7 +2,6 @@ import { ArrowBack } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/material'
 
 export interface DetailPageHeaderProps {
-  /** When false, the back button is hidden (e.g. create flows). Default true. */
   showBack?: boolean
   backLabel?: string
   onBack?: () => void

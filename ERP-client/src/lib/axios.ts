@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { API_URL } from '../config'
 
-// In-memory access token; refreshed via HttpOnly refresh cookie
 let accessToken: string | null = null
 
 export const setAccessToken = (t: string | null) => {

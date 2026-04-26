@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
 
-/**
- * Debounces a value—useful for search inputs so filtering runs after typing pauses.
- */
 export function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value)
 

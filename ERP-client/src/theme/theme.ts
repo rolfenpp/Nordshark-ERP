@@ -1,7 +1,6 @@
 import { createTheme, type ThemeOptions } from '@mui/material/styles'
 
 export const colors = {
-  // Neon-blue primary scale suited for dark UI
   primary: {
     50: '#eff6ff',
     100: '#dbeafe',
@@ -15,7 +14,6 @@ export const colors = {
     900: '#1e3a8a',
   },
 
-  // Accents aligned with trading dashboard aesthetic
   accent: {
     blue: '#3b82f6',
     blueLight: '#60a5fa',
@@ -24,7 +22,6 @@ export const colors = {
     cyan: '#22D3EE',
   },
 
-  // Deep, cool-neutral backgrounds
   background: {
     primary: '#0b0f10',
     secondary: '#0f1417',
@@ -197,7 +194,6 @@ export const typography = {
     textTransform: 'uppercase' as const,
   },
 
-  // Button text
   button: {
     fontSize: '0.875rem',
     fontWeight: 600,
@@ -486,7 +482,6 @@ export const darkThemeOptions: ThemeOptions = {
         },
       },
 
-      // Global table styles for consistent appearance across routes
       MuiTable: {
         defaultProps: {
           stickyHeader: true,

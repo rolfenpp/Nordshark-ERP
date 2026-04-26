@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           {},
           { 
             withCredentials: true,
-            timeout: 10000 // 10 second timeout
+            timeout: 10000
           },
         )
         const newToken: string | null = data?.accessToken || data?.token || null
@@ -64,8 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null)
       },
       logout: () => {
-        // Clear client auth immediately so UI (e.g. AI assistant) updates before navigation.
-        // Server logout still runs to clear the HttpOnly refresh cookie.
         setAccessToken(null)
         setToken(null)
         setError(null)

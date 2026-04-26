@@ -1,28 +1,12 @@
-/**
- * Organization (company) subscription tiers for the multi-tenant ERP.
- *
- * Aligns with the product surface area: per-company users, inventory, invoices,
- * projects, and exports. When backend billing exists, these ids and limits
- * should match API-enforced entitlements (JWT `companyId` / tenant scope).
- *
- * @see ERP-api onboarding: companies register → admin adds users scoped to company.
- */
-
 export type OrganizationPlanId = 'starter' | 'business'
 
 export type OrganizationPlan = {
   id: OrganizationPlanId
-  /** Full name in marketing / comparison UI */
   displayName: string
-  /** Short column header label */
   shortLabel: string
-  /** Primary price line, e.g. "Free" or "$49" */
   pricePrimary: string
-  /** Secondary line under price in compact UIs, or null */
   priceSecondary: string | null
-  /** Sort order for comparison columns (lower = left) */
   sortOrder: number
-  /** Highlight column (e.g. gradient pill on recommended tier) */
   recommended: boolean
 }
 
@@ -47,23 +31,17 @@ export const ORGANIZATION_PLANS: Record<OrganizationPlanId, OrganizationPlan> = 
   },
 }
 
-/** Plans shown side-by-side in upgrade UI (left → right). */
 export const PLANS_FOR_COMPARISON: OrganizationPlanId[] = (
   Object.values(ORGANIZATION_PLANS) as OrganizationPlan[]
 )
   .sort((a, b) => a.sortOrder - b.sortOrder)
   .map((p) => p.id)
 
-/** One row in the matrix; keys match {@link OrganizationPlanId} for cell copy. */
 export type PlanFeatureRow = {
   id: string
   label: string
 } & Record<OrganizationPlanId, string>
 
-/**
- * Feature matrix: limits and capabilities per tier.
- * Wording mirrors modules in the app (Users, Inventory, Invoices, Projects).
- */
 export const PLAN_FEATURE_ROWS: PlanFeatureRow[] = [
   {
     id: 'users',
@@ -109,7 +87,6 @@ export const PLAN_FEATURE_ROWS: PlanFeatureRow[] = [
   },
 ]
 
-/** Plan selected from primary CTA until checkout is wired. */
 export const DEFAULT_UPGRADE_TARGET_ID: OrganizationPlanId = 'business'
 
 export function getOrganizationPlan(id: OrganizationPlanId): OrganizationPlan {
