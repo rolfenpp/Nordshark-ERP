@@ -71,7 +71,6 @@ namespace ErpApi
                 }
             });
 
-            // JSON array in appsettings (Cors:AllowedOrigins) is bound via GetSection; scalar fallback supports comma-separated env override
             var corsFromSection = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
             var allowedOrigins = corsFromSection is { Length: > 0 }
                 ? corsFromSection
@@ -173,9 +172,6 @@ namespace ErpApi
             }
         }
 
-        /// <summary>
-        /// Matches ERP-client login hint so local <c>dotnet run</c> can sign in without production data.
-        /// </summary>
         private static async Task SeedDevelopmentDemoUserAsync(IServiceProvider services)
         {
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();

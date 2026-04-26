@@ -3,7 +3,6 @@ import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/st
 import { CssBaseline } from '@mui/material'
 import { darkThemeOptions, colors, typography, borderRadius, transitions, designTokens } from './theme'
 
-// Theme context
 interface ThemeContextType {
   mode: 'light' | 'dark'
   toggleTheme: () => void
@@ -12,13 +11,11 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-// Light theme options (optimized for dashboard)
 const createLightTheme = () => {
   const t = createTheme({
     palette: {
       mode: 'light',
       
-      // Primary colors
       primary: {
         main: colors.primary[600],
         light: colors.primary[400],
@@ -26,7 +23,6 @@ const createLightTheme = () => {
         contrastText: '#FFFFFF',
       },
       
-      // Secondary colors (teal/emerald accent for light mode)
       secondary: {
         main: colors.accent.indigo,
         light: colors.accent.blueLight,
@@ -34,7 +30,6 @@ const createLightTheme = () => {
         contrastText: '#FFFFFF',
       },
       
-      // Status colors
       success: {
         main: colors.status.success,
         light: colors.status.successLight,
@@ -60,23 +55,19 @@ const createLightTheme = () => {
         contrastText: '#FFFFFF',
       },
       
-      // Background colors (softened light theme)
       background: {
         default: '#E8EDF2',
         paper: '#FFFFFF',
       },
       
-      // Text colors (clean light theme)
       text: {
         primary: '#1A1A2E',
         secondary: '#4A4A6A',
         disabled: '#8A8AA3',
       },
       
-      // Divider (subtle)
       divider: '#E6E8EF',
       
-      // Action colors
       action: {
         active: colors.interactive.active,
         hover: colors.interactive.hover,
@@ -86,7 +77,6 @@ const createLightTheme = () => {
       },
     },
     
-    // Clean light theme shadows
     shadows: [
       'none',
       '0 1px 2px rgba(0, 0, 0, 0.06)',
@@ -97,7 +87,6 @@ const createLightTheme = () => {
       ...Array(19).fill('none'),
     ] as any,
     
-    // Typography
     typography: {
       fontFamily: typography.fontFamily,
       h1: typography.h1,
@@ -113,15 +102,12 @@ const createLightTheme = () => {
       button: typography.button,
     },
     
-    // Spacing
     spacing: 8,
     
-    // Shape
     shape: {
       borderRadius: parseInt(borderRadius.md),
     },
     
-    // Clean light theme components
     components: {
       MuiButton: {
         styleOverrides: {
@@ -259,7 +245,6 @@ const createLightTheme = () => {
         },
       },
 
-      // Table styling for light theme
       MuiTableHead: {
         styleOverrides: {
           root: ({ theme }) => ({
@@ -277,7 +262,6 @@ const createLightTheme = () => {
         },
       },
 
-      // Table cell styling for light theme
       MuiTableCell: {
         styleOverrides: {
           root: {
@@ -296,11 +280,9 @@ const createLightTheme = () => {
   return t
 }
 
-// Theme provider component
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setMode] = useState<'light' | 'dark'>('light')
   
-  // Load theme preference from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
     if (savedTheme) {
@@ -308,7 +290,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [])
   
-  // Save theme preference to localStorage
   useEffect(() => {
     localStorage.setItem('theme', mode)
   }, [mode])
@@ -321,7 +302,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMode(newMode)
   }
   
-  // Create theme based on current mode
   const theme = mode === 'light' 
     ? createLightTheme() 
     : createTheme({ ...darkThemeOptions, designTokens })
@@ -342,7 +322,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   )
 }
 
-// Hook to use theme context
 export const useTheme = () => {
   const context = useContext(ThemeContext)
   if (!context) {

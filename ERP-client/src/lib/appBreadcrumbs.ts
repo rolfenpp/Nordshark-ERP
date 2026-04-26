@@ -3,9 +3,6 @@ export type AppBreadcrumbItem = {
   to?: string
 }
 
-/**
- * Breadcrumb trail for the app bar: section-first (e.g. Projects → …, not Dashboard → Projects).
- */
 export function getAppBreadcrumbs(pathname: string): AppBreadcrumbItem[] {
   const p = pathname.replace(/\/$/, '') || '/'
 

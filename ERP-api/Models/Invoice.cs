@@ -23,7 +23,6 @@ public class Invoice
     [MaxLength(500)]
     public string? ClientAddress { get; set; }
 
-    /// <summary>draft, pending, paid, overdue</summary>
     [Required, MaxLength(20)]
     public string Status { get; set; } = "draft";
 

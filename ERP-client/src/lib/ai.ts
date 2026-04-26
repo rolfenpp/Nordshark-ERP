@@ -12,7 +12,6 @@ function getGenAI(): GoogleGenAI | null {
   return aiClient
 }
 
-/** True when `VITE_GEMINI_API_KEY` is set (see `.env` / Vite env). */
 export function isAIConfigured(): boolean {
   return Boolean(apiKey)
 }

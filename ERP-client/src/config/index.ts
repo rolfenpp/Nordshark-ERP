@@ -7,7 +7,6 @@ const MODE = import.meta.env.MODE || 'development'
 
 const defaults: Record<string, AppConfig> = {
   development: {
-    // Align with ERP-api Properties/launchSettings.json (dotnet run → port 8080)
     apiBaseUrl: 'http://localhost:8080',
     clientUrl: 'http://localhost:5173',
   },

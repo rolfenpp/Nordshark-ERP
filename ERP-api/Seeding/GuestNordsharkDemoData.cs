@@ -5,10 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ErpApi.Seeding;
 
-/// <summary>
-/// Development-only demo data for the guest tenant (<see cref="GuestEmail"/>): inventory, projects,
-/// invoices, and a few extra team users with app permissions (not admin-level user management).
-/// </summary>
 public static class GuestNordsharkDemoData
 {
     public const string GuestEmail = "guest@nordshark.com";

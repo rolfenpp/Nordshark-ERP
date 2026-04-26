@@ -17,10 +17,6 @@ const crumbTextSx = {
   maxWidth: { xs: 200, sm: 360 },
 } as const
 
-/**
- * MUI breadcrumbs for the app bar (Material UI `Breadcrumbs`).
- * Trails come from `getAppBreadcrumbs` (section-first).
- */
 export function AppToolbarBreadcrumbs({ pathname }: AppToolbarBreadcrumbsProps) {
   const items = getAppBreadcrumbs(pathname)
 

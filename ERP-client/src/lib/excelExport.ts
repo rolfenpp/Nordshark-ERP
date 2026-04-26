@@ -6,11 +6,6 @@ export interface ExcelExportOptions {
   includeHeaders?: boolean
 }
 
-/**
- * Export data to Excel format
- * @param data - Array of objects or 2D array
- * @param options - Export configuration options
- */
 export function exportToExcel(
   data: any[] | any[][],
   options: ExcelExportOptions = {}
@@ -44,12 +39,6 @@ export function exportToExcel(
   }
 }
 
-/**
- * Export table data with custom headers
- * @param data - Array of objects
- * @param headers - Custom header mapping { key: displayName }
- * @param options - Export configuration options
- */
 export function exportTableToExcel(
   data: any[],
   headers: Record<string, string> = {},
@@ -84,13 +73,6 @@ export function exportTableToExcel(
   })
 }
 
-/**
- * Export specific table columns to Excel
- * @param data - Array of objects
- * @param columns - Array of column keys to include
- * @param columnHeaders - Custom header mapping
- * @param options - Export configuration options
- */
 export function exportColumnsToExcel(
   data: any[],
   columns: string[],
