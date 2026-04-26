@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using ErpApi.Seeding;
 
 namespace ErpApi
 {
@@ -131,6 +132,9 @@ namespace ErpApi
                 if (app.Environment.IsDevelopment())
                 {
                     SeedDevelopmentDemoUserAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    GuestNordsharkDemoData.SeedIfEmptyAsync(
+                        scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
+                        db).GetAwaiter().GetResult();
                 }
             }
 
@@ -177,7 +181,7 @@ namespace ErpApi
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var db = services.GetRequiredService<ApplicationDbContext>();
 
-            const string email = "guest@nordshark.com";
+            const string email = GuestNordsharkDemoData.GuestEmail;
             const string password = "Password123!";
 
             if (await userManager.FindByEmailAsync(email) != null)
