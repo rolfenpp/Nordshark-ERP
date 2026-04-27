@@ -26,6 +26,8 @@ public static class GuestNordsharkDemoData
         if (user is null || user.CompanyId < 1)
             return;
 
+        await EnsureViewInvoicesClaimForUserAsync(userManager, user, cancellationToken).ConfigureAwait(false);
+
         var companyId = user.CompanyId;
         var now = DateTime.UtcNow;
 
@@ -307,6 +309,17 @@ public static class GuestNordsharkDemoData
 
     private static DateTime D(int y, int m, int d) =>
         new DateTime(y, m, d, 0, 0, 0, DateTimeKind.Utc);
+
+    private static async Task EnsureViewInvoicesClaimForUserAsync(
+        UserManager<ApplicationUser> userManager, ApplicationUser user, CancellationToken ct)
+    {
+        var perms = await userManager.GetClaimsAsync(user).ConfigureAwait(false);
+        if (perms.Any(c => c.Type == "perm" && c.Value == Permissions.ViewInvoices))
+            return;
+        await userManager
+            .AddClaimAsync(user, new Claim("perm", Permissions.ViewInvoices))
+            .ConfigureAwait(false);
+    }
 
     private static async Task SeedDemoTeamUsersAsync(
         UserManager<ApplicationUser> userManager, int companyId, CancellationToken ct)
