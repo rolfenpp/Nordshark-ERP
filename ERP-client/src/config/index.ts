@@ -3,7 +3,7 @@ export type AppConfig = {
   clientUrl: string
 }
 
-function normalizeApiBaseUrl(url: string): string {
+function trimApiBase(url: string): string {
   let u = url.trim().replace(/\/$/, '')
   if (/\/api$/i.test(u)) {
     u = u.replace(/\/api$/i, '')
@@ -30,11 +30,12 @@ const envClientUrl = (import.meta.env.VITE_CLIENT_URL as string | undefined)?.re
 const base: AppConfig = defaults[MODE] ?? defaults.development
 
 export const CONFIG: AppConfig = {
-  apiBaseUrl: normalizeApiBaseUrl(envApiBaseUrl || base.apiBaseUrl),
+  apiBaseUrl: trimApiBase((envApiBaseUrl || base.apiBaseUrl).trim() || base.apiBaseUrl),
   clientUrl: envClientUrl || base.clientUrl,
 }
 
-export const API_URL = `${CONFIG.apiBaseUrl}`
+/** Base URL of the API (no `/api` path segment). */
+export const API_URL = CONFIG.apiBaseUrl
 
-export const API_ROOT = `${CONFIG.apiBaseUrl}/api`
-
+/** Same as `API_URL` — used as axios `baseURL` for all backend calls. */
+export const API_ROOT = CONFIG.apiBaseUrl

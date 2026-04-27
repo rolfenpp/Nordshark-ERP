@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using ErpApi.Services;
 
 [ApiController]
-[Route("api/companies")]
 [Route("companies")]
 public class CompaniesController : ControllerBase
 {

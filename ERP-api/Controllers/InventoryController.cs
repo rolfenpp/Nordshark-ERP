@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 [ApiController]
-[Route("api/inventory")]
 [Route("inventory")]
 [Authorize]
 public class InventoryController : ControllerBase

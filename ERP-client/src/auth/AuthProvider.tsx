@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
-import { setAccessToken } from '../lib/axios'
-import { API_ROOT } from '../config'
+import { http, setAccessToken } from '../lib/axios'
 
 export type AuthContextValue = {
   isAuthenticated: boolean
@@ -23,13 +21,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true
     const hydrate = async () => {
       try {
-        const { data } = await axios.post(
-          `${API_ROOT}/Account/refresh`,
+        const { data } = await http.post(
+          '/Account/refresh',
           {},
-          { 
-            withCredentials: true,
-            timeout: 10000
-          },
+          { timeout: 10000 },
         )
         const newToken: string | null = data?.accessToken || data?.token || null
         if (!mounted) return
@@ -67,9 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAccessToken(null)
         setToken(null)
         setError(null)
-        void axios
-          .post(`${API_ROOT}/Account/logout`, {}, { withCredentials: true })
-          .catch(() => {})
+        void http.post('/Account/logout', {}).catch(() => {})
       },
     }),
     [token, ready, error],

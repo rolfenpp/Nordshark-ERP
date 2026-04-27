@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 [ApiController]
-[Route("api/[controller]")]
 [Route("[controller]")]
 public class AccountController : ControllerBase
 {

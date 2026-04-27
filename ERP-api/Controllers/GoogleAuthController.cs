@@ -5,7 +5,6 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
-[Route("api/account")]
 [Route("account")]
 public class GoogleAccountController : ControllerBase
 {

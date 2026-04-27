@@ -35,9 +35,9 @@ http.interceptors.response.use(
         isRefreshing = true
         try {
           const { data } = await axios.post(
-            `${API_ROOT}/Account/refresh`,
+            '/Account/refresh',
             {},
-            { withCredentials: true },
+            { baseURL: API_ROOT, withCredentials: true },
           )
           const newToken: string | null = data?.accessToken || data?.token || null
           setAccessToken(newToken)
@@ -69,5 +69,3 @@ http.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
-

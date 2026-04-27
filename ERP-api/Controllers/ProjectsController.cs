@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using ErpApi;
 
 [ApiController]
-[Route("api/projects")]
 [Route("projects")]
 [Authorize]
 public class ProjectsController : ControllerBase
