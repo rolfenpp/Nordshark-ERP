@@ -7,6 +7,7 @@ import { Box, Typography, Paper, Button, Divider, Table, TableBody, TableCell, T
 import { Edit, Delete, CheckCircle, Schedule, Warning, Receipt } from '@mui/icons-material'
 import { useNavigate } from '@tanstack/react-router'
 import { useInvoice, useDeleteInvoice } from '@/api/invoices'
+import { formatDisplayDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/invoices/$invoiceId')({
   component: InvoiceViewComponent,
@@ -117,15 +118,15 @@ function InvoiceViewComponent() {
               </Box>
               <Paper sx={{ p: 3 }}>
                 <Typography variant="subtitle2" color="text.secondary">Issue</Typography>
-                <Typography variant="body1" gutterBottom>{new Date(inv.issueDate).toLocaleDateString()}</Typography>
+                <Typography variant="body1" gutterBottom>{formatDisplayDate(inv.issueDate)}</Typography>
                 <Typography variant="subtitle2" color="text.secondary">Due</Typography>
-                <Typography variant="body1" gutterBottom>{new Date(inv.dueDate).toLocaleDateString()}</Typography>
+                <Typography variant="body1" gutterBottom>{formatDisplayDate(inv.dueDate)}</Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="body2">Subtotal: ${inv.subtotal.toFixed(2)}</Typography>
                 <Typography variant="body2">Tax ({inv.taxRatePercent}%): ${inv.taxAmount.toFixed(2)}</Typography>
                 <Typography variant="h6" sx={{ mt: 1 }}>Total: ${inv.total.toFixed(2)} {inv.currency}</Typography>
                 {inv.paymentMethod && <Typography variant="body2" sx={{ mt: 1 }}>Payment: {inv.paymentMethod}</Typography>}
-                {inv.paidDate && <Typography variant="body2">Paid: {new Date(inv.paidDate).toLocaleDateString()}</Typography>}
+                {inv.paidDate && <Typography variant="body2">Paid: {formatDisplayDate(inv.paidDate)}</Typography>}
                 {inv.terms && <Typography variant="body2" sx={{ mt: 1 }}>Terms: {inv.terms}</Typography>}
               </Paper>
             </Box>

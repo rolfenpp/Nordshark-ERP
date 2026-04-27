@@ -37,6 +37,8 @@ import {
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '@/api/invoices'
+import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/invoices/edit/$invoiceId')({
   component: EditInvoiceComponent,
@@ -149,8 +151,8 @@ function EditInvoiceComponent() {
   const handleSubmit = () => {
     const body: UpdateInvoiceDto = {
       invoiceNumber: formData.invoiceNumber,
-      issueDate: new Date(formData.date + 'T12:00:00.000Z').toISOString(),
-      dueDate: new Date(formData.dueDate + 'T12:00:00.000Z').toISOString(),
+      issueDate: formYmdToApiIso(formData.date)!,
+      dueDate: formYmdToApiIso(formData.dueDate)!,
       clientName: formData.client,
       clientEmail: formData.clientEmail || undefined,
       clientAddress: formData.clientAddress || undefined,
@@ -160,7 +162,7 @@ function EditInvoiceComponent() {
       currency: formData.currency,
       notes: formData.notes || undefined,
       paymentMethod: formData.paymentMethod || undefined,
-      paidDate: formData.paidDate ? new Date(formData.paidDate + 'T12:00:00.000Z').toISOString() : undefined,
+      paidDate: formYmdToApiIso(formData.paidDate),
       lines: items.map((it, i) => ({
         lineNumber: i + 1,
         description: it.description,
@@ -242,24 +244,18 @@ function EditInvoiceComponent() {
                   </FormControl>
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="Invoice Date"
                     value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('date', v)}
                     required
                   />
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="Due Date"
                     value={formData.dueDate}
-                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('dueDate', v)}
                     required
                   />
                 </Box>
@@ -514,12 +510,12 @@ function EditInvoiceComponent() {
                   }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Invoice Date: {formData.date ? new Date(formData.date).toLocaleDateString() : 'Not set'}
+                        Invoice Date: {formatFormYmdOrNotSet(formData.date)}
                       </Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Due Date: {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'Not set'}
+                        Due Date: {formatFormYmdOrNotSet(formData.dueDate)}
                       </Typography>
                     </Box>
                   </Box>

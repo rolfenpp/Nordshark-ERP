@@ -8,6 +8,7 @@ import { Edit, Delete, Assignment, Person, AttachMoney, TrendingUp, Share } from
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useProject, useDeleteProject } from '@/api/projects'
+import { formatDisplayDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectDetailComponent,
@@ -222,10 +223,10 @@ function ProjectDetailComponent() {
                     </List>
                     <Box sx={{ mt: 2, display: 'grid', gap: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Start: {p.startDate ? new Date(p.startDate).toLocaleDateString() : '—'}
+                        Start: {p.startDate ? formatDisplayDate(p.startDate) : '—'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        End: {p.endDate ? new Date(p.endDate).toLocaleDateString() : '—'}
+                        End: {p.endDate ? formatDisplayDate(p.endDate) : '—'}
                       </Typography>
                     </Box>
                   </Paper>

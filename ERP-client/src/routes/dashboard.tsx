@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Box, Alert, useTheme, Card, CardContent, Typography, Skeleton } from '@mui/material'
 import { DashboardLayout } from '@/components/DashboardLayout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
@@ -14,27 +14,14 @@ import { useUsers } from '@/api/users'
 import { useProjects, type ProjectDto } from '@/api/projects'
 import { useInventoryItems, type InventoryItemDto } from '@/api/inventory'
 import { normalizeInvoiceStatus, normalizeProjectStatus } from '@/lib/statusNormalize'
+import { buildRevenuePeriodSeries, type RevenuePeriod } from '@/lib/revenuePeriodSeries'
+import { formatRelativeTime, parseApiDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardComponent,
 })
 
 const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'draft'] as const
-const REVENUE_CHART_MONTHS = 24
-
-function formatRelativeTime(iso: string) {
-  const t = new Date(iso).getTime()
-  if (Number.isNaN(t)) return '—'
-  const diffSec = Math.floor((Date.now() - t) / 1000)
-  if (diffSec < 60) return 'just now'
-  const diffMin = Math.floor(diffSec / 60)
-  if (diffMin < 60) return `${diffMin}m ago`
-  const diffH = Math.floor(diffMin / 60)
-  if (diffH < 24) return `${diffH}h ago`
-  const diffD = Math.floor(diffH / 24)
-  if (diffD < 7) return `${diffD}d ago`
-  return new Date(iso).toLocaleDateString()
-}
 
 function effectivePaidDate(inv: InvoiceListDto): string {
   return inv.paidDate ?? inv.issueDate
@@ -107,6 +94,7 @@ function buildActivities(
 
 function DashboardComponent() {
   const theme = useTheme()
+  const [revenuePeriod, setRevenuePeriod] = useState<RevenuePeriod>('month')
 
   const { data: invoices = [], isLoading: lInv, isError: eInv, error: errInv } = useInvoices()
   const { data: users = [], isLoading: lUs, isError: eUs, error: errUs } = useUsers()
@@ -128,7 +116,6 @@ function DashboardComponent() {
     inventoryLineCount,
     stockValue,
     lowStockCount,
-    revenueData,
     invoiceStatusData,
     topClients,
     recentActivities,
@@ -149,7 +136,8 @@ function DashboardComponent() {
     )
 
     const inMonth = (dateStr: string, year: number, month0: number) => {
-      const d = new Date(dateStr)
+      const d = parseApiDate(dateStr)
+      if (d == null) return false
       return d.getFullYear() === year && d.getMonth() === month0
     }
     const paid = invoices.filter((i) => normalizeInvoiceStatus(i.status) === 'paid')
@@ -168,25 +156,6 @@ function DashboardComponent() {
       (it) =>
         it.reorderLevel != null && it.reorderLevel > 0 && (it.quantityOnHand ?? 0) <= it.reorderLevel
     )
-
-    const monthBuckets = Array.from({ length: REVENUE_CHART_MONTHS }, (_, idx) => {
-      const i = REVENUE_CHART_MONTHS - 1 - idx
-      const d = new Date(y, m - i, 1)
-      return {
-        month: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
-        revenue: 0,
-        y: d.getFullYear(),
-        m0: d.getMonth(),
-      }
-    })
-    paid.forEach((inv) => {
-      const ds = effectivePaidDate(inv)
-      const d = new Date(ds)
-      if (Number.isNaN(d.getTime())) return
-      const bucket = monthBuckets.find((b) => b.y === d.getFullYear() && b.m0 === d.getMonth())
-      if (bucket) bucket.revenue += inv.total ?? 0
-    })
-    const revChart = monthBuckets.map(({ month, revenue }) => ({ month, revenue }))
 
     const statusCounts = Object.fromEntries(INVOICE_STATUSES.map((s) => [s, 0])) as Record<
       (typeof INVOICE_STATUSES)[number],
@@ -233,12 +202,18 @@ function DashboardComponent() {
 
     const activities = buildActivities(
       [...invoices]
-        .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+        .sort(
+          (a, b) =>
+            (parseApiDate(b.issueDate)?.getTime() ?? 0) - (parseApiDate(a.issueDate)?.getTime() ?? 0)
+        )
         .slice(0, 5),
-      [...projects].sort(
-        (a, b) =>
-          new Date(b.updatedUtc ?? b.createdUtc).getTime() - new Date(a.updatedUtc ?? a.createdUtc).getTime()
-      ).slice(0, 3),
+      [...projects]
+        .sort(
+          (a, b) =>
+            (parseApiDate(b.updatedUtc ?? b.createdUtc)?.getTime() ?? 0) -
+            (parseApiDate(a.updatedUtc ?? a.createdUtc)?.getTime() ?? 0)
+        )
+        .slice(0, 3),
       low
     )
 
@@ -255,13 +230,17 @@ function DashboardComponent() {
       inventoryLineCount: lineCount,
       stockValue: value,
       lowStockCount: low.length,
-      revenueData: revChart,
       invoiceStatusData: byStatus,
       topClients: topWithAvg,
       recentActivities: activities,
       invoiceStatusTotal: statusSum,
     }
   }, [invoices, users, projects, inventory, theme.palette])
+
+  const revenueData = useMemo(
+    () => buildRevenuePeriodSeries(invoices, revenuePeriod),
+    [invoices, revenuePeriod],
+  )
 
   const showRevenueBlockSkeleton = lInv && invoices.length === 0
   const showClientsSkeleton = lInv && topClients.length === 0
@@ -328,6 +307,8 @@ function DashboardComponent() {
               ) : (
                 <RevenueChart
                   revenueData={revenueData}
+                  period={revenuePeriod}
+                  onPeriodChange={setRevenuePeriod}
                   thisMonthRevenue={thisMonthRevenue}
                   lastMonthRevenue={lastMonthRevenue}
                   growthPct={growthPct}

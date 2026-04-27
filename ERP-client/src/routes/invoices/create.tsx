@@ -36,7 +36,10 @@ import {
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { addDays, format } from 'date-fns'
 import { useCreateInvoice, type CreateInvoiceDto } from '@/api/invoices'
+import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/invoices/create')({
   component: CreateInvoiceComponent,
@@ -55,8 +58,8 @@ function CreateInvoiceComponent() {
   const create = useCreateInvoice()
   const [formData, setFormData] = useState({
     invoiceNumber: '',
-    date: new Date().toISOString().split('T')[0],
-    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    date: format(new Date(), 'yyyy-MM-dd'),
+    dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
     client: '',
     clientEmail: '',
     clientAddress: '',
@@ -119,8 +122,8 @@ function CreateInvoiceComponent() {
     const number = formData.invoiceNumber.trim() || `INV-${Date.now()}`
     const body: CreateInvoiceDto = {
       invoiceNumber: number,
-      issueDate: new Date(formData.date + 'T12:00:00.000Z').toISOString(),
-      dueDate: new Date(formData.dueDate + 'T12:00:00.000Z').toISOString(),
+      issueDate: formYmdToApiIso(formData.date)!,
+      dueDate: formYmdToApiIso(formData.dueDate)!,
       clientName: formData.client.trim() || 'Client',
       clientEmail: formData.clientEmail || undefined,
       clientAddress: formData.clientAddress || undefined,
@@ -181,24 +184,18 @@ function CreateInvoiceComponent() {
                   />
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="Invoice Date"
                     value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('date', v)}
                     required
                   />
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="Due Date"
                     value={formData.dueDate}
-                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('dueDate', v)}
                     required
                   />
                 </Box>
@@ -453,12 +450,12 @@ function CreateInvoiceComponent() {
                   }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Invoice Date: {formData.date ? new Date(formData.date).toLocaleDateString() : 'Not set'}
+                        Invoice Date: {formatFormYmdOrNotSet(formData.date)}
                       </Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Due Date: {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'Not set'}
+                        Due Date: {formatFormYmdOrNotSet(formData.dueDate)}
                       </Typography>
                     </Box>
                   </Box>

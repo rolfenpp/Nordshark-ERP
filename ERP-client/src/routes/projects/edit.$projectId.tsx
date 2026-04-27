@@ -29,6 +29,8 @@ import {
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useProject, useUpdateProject, type CreateProjectDto } from '@/api/projects'
+import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/projects/edit/$projectId')({
   component: EditProjectComponent,
@@ -91,8 +93,8 @@ function EditProjectComponent() {
       status: formData.status,
       priority: formData.priority,
       progress: Math.min(100, Math.max(0, parseInt(formData.progress, 10) || 0)),
-      startDate: formData.startDate ? new Date(formData.startDate + 'T12:00:00.000Z').toISOString() : undefined,
-      endDate: formData.endDate ? new Date(formData.endDate + 'T12:00:00.000Z').toISOString() : undefined,
+      startDate: formYmdToApiIso(formData.startDate),
+      endDate: formYmdToApiIso(formData.endDate),
       budget: formData.budget ? parseFloat(formData.budget) : undefined,
       tags: formData.tags.trim() || undefined,
     }
@@ -203,24 +205,18 @@ function EditProjectComponent() {
                   </FormControl>
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="Start Date"
                     value={formData.startDate}
-                    onChange={(e) => handleInputChange('startDate', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('startDate', v)}
                     required
                   />
                 </Box>
                 <Box>
-                  <TextField
-                    fullWidth
-                    type="date"
+                  <FormYmdDatePicker
                     label="End Date"
                     value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => handleInputChange('endDate', v)}
                     required
                   />
                 </Box>
@@ -334,12 +330,12 @@ function EditProjectComponent() {
                   }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Start Date: {formData.startDate ? new Date(formData.startDate).toLocaleDateString() : 'Not set'}
+                        Start Date: {formatFormYmdOrNotSet(formData.startDate)}
                       </Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        End Date: {formData.endDate ? new Date(formData.endDate).toLocaleDateString() : 'Not set'}
+                        End Date: {formatFormYmdOrNotSet(formData.endDate)}
                       </Typography>
                     </Box>
                     <Box>

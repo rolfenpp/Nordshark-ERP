@@ -31,6 +31,8 @@ import {
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useCreateProject, type CreateProjectDto } from '@/api/projects'
+import { formYmdToApiIso } from '@/lib/dates'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectComponent,
@@ -82,8 +84,8 @@ function CreateProjectComponent() {
       status: formData.status,
       priority: formData.priority,
       progress: Math.min(100, Math.max(0, parseInt(formData.progress, 10) || 0)),
-      startDate: formData.startDate ? new Date(formData.startDate + 'T12:00:00.000Z').toISOString() : undefined,
-      endDate: formData.endDate ? new Date(formData.endDate + 'T12:00:00.000Z').toISOString() : undefined,
+      startDate: formYmdToApiIso(formData.startDate),
+      endDate: formYmdToApiIso(formData.endDate),
       budget: formData.budget ? parseFloat(formData.budget) : undefined,
       tags: formData.tags.trim() || undefined,
     }
@@ -199,24 +201,18 @@ function CreateProjectComponent() {
               gap: 3 
             }}>
               <Box>
-                <TextField
-                  fullWidth
-                  type="date"
+                <FormYmdDatePicker
                   label="Start Date"
                   value={formData.startDate}
-                  onChange={(e) => handleInputChange('startDate', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
+                  onChange={(v) => handleInputChange('startDate', v)}
                   required
                 />
               </Box>
               <Box>
-                <TextField
-                  fullWidth
-                  type="date"
+                <FormYmdDatePicker
                   label="End Date"
                   value={formData.endDate}
-                  onChange={(e) => handleInputChange('endDate', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
+                  onChange={(v) => handleInputChange('endDate', v)}
                   required
                 />
               </Box>

@@ -51,6 +51,8 @@ import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 import { useInvoices, useDeleteInvoice, type InvoiceListDto, type InvoiceStatus } from '@/api/invoices'
 import { normalizeInvoiceStatus } from '@/lib/statusNormalize'
+import { formatDisplayDate, parseApiDate } from '@/lib/dates'
+import { format } from 'date-fns'
 
 const exportSpinner = keyframes`
   0% { transform: rotate(0deg); }
@@ -80,8 +82,8 @@ function buildInvoicesExportSheet(
   ]
   const rows = invoices.map((invoice) => [
     invoice.invoiceNumber,
-    new Date(invoice.issueDate).toLocaleDateString(),
-    new Date(invoice.dueDate).toLocaleDateString(),
+    formatDisplayDate(invoice.issueDate),
+    formatDisplayDate(invoice.dueDate),
     invoice.clientName,
     invoice.clientEmail ?? 'N/A',
     invoice.subtotal,
@@ -89,7 +91,7 @@ function buildInvoicesExportSheet(
     invoice.total,
     getStatusLabel(invoice.status),
     invoice.paymentMethod || 'N/A',
-    invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'N/A',
+    invoice.paidDate ? formatDisplayDate(invoice.paidDate) : 'N/A',
   ])
   return [header, ...rows]
 }
@@ -199,16 +201,16 @@ function InvoicesIndexComponent() {
         label: 'Date',
         hideOnCompact: true,
         sortable: true,
-        sortAccessor: (inv) => new Date(inv.issueDate).getTime(),
-        render: (invoice) => new Date(invoice.issueDate).toLocaleDateString(),
+        sortAccessor: (inv) => parseApiDate(inv.issueDate)?.getTime() ?? 0,
+        render: (invoice) => formatDisplayDate(invoice.issueDate),
       },
       {
         id: 'due',
         label: 'Due Date',
         hideOnCompact: true,
         sortable: true,
-        sortAccessor: (inv) => new Date(inv.dueDate).getTime(),
-        render: (invoice) => new Date(invoice.dueDate).toLocaleDateString(),
+        sortAccessor: (inv) => parseApiDate(inv.dueDate)?.getTime() ?? 0,
+        render: (invoice) => formatDisplayDate(invoice.dueDate),
       },
       {
         id: 'client',
@@ -326,7 +328,7 @@ function InvoicesIndexComponent() {
     setIsExporting(true)
     try {
       const sheet = buildInvoicesExportSheet(filteredInvoices, getStatusLabel)
-      const currentDate = new Date().toISOString().split('T')[0]
+      const currentDate = format(new Date(), 'yyyy-MM-dd')
       exportToExcel(sheet, {
         filename: `invoices-export-${currentDate}.xlsx`,
         sheetName: 'Invoices',
@@ -453,7 +455,7 @@ function InvoicesIndexComponent() {
                 </Box>
                 <Typography variant="body2">{inv.clientName}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Due {new Date(inv.dueDate).toLocaleDateString()}
+                  Due {formatDisplayDate(inv.dueDate)}
                 </Typography>
                 <Typography variant="h6" sx={{ mt: 1 }}>${inv.total.toFixed(2)}</Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
