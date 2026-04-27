@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { http } from '../lib/axios'
+import { apiRequest } from '../lib/apiError'
 import { showSuccess, showError } from '../lib/toast'
 
 export interface ProjectDto {
@@ -42,24 +43,31 @@ export const projectKeys = {
 }
 
 const projectsApi = {
-  async getAll(): Promise<ProjectDto[]> {
-    const { data } = await http.get<ProjectDto[]>('/projects')
-    return data
-  },
-  async getById(id: number): Promise<ProjectDto> {
-    const { data } = await http.get<ProjectDto>(`/projects/${id}`)
-    return data
-  },
-  async create(body: CreateProjectDto): Promise<ProjectDto> {
-    const { data } = await http.post<ProjectDto>('/projects', body)
-    return data
-  },
-  async update(id: number, body: UpdateProjectDto): Promise<void> {
-    await http.put(`/projects/${id}`, body)
-  },
-  async delete(id: number): Promise<void> {
-    await http.delete(`/projects/${id}`)
-  },
+  getAll: () =>
+    apiRequest(
+      () => http.get<ProjectDto[]>('/projects').then((r) => r.data),
+      'Failed to load projects.'
+    ),
+  getById: (id: number) =>
+    apiRequest(
+      () => http.get<ProjectDto>(`/projects/${id}`).then((r) => r.data),
+      'Failed to load project.'
+    ),
+  create: (body: CreateProjectDto) =>
+    apiRequest(
+      () => http.post<ProjectDto>('/projects', body).then((r) => r.data),
+      'Failed to create project.'
+    ),
+  update: (id: number, body: UpdateProjectDto) =>
+    apiRequest(
+      () => http.put(`/projects/${id}`, body).then(() => undefined as void),
+      'Failed to update project.'
+    ),
+  delete: (id: number) =>
+    apiRequest(
+      () => http.delete(`/projects/${id}`).then(() => undefined as void),
+      'Failed to delete project.'
+    ),
 }
 
 export const useProjects = () =>
@@ -67,6 +75,7 @@ export const useProjects = () =>
     queryKey: projectKeys.lists(),
     queryFn: projectsApi.getAll,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   })
 
 export const useProject = (id: number) =>

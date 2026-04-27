@@ -1,14 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
+  Alert,
   Box,
   Typography,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
   IconButton,
   Chip,
@@ -21,11 +16,12 @@ import {
 import { Add, Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useMemo } from 'react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { TableSkeleton } from '../components/Skeletons'
 import { ResourceListPage } from '../components/ResourceListPage'
 import { ListStatsGrid } from '../components/ListStatsGrid'
 import { ListSummaryFooter } from '../components/ListSummaryFooter'
+import { DataTable, type DataTableColumn } from '../components/DataTable'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import { useCompactListLayout } from '../hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '../lib/listBreakpoints'
@@ -34,6 +30,15 @@ import { useUsers } from '../api/users'
 export const Route = createFileRoute('/users')({
   component: UsersComponent,
 })
+
+type UserRow = {
+  id: string
+  name: string
+  email: string
+  role: string
+  status: string
+  lastLogin: string
+}
 
 function displayNameFromEmail(email: string) {
   const local = email.split('@')[0] || email
@@ -44,18 +49,39 @@ function displayNameFromEmail(email: string) {
     .join(' ')
 }
 
+function getRoleColor(role: string) {
+  switch (role) {
+    case 'admin':
+      return 'error'
+    case 'user':
+      return 'default'
+    default:
+      return 'info'
+  }
+}
+
+function getStatusColor(status: string) {
+  return status === 'active' ? 'success' : 'warning'
+}
+
+function formatLastLogin(value: string) {
+  if (value === '—') return '—'
+  const t = new Date(value).getTime()
+  return Number.isNaN(t) ? '—' : new Date(value).toLocaleDateString()
+}
+
+const USER_ACTIONS_UNAVAILABLE = 'Not available in this app version.'
+
 function UsersComponent() {
   const theme = useTheme()
-
   const smUp = useMediaQuery(theme.breakpoints.up('sm'), { noSsr: true })
   const compactList = useCompactListLayout()
 
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebouncedValue(searchTerm, LIST_SEARCH_DEBOUNCE_MS)
-
   const { data: apiUsers = [], isLoading, isError, error } = useUsers()
 
-  const users = useMemo(
+  const users: UserRow[] = useMemo(
     () =>
       apiUsers.map((u) => ({
         id: u.id,
@@ -70,7 +96,6 @@ function UsersComponent() {
 
   const filteredUsers = useMemo(() => {
     if (!debouncedSearchTerm.trim()) return users
-
     const q = debouncedSearchTerm.toLowerCase()
     return users.filter(
       (user) =>
@@ -80,33 +105,108 @@ function UsersComponent() {
     )
   }, [users, debouncedSearchTerm])
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'error'
-      case 'user':
-        return 'default'
-      default:
-        return 'info'
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    return status === 'active' ? 'success' : 'warning'
-  }
+  const columns: DataTableColumn<UserRow>[] = useMemo(
+    () => [
+      {
+        id: 'name',
+        label: 'Name',
+        sortable: true,
+        sortAccessor: (u) => u.name.toLowerCase(),
+        render: (u) => (
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {u.name}
+            </Typography>
+            {compactList && (
+              <Typography variant="caption" color="text.secondary">
+                {u.email}
+              </Typography>
+            )}
+          </Box>
+        ),
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        hideOnCompact: true,
+        sortable: true,
+        sortAccessor: (u) => u.email.toLowerCase(),
+        render: (u) => u.email,
+      },
+      {
+        id: 'role',
+        label: 'Role',
+        sortable: true,
+        sortAccessor: (u) => u.role,
+        render: (u) => <Chip label={u.role} color={getRoleColor(u.role) as 'error' | 'default' | 'info'} size="small" />,
+      },
+      {
+        id: 'status',
+        label: 'Status',
+        sortable: true,
+        sortAccessor: (u) => u.status,
+        render: (u) => <Chip label={u.status} color={getStatusColor(u.status)} size="small" />,
+      },
+      {
+        id: 'lastLogin',
+        label: 'Last Login',
+        hideOnCompact: true,
+        sortable: true,
+        sortAccessor: (u) => u.lastLogin,
+        render: (u) => formatLastLogin(u.lastLogin),
+      },
+      {
+        id: 'actions',
+        label: 'Actions',
+        align: 'center',
+        render: () => (
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+            <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+              <span>
+                <IconButton size="small" color="primary" disabled>
+                  <Visibility />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Box sx={{ display: compactList ? 'none' : 'inline-flex' }}>
+              <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+                <span>
+                  <IconButton size="small" color="warning" disabled>
+                    <Edit />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+                <span>
+                  <IconButton size="small" color="error" disabled>
+                    <Delete />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </Box>
+        ),
+      },
+    ],
+    [compactList]
+  )
 
   const totalUsers = users.length
-  const activeUsers = users.filter((user) => user.status === 'active').length
-  const adminUsers = users.filter((user) => user.role === 'admin').length
-  const standardUsers = users.filter((user) => user.role === 'user').length
+  const activeUsers = users.filter((u) => u.status === 'active').length
+  const adminUsers = users.filter((u) => u.role === 'admin').length
+  const standardUsers = users.filter((u) => u.role === 'user').length
 
   return (
     <ResourceListPage
       title="Users Management"
       actions={
-        <Button variant="contained" startIcon={<Add />} onClick={() => console.log('Add user clicked')}>
-          Add User
-        </Button>
+        <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+          <span>
+            <Button variant="contained" startIcon={<Add />} disabled>
+              Add User
+            </Button>
+          </span>
+        </Tooltip>
       }
     >
       <ListStatsGrid compact={compactList}>
@@ -115,12 +215,8 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Person color="primary" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {totalUsers}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Total Users
-                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>{totalUsers}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Users</Typography>
               </Box>
             </Box>
           </CardContent>
@@ -130,12 +226,8 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <PersonAdd color="success" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {activeUsers}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Active Users
-                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>{activeUsers}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Active Users</Typography>
               </Box>
             </Box>
           </CardContent>
@@ -145,12 +237,8 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AdminPanelSettings color="error" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {adminUsers}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Admins
-                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>{adminUsers}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Admins</Typography>
               </Box>
             </Box>
           </CardContent>
@@ -160,12 +248,8 @@ function UsersComponent() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <SupervisorAccount color="warning" sx={{ mr: 2 }} />
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {standardUsers}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Standard users
-                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 300 }}>{standardUsers}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Standard users</Typography>
               </Box>
             </Box>
           </CardContent>
@@ -173,9 +257,9 @@ function UsersComponent() {
       </ListStatsGrid>
 
       {isError && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {(error as Error)?.message || 'Failed to load users (Admin only).'}
-        </Typography>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {(error as Error)?.message || 'Failed to load users (admin access required).'}
+        </Alert>
       )}
 
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -195,120 +279,50 @@ function UsersComponent() {
       </Paper>
 
       {isLoading ? (
-        <Typography color="text.secondary">Loading users…</Typography>
-      ) : smUp ? (
-        <Paper sx={{ width: '100%' }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table stickyHeader size={compactList ? 'small' : 'medium'}>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 300 }}>Name</TableCell>
-
-                  <TableCell
-                    sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}
-                  >
-                    Email
-                  </TableCell>
-
-                  <TableCell sx={{ fontWeight: 300 }}>Role</TableCell>
-                  <TableCell sx={{ fontWeight: 300 }}>Status</TableCell>
-
-                  <TableCell sx={{ display: compactList ? 'none' : 'table-cell', whiteSpace: 'nowrap', fontWeight: 300 }}>
-                    Last Login
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ fontWeight: 300 }}>
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {user.name}
-                        </Typography>
-                        {compactList && (
-                          <Typography variant="caption" color="text.secondary">
-                            {user.email}
-                          </Typography>
-                        )}
-                      </Box>
-                    </TableCell>
-
-                    <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>{user.email}</TableCell>
-
-                    <TableCell>
-                      <Chip label={user.role} color={getRoleColor(user.role) as any} size="small" />
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={user.status} color={getStatusColor(user.status)} size="small" />
-                    </TableCell>
-
-                    <TableCell sx={{ display: compactList ? 'none' : 'table-cell' }}>
-                      {new Date(user.lastLogin).toLocaleDateString()}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        <Tooltip title="View User">
-                          <IconButton size="small" onClick={() => console.log('View user:', user.id)} color="primary">
-                            <Visibility />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Box sx={{ display: compactList ? 'none' : 'inline-flex' }}>
-                          <Tooltip title="Edit User">
-                            <IconButton size="small" onClick={() => console.log('Edit user:', user.id)} color="warning">
-                              <Edit />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete User">
-                            <IconButton size="small" onClick={() => console.log('Delete user:', user.id)} color="error">
-                              <Delete />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+        <TableSkeleton />
       ) : (
-        <Box sx={{ display: 'grid', gap: 2 }}>
-          {filteredUsers.map((user) => (
-            <Card key={user.id} variant="outlined">
+        <DataTable<UserRow>
+          columns={columns}
+          rows={filteredUsers}
+          getRowId={(r) => r.id}
+          compact={compactList}
+          isDesktop={smUp}
+          emptyMessage="No users match your search."
+          defaultRowsPerPage={10}
+          renderMobileRow={(u) => (
+            <Card variant="outlined">
               <CardContent sx={{ display: 'grid', gap: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="subtitle1">{user.name}</Typography>
+                  <Typography variant="subtitle1">{u.name}</Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Chip label={user.role} color={getRoleColor(user.role)} size="small" />
-                    <Chip label={user.status} color={getStatusColor(user.status)} size="small" />
+                    <Chip label={u.role} color={getRoleColor(u.role) as 'error' | 'default' | 'info'} size="small" />
+                    <Chip label={u.status} color={getStatusColor(u.status)} size="small" />
                   </Box>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {user.email}
-                </Typography>
+                <Typography variant="body2" color="text.secondary">{u.email}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Last login: {new Date(user.lastLogin).toLocaleDateString()}
+                  Last login: {formatLastLogin(u.lastLogin)}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Button size="small" onClick={() => console.log('View user:', user.id)} startIcon={<Visibility />}>
-                    View
-                  </Button>
-                  <Button size="small" onClick={() => console.log('Edit user:', user.id)} startIcon={<Edit />}>
-                    Edit
-                  </Button>
+                  <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+                    <span>
+                      <Button size="small" startIcon={<Visibility />} disabled>
+                        View
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
+                    <span>
+                      <Button size="small" startIcon={<Edit />} disabled>
+                        Edit
+                      </Button>
+                    </span>
+                  </Tooltip>
                 </Box>
               </CardContent>
             </Card>
-          ))}
-        </Box>
+          )}
+        />
       )}
 
       <ListSummaryFooter
@@ -318,15 +332,9 @@ function UsersComponent() {
           </Typography>
         }
       >
-        <Typography variant="body2" color="text.secondary">
-          Active: <strong>{activeUsers}</strong>
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Admins: <strong>{adminUsers}</strong>
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Standard: <strong>{standardUsers}</strong>
-        </Typography>
+        <Typography variant="body2" color="text.secondary">Active: <strong>{activeUsers}</strong></Typography>
+        <Typography variant="body2" color="text.secondary">Admins: <strong>{adminUsers}</strong></Typography>
+        <Typography variant="body2" color="text.secondary">Standard: <strong>{standardUsers}</strong></Typography>
       </ListSummaryFooter>
     </ResourceListPage>
   )

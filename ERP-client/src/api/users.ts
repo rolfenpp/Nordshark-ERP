@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { http } from '../lib/axios'
+import { apiRequest } from '../lib/apiError'
 
 export interface UserDto {
   id: string
@@ -13,9 +14,8 @@ export const userKeys = {
   list: () => [...userKeys.all, 'list'] as const,
 }
 
-async function fetchUsers(): Promise<UserDto[]> {
-  const { data } = await http.get<UserDto[]>('/users')
-  return data
+function fetchUsers(): Promise<UserDto[]> {
+  return apiRequest(() => http.get<UserDto[]>('/users').then((r) => r.data), 'Failed to load users.')
 }
 
 export const useUsers = () =>
@@ -23,4 +23,5 @@ export const useUsers = () =>
     queryKey: userKeys.list(),
     queryFn: fetchUsers,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   })

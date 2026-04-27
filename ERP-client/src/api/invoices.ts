@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { http } from '../lib/axios'
+import { apiRequest } from '../lib/apiError'
 import { showSuccess, showError } from '../lib/toast'
 
 export type InvoiceStatus = 'paid' | 'pending' | 'overdue' | 'draft'
@@ -85,24 +86,31 @@ export const invoiceKeys = {
 }
 
 const invoicesApi = {
-  async getAll(): Promise<InvoiceListDto[]> {
-    const { data } = await http.get<InvoiceListDto[]>('/invoices')
-    return data
-  },
-  async getById(id: number): Promise<InvoiceDetailDto> {
-    const { data } = await http.get<InvoiceDetailDto>(`/invoices/${id}`)
-    return data
-  },
-  async create(body: CreateInvoiceDto): Promise<InvoiceDetailDto> {
-    const { data } = await http.post<InvoiceDetailDto>('/invoices', body)
-    return data
-  },
-  async update(id: number, body: UpdateInvoiceDto): Promise<void> {
-    await http.put(`/invoices/${id}`, body)
-  },
-  async delete(id: number): Promise<void> {
-    await http.delete(`/invoices/${id}`)
-  },
+  getAll: () =>
+    apiRequest(
+      () => http.get<InvoiceListDto[]>('/invoices').then((r) => r.data),
+      'Failed to load invoices.'
+    ),
+  getById: (id: number) =>
+    apiRequest(
+      () => http.get<InvoiceDetailDto>(`/invoices/${id}`).then((r) => r.data),
+      'Failed to load invoice.'
+    ),
+  create: (body: CreateInvoiceDto) =>
+    apiRequest(
+      () => http.post<InvoiceDetailDto>('/invoices', body).then((r) => r.data),
+      'Failed to create invoice.'
+    ),
+  update: (id: number, body: UpdateInvoiceDto) =>
+    apiRequest(
+      () => http.put(`/invoices/${id}`, body).then(() => undefined as void),
+      'Failed to update invoice.'
+    ),
+  delete: (id: number) =>
+    apiRequest(
+      () => http.delete(`/invoices/${id}`).then(() => undefined as void),
+      'Failed to delete invoice.'
+    ),
 }
 
 export const useInvoices = () =>
@@ -110,6 +118,7 @@ export const useInvoices = () =>
     queryKey: invoiceKeys.lists(),
     queryFn: invoicesApi.getAll,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   })
 
 export const useInvoice = (id: number) =>

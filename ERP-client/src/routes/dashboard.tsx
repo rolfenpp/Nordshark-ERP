@@ -1,9 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { Box, Alert, useTheme } from '@mui/material'
+import { Box, Alert, useTheme, Card, CardContent, Typography, Skeleton } from '@mui/material'
 import { DashboardLayout } from '../components/DashboardLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
-import { DashboardSkeleton } from '../components/Skeletons'
 import { FadeInContent } from '../components/FadeInContent'
 import { SummaryCards } from '../components/dashboard/SummaryCards'
 import { RevenueChart } from '../components/dashboard/RevenueChart'
@@ -14,6 +13,7 @@ import { useInvoices, type InvoiceListDto } from '../api/invoices'
 import { useUsers } from '../api/users'
 import { useProjects, type ProjectDto } from '../api/projects'
 import { useInventoryItems, type InventoryItemDto } from '../api/inventory'
+import { normalizeInvoiceStatus, normalizeProjectStatus } from '../lib/statusNormalize'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardComponent,
@@ -21,10 +21,6 @@ export const Route = createFileRoute('/dashboard')({
 
 const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'draft'] as const
 const REVENUE_CHART_MONTHS = 24
-
-function normStatus(s: string | undefined): string {
-  return (s ?? '').toLowerCase().trim()
-}
 
 function formatRelativeTime(iso: string) {
   const t = new Date(iso).getTime()
@@ -62,7 +58,7 @@ function buildActivities(
   lowStockItems: InventoryItemDto[]
 ): ActivityListItem[] {
   const fromInv: ActivityRow[] = invoices.map((inv) => {
-    const st = normStatus(inv.status)
+    const st = normalizeInvoiceStatus(inv.status)
     let vis: ActivityRow['status'] = 'info'
     if (st === 'paid') vis = 'success'
     else if (st === 'overdue') vis = 'error'
@@ -117,7 +113,6 @@ function DashboardComponent() {
   const { data: projects = [], isLoading: lPr, isError: ePr, error: errPr } = useProjects()
   const { data: inventory = [], isLoading: lIn, isError: eIn, error: errIn } = useInventoryItems()
 
-  const isLoading = lInv || lUs || lPr || lIn
   const firstError = [errInv, errUs, errPr, errIn].find((e) => e != null) as Error | undefined
 
   const {
@@ -146,25 +141,26 @@ function DashboardComponent() {
     const payTotal = (list: InvoiceListDto[], pred: (inv: InvoiceListDto) => boolean) =>
       list.filter(pred).reduce((s, i) => s + (i.total ?? 0), 0)
 
-    const totalRev = payTotal(invoices, (i) => normStatus(i.status) === 'paid')
+    const totalRev = payTotal(invoices, (i) => normalizeInvoiceStatus(i.status) === 'paid')
     const pending = payTotal(
       invoices,
-      (i) => normStatus(i.status) === 'pending' || normStatus(i.status) === 'overdue'
+      (i) =>
+        normalizeInvoiceStatus(i.status) === 'pending' || normalizeInvoiceStatus(i.status) === 'overdue'
     )
 
     const inMonth = (dateStr: string, year: number, month0: number) => {
       const d = new Date(dateStr)
       return d.getFullYear() === year && d.getMonth() === month0
     }
-    const paid = invoices.filter((i) => normStatus(i.status) === 'paid')
+    const paid = invoices.filter((i) => normalizeInvoiceStatus(i.status) === 'paid')
     const thisM = payTotal(paid, (i) => inMonth(effectivePaidDate(i), y, m))
     const ly = m === 0 ? y - 1 : y
     const lm = m === 0 ? 11 : m - 1
     const lastM = payTotal(paid, (i) => inMonth(effectivePaidDate(i), ly, lm))
     const growth = lastM > 0 ? ((thisM - lastM) / lastM) * 100 : thisM > 0 ? 100 : 0
 
-    const activeProj = projects.filter((p) => normStatus(p.status) === 'active').length
-    const doneProj = projects.filter((p) => normStatus(p.status) === 'completed').length
+    const activeProj = projects.filter((p) => normalizeProjectStatus(p.status) === 'active').length
+    const doneProj = projects.filter((p) => normalizeProjectStatus(p.status) === 'completed').length
 
     const lineCount = inventory.length
     const value = inventory.reduce((s, it) => s + (it.quantityOnHand ?? 0) * (it.unitPrice ?? 0), 0)
@@ -197,7 +193,7 @@ function DashboardComponent() {
       number
     >
     invoices.forEach((inv) => {
-      const k = normStatus(inv.status)
+      const k = normalizeInvoiceStatus(inv.status)
       if (k in statusCounts) statusCounts[k as keyof typeof statusCounts] += 1
     })
     const byStatus = INVOICE_STATUSES.map((s) => {
@@ -267,15 +263,9 @@ function DashboardComponent() {
     }
   }, [invoices, users, projects, inventory, theme.palette])
 
-  if (isLoading) {
-    return (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <DashboardSkeleton />
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  }
+  const showRevenueBlockSkeleton = lInv && invoices.length === 0
+  const showClientsSkeleton = lInv && topClients.length === 0
+  const showActivitySkeleton = (lInv || lPr || lIn) && recentActivities.length === 0
 
   return (
     <ProtectedRoute>
@@ -302,6 +292,16 @@ function DashboardComponent() {
               inventoryLineCount={inventoryLineCount}
               lowStockCount={lowStockCount}
               stockValue={stockValue}
+              sectionLoading={{
+                inv: lInv,
+                rev: lInv,
+                pend: lInv,
+                usr: lUs,
+                actp: lPr,
+                comp: lPr,
+                line: lIn,
+                low: lIn,
+              }}
             />
 
             <Box
@@ -312,13 +312,40 @@ function DashboardComponent() {
                 mb: 4,
               }}
             >
-              <RevenueChart
-                revenueData={revenueData}
-                thisMonthRevenue={thisMonthRevenue}
-                lastMonthRevenue={lastMonthRevenue}
-                growthPct={growthPct}
-              />
-              <InvoiceStatusChart slices={invoiceStatusData} total={invoiceStatusTotal} />
+              {showRevenueBlockSkeleton ? (
+                <Card>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                      Revenue Overview
+                    </Typography>
+                    <Skeleton variant="rectangular" width="100%" height={200} />
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+                      <Skeleton width={120} height={32} />
+                      <Skeleton width={120} height={32} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              ) : (
+                <RevenueChart
+                  revenueData={revenueData}
+                  thisMonthRevenue={thisMonthRevenue}
+                  lastMonthRevenue={lastMonthRevenue}
+                  growthPct={growthPct}
+                />
+              )}
+
+              {lInv && invoices.length === 0 ? (
+                <Card>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                      Invoice Status
+                    </Typography>
+                    <Skeleton variant="circular" width={160} height={160} sx={{ mx: 'auto' }} />
+                  </CardContent>
+                </Card>
+              ) : (
+                <InvoiceStatusChart slices={invoiceStatusData} total={invoiceStatusTotal} />
+              )}
             </Box>
 
             <Box
@@ -328,8 +355,35 @@ function DashboardComponent() {
                 gap: 3,
               }}
             >
-              <RecentActivity items={recentActivities} />
-              <TopClients clients={topClients} />
+              {showActivitySkeleton ? (
+                <Card>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                      Recent Activity
+                    </Typography>
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <Skeleton key={i} variant="text" height={40} sx={{ mb: 1 }} />
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : (
+                <RecentActivity items={recentActivities} />
+              )}
+
+              {showClientsSkeleton ? (
+                <Card>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                      Top clients (by revenue)
+                    </Typography>
+                    {[0, 1, 2, 3].map((i) => (
+                      <Skeleton key={i} variant="text" height={48} sx={{ mb: 1 }} />
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : (
+                <TopClients clients={topClients} />
+              )}
             </Box>
           </Box>
         </FadeInContent>

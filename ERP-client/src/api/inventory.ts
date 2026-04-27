@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { http } from '../lib/axios'
+import { apiRequest } from '../lib/apiError'
 import { showSuccess, showError } from '../lib/toast'
 
 export interface InventoryItemDto {
@@ -64,130 +65,53 @@ export const inventoryKeys = {
 }
 
 const inventoryApi = {
-  async getAll(): Promise<InventoryItemDto[]> {
-    try {
-      const response = await http.get<InventoryItemDto[]>('/inventory')
-      return response.data
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        throw new Error('Unauthorized - Please log in again')
-      }
-      if (error.response?.status === 403) {
-        throw new Error('Access denied - You do not have permission to view inventory')
-      }
-      throw new Error(error.response?.data?.message || 'Failed to fetch inventory items')
-    }
-  },
+  getAll: () =>
+    apiRequest(
+      () => http.get<InventoryItemDto[]>('/inventory').then((r) => r.data),
+      'Failed to load inventory items.'
+    ),
 
-  async getById(id: number): Promise<InventoryItemDto> {
-    try {
-      const response = await http.get<InventoryItemDto>(`/inventory/${id}`)
-      return response.data
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        throw new Error('Inventory item not found')
-      }
-      if (error.response?.status === 401) {
-        throw new Error('Unauthorized - Please log in again')
-      }
-      if (error.response?.status === 403) {
-        throw new Error('Access denied - You do not have permission to view this item')
-      }
-      throw new Error(error.response?.data?.message || 'Failed to fetch inventory item')
-    }
-  },
+  getById: (id: number) =>
+    apiRequest(
+      () => http.get<InventoryItemDto>(`/inventory/${id}`).then((r) => r.data),
+      'Failed to load this inventory item.'
+    ),
 
-  async create(item: CreateInventoryItemDto): Promise<InventoryItemDto> {
-    try {
-      const response = await http.post<InventoryItemDto>('/inventory', item)
-      return response.data
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        const validationErrors = error.response.data?.errors
-        if (validationErrors) {
-          const errorMessages = Object.entries(validationErrors)
-            .map(([field, messages]) => `${field}: ${(messages as string[]).join(', ')}`)
-            .join('; ')
-          throw new Error(`Validation failed: ${errorMessages}`)
-        }
-        throw new Error(error.response.data?.message || 'Invalid data provided')
-      }
-      if (error.response?.status === 409) {
-        throw new Error('An item with this SKU already exists in your company')
-      }
-      if (error.response?.status === 401) {
-        throw new Error('Unauthorized - Please log in again')
-      }
-      if (error.response?.status === 403) {
-        throw new Error('Access denied - You do not have permission to create inventory items')
-      }
-      throw new Error(error.response?.data?.message || 'Failed to create inventory item')
-    }
-  },
+  create: (item: CreateInventoryItemDto) =>
+    apiRequest(
+      () => http.post<InventoryItemDto>('/inventory', item).then((r) => r.data),
+      'Failed to create inventory item.'
+    ),
 
-  async update(id: number, item: UpdateInventoryItemDto): Promise<void> {
-    try {
-      await http.put(`/inventory/${id}`, item)
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        const validationErrors = error.response.data?.errors
-        if (validationErrors) {
-          const errorMessages = Object.entries(validationErrors)
-            .map(([field, messages]) => `${field}: ${(messages as string[]).join(', ')}`)
-            .join('; ')
-          throw new Error(`Validation failed: ${errorMessages}`)
-        }
-        throw new Error(error.response.data?.message || 'Invalid data provided')
-      }
-      if (error.response?.status === 404) {
-        throw new Error('Inventory item not found')
-      }
-      if (error.response?.status === 409) {
-        throw new Error('An item with this SKU already exists in your company')
-      }
-      if (error.response?.status === 401) {
-        throw new Error('Unauthorized - Please log in again')
-      }
-      if (error.response?.status === 403) {
-        throw new Error('Access denied - You do not have permission to edit this item')
-      }
-      throw new Error(error.response?.data?.message || 'Failed to update inventory item')
-    }
-  },
+  update: (id: number, item: UpdateInventoryItemDto) =>
+    apiRequest(
+      () => http.put(`/inventory/${id}`, item).then(() => undefined),
+      'Failed to update inventory item.'
+    ),
 
-  async delete(id: number): Promise<void> {
-    try {
-      await http.delete(`/inventory/${id}`)
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        throw new Error('Inventory item not found')
-      }
-      if (error.response?.status === 401) {
-        throw new Error('Unauthorized - Please log in again')
-      }
-      if (error.response?.status === 403) {
-        throw new Error('Access denied - You do not have permission to delete this item')
-      }
-      throw new Error(error.response?.data?.message || 'Failed to delete inventory item')
-    }
-  },
+  delete: (id: number) =>
+    apiRequest(
+      () => http.delete(`/inventory/${id}`).then(() => undefined),
+      'Failed to delete inventory item.'
+    ),
 
   async checkSkuExists(sku: string): Promise<boolean> {
     try {
-      const items = await this.getAll()
-      return items.some(item => item.sku === sku)
-    } catch (error) {
+      const items = await inventoryApi.getAll()
+      return items.some((item) => item.sku === sku)
+    } catch {
       return true
     }
-  }
+  },
 }
 
 export const useInventoryItems = () => {
   return useQuery({
     queryKey: inventoryKeys.lists(),
-    queryFn: inventoryApi.getAll,
+    queryFn: () => inventoryApi.getAll(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -203,61 +127,58 @@ export const useInventoryItem = (id: number) => {
 
 export const useCreateInventoryItem = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: inventoryApi.create,
     onSuccess: (newItem) => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() })
-      
-      queryClient.setQueryData(
-        inventoryKeys.detail(newItem.id),
-        newItem
-      )
-      
+
+      queryClient.setQueryData(inventoryKeys.detail(newItem.id), newItem)
+
       showSuccess(`Item "${newItem.name}" created successfully!`)
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Failed to create inventory item:', error)
       showError(error.message || 'Failed to create inventory item')
-    }
+    },
   })
 }
 
 export const useUpdateInventoryItem = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: ({ id, item }: { id: number; item: UpdateInventoryItemDto }) =>
       inventoryApi.update(id, item),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() })
       queryClient.invalidateQueries({ queryKey: inventoryKeys.detail(id) })
-      
+
       showSuccess('Item updated successfully!')
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Failed to update inventory item:', error)
       showError(error.message || 'Failed to update inventory item')
-    }
+    },
   })
 }
 
 export const useDeleteInventoryItem = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: inventoryApi.delete,
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() })
-      
+
       queryClient.removeQueries({ queryKey: inventoryKeys.detail(deletedId) })
-      
+
       showSuccess('Item deleted successfully!')
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Failed to delete inventory item:', error)
       showError(error.message || 'Failed to delete inventory item')
-    }
+    },
   })
 }
 
