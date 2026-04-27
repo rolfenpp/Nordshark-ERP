@@ -1,37 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { Box, Alert, useTheme } from '@mui/material'
 import { DashboardLayout } from '../components/DashboardLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { DashboardSkeleton } from '../components/Skeletons'
 import { FadeInContent } from '../components/FadeInContent'
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  List, 
-  ListItem, 
-  ListItemIcon,
-  Chip,
-  Avatar,
-  Divider,
-  IconButton,
-  Alert
-} from '@mui/material'
-import {
-  AttachMoney,
-  Receipt,
-  People,
-  Schedule,
-  CheckCircle,
-  Warning,
-  Error,
-  MoreVert,
-  Work,
-  Inventory2,
-} from '@mui/icons-material'
-import { Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { useTheme } from '@mui/material'
+import { SummaryCards } from '../components/dashboard/SummaryCards'
+import { RevenueChart } from '../components/dashboard/RevenueChart'
+import { InvoiceStatusChart } from '../components/dashboard/InvoiceStatusChart'
+import { RecentActivity } from '../components/dashboard/RecentActivity'
+import { TopClients } from '../components/dashboard/TopClients'
 import { useInvoices, type InvoiceListDto } from '../api/invoices'
 import { useUsers } from '../api/users'
 import { useProjects, type ProjectDto } from '../api/projects'
@@ -42,7 +20,6 @@ export const Route = createFileRoute('/dashboard')({
 })
 
 const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'draft'] as const
-
 const REVENUE_CHART_MONTHS = 24
 
 function normStatus(s: string | undefined): string {
@@ -141,9 +118,7 @@ function DashboardComponent() {
   const { data: inventory = [], isLoading: lIn, isError: eIn, error: errIn } = useInventoryItems()
 
   const isLoading = lInv || lUs || lPr || lIn
-  const firstError = [errInv, errUs, errPr, errIn].find(
-    (e) => e != null
-  ) as Error | undefined
+  const firstError = [errInv, errUs, errPr, errIn].find((e) => e != null) as Error | undefined
 
   const {
     totalInvoices,
@@ -162,6 +137,7 @@ function DashboardComponent() {
     invoiceStatusData,
     topClients,
     recentActivities,
+    invoiceStatusTotal,
   } = useMemo(() => {
     const now = new Date()
     const y = now.getFullYear()
@@ -197,31 +173,33 @@ function DashboardComponent() {
         it.reorderLevel != null && it.reorderLevel > 0 && (it.quantityOnHand ?? 0) <= it.reorderLevel
     )
 
-    const monthBuckets: { month: string; revenue: number; y: number; m0: number }[] = []
-    for (let i = REVENUE_CHART_MONTHS - 1; i >= 0; i--) {
+    const monthBuckets = Array.from({ length: REVENUE_CHART_MONTHS }, (_, idx) => {
+      const i = REVENUE_CHART_MONTHS - 1 - idx
       const d = new Date(y, m - i, 1)
-      monthBuckets.push({
+      return {
         month: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
         revenue: 0,
         y: d.getFullYear(),
         m0: d.getMonth(),
-      })
-    }
-    for (const inv of paid) {
+      }
+    })
+    paid.forEach((inv) => {
       const ds = effectivePaidDate(inv)
       const d = new Date(ds)
-      if (Number.isNaN(d.getTime())) continue
+      if (Number.isNaN(d.getTime())) return
       const bucket = monthBuckets.find((b) => b.y === d.getFullYear() && b.m0 === d.getMonth())
       if (bucket) bucket.revenue += inv.total ?? 0
-    }
+    })
     const revChart = monthBuckets.map(({ month, revenue }) => ({ month, revenue }))
 
-    const statusCounts: Record<string, number> = {}
-    for (const s of INVOICE_STATUSES) statusCounts[s] = 0
-    for (const inv of invoices) {
+    const statusCounts = Object.fromEntries(INVOICE_STATUSES.map((s) => [s, 0])) as Record<
+      (typeof INVOICE_STATUSES)[number],
+      number
+    >
+    invoices.forEach((inv) => {
       const k = normStatus(inv.status)
-      if (k in statusCounts) statusCounts[k] += 1
-    }
+      if (k in statusCounts) statusCounts[k as keyof typeof statusCounts] += 1
+    })
     const byStatus = INVOICE_STATUSES.map((s) => {
       const name = s.charAt(0).toUpperCase() + s.slice(1)
       const col =
@@ -234,15 +212,19 @@ function DashboardComponent() {
               : theme.palette.info.main
       return { name, value: statusCounts[s], color: col }
     })
+    const statusSum = byStatus.reduce((s, it) => s + it.value, 0)
 
-    const byClient = new Map<string, { total: number; count: number }>()
-    for (const inv of invoices) {
-      const n = (inv.clientName || 'Unknown').trim() || 'Unknown'
-      const o = byClient.get(n) || { total: 0, count: 0 }
-      o.total += inv.total ?? 0
-      o.count += 1
-      byClient.set(n, o)
-    }
+    const byClient = invoices.reduce(
+      (map, inv) => {
+        const n = (inv.clientName || 'Unknown').trim() || 'Unknown'
+        const o = map.get(n) || { total: 0, count: 0 }
+        o.total += inv.total ?? 0
+        o.count += 1
+        map.set(n, o)
+        return map
+      },
+      new Map<string, { total: number; count: number }>()
+    )
     const topWithAvg = [...byClient.entries()]
       .map(([name, v]) => ({
         name,
@@ -254,14 +236,13 @@ function DashboardComponent() {
       .slice(0, 4)
 
     const activities = buildActivities(
-      [...invoices].sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()).slice(0, 5),
-      [...projects]
-        .sort(
-          (a, b) =>
-            new Date(b.updatedUtc ?? b.createdUtc).getTime() -
-            new Date(a.updatedUtc ?? a.createdUtc).getTime()
-        )
-        .slice(0, 3),
+      [...invoices]
+        .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+        .slice(0, 5),
+      [...projects].sort(
+        (a, b) =>
+          new Date(b.updatedUtc ?? b.createdUtc).getTime() - new Date(a.updatedUtc ?? a.createdUtc).getTime()
+      ).slice(0, 3),
       low
     )
 
@@ -282,23 +263,9 @@ function DashboardComponent() {
       invoiceStatusData: byStatus,
       topClients: topWithAvg,
       recentActivities: activities,
+      invoiceStatusTotal: statusSum,
     }
   }, [invoices, users, projects, inventory, theme.palette])
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success': return <CheckCircle color="success" />
-      case 'warning': return <Warning color="warning" />
-      case 'error': return <Error color="error" />
-      case 'info': return <Schedule color="info" />
-      default: return <Schedule color="info" />
-    }
-  }
-
-  const invoiceTotalForChart = invoiceStatusData.reduce((s, it) => s + it.value, 0)
-  const maxRevenue = Math.max(1, ...revenueData.map((d) => d.revenue))
-  const yAxisFmt = (v: number) =>
-    v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`
 
   if (isLoading) {
     return (
@@ -324,469 +291,45 @@ function DashboardComponent() {
                 {firstError?.message}
               </Alert>
             )}
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
-              gap: 3, 
-              mb: 3
-            }}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Receipt color="primary" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {totalInvoices.toLocaleString()}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Total Invoices
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AttachMoney color="success" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        ${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Total Revenue (paid)
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <People color="info" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {activeUsers}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Active users (verified email)
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Schedule color="warning" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        ${pendingAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Pending & overdue
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
+
+            <SummaryCards
+              totalInvoices={totalInvoices}
+              totalRevenue={totalRevenue}
+              activeUsers={activeUsers}
+              pendingAmount={pendingAmount}
+              activeProjects={activeProjects}
+              completedProjects={completedProjects}
+              inventoryLineCount={inventoryLineCount}
+              lowStockCount={lowStockCount}
+              stockValue={stockValue}
+            />
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+                gap: 3,
+                mb: 4,
+              }}
+            >
+              <RevenueChart
+                revenueData={revenueData}
+                thisMonthRevenue={thisMonthRevenue}
+                lastMonthRevenue={lastMonthRevenue}
+                growthPct={growthPct}
+              />
+              <InvoiceStatusChart slices={invoiceStatusData} total={invoiceStatusTotal} />
             </Box>
 
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
-              gap: 3, 
-              mb: 4 
-            }}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Work color="primary" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {activeProjects}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Active projects
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <CheckCircle color="success" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {completedProjects}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Completed projects
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Inventory2 color="info" sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {inventoryLineCount.toLocaleString()}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Inventory line items
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Warning color={lowStockCount > 0 ? 'warning' : 'action'} sx={{ mr: 2 }} />
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                        {lowStockCount}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Low stock alerts
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                        Stock value ${stockValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, 
-              gap: 3, 
-              mb: 4 
-            }}>
-              <Card>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
-                      Revenue Overview
-                    </Typography>
-                    <IconButton size="small">
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
-                  
-                  <Box sx={{ height: 200, width: '100%' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                        <defs>
-                          <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={theme.designTokens?.brand?.primary || '#667eea'} stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor={theme.designTokens?.brand?.secondary || '#764ba2'} stopOpacity={0.1}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" opacity={0.3} />
-                        <XAxis
-                          dataKey="month"
-                          axisLine={false}
-                          tickLine={false}
-                          interval={1}
-                          angle={-35}
-                          textAnchor="end"
-                          height={48}
-                          tick={{ fontSize: 10, fill: theme.palette.text.secondary }}
-                        />
-                        <YAxis 
-                          domain={[0, maxRevenue * 1.05]}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
-                          tickFormatter={yAxisFmt}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderRadius: '8px',
-                            boxShadow: theme.shadows[4],
-                            color: theme.palette.text.primary
-                          }}
-                          formatter={(value: number) => [`$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 'Revenue']}
-                          labelStyle={{ fontWeight: 300 }}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="revenue" 
-                          stroke={theme.designTokens?.brand?.primary || '#667eea'} 
-                          strokeWidth={3}
-                          fill="url(#revenueGradient)"
-                          fillOpacity={0.6}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </Box>
-                  
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      justifyContent: 'space-between',
-                      gap: 2,
-                      mt: 2,
-                    }}
-                  >
-                    <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        This month (paid)
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 300 }}>
-                        ${thisMonthRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ minWidth: { xs: '45%', sm: 'auto' } }}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Last month (paid)
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 300 }}>
-                        ${lastMonthRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ minWidth: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'left', sm: 'inherit' } }}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        MoM change
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 300,
-                          color: growthPct >= 0 ? 'success.main' : 'error.main',
-                        }}
-                      >
-                        {lastMonthRevenue > 0 || thisMonthRevenue > 0
-                          ? `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`
-                          : '—'}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
-                      Invoice Status
-                    </Typography>
-                    <IconButton size="small">
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
-                  
-                  {invoiceTotalForChart === 0 ? (
-                    <Box sx={{ py: 4, textAlign: 'center' }}>
-                      <Typography color="text.secondary" sx={{ fontWeight: 300 }}>
-                        No invoices yet
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                  <Box sx={{ height: 200, width: '100%', position: 'relative' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={invoiceStatusData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
-                          paddingAngle={2}
-                          dataKey="value"
-                          stroke={theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.paper}
-                          strokeWidth={theme.palette.mode === 'dark' ? 0 : 2}
-                        >
-                          {invoiceStatusData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={entry.color} 
-                              stroke={theme.palette.mode === 'dark' ? 'transparent' : theme.palette.background.paper}
-                              strokeWidth={theme.palette.mode === 'dark' ? 0 : 2}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderRadius: '8px',
-                            boxShadow: theme.shadows[2],
-                            color: theme.palette.text.primary,
-                          }}
-                          formatter={(value: number) => [value, 'Invoices']}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    
-                    <Box sx={{ 
-                      position: 'absolute', 
-                      top: '50%', 
-                      left: '50%', 
-                      transform: 'translate(-50%, -50%)',
-                      textAlign: 'center',
-                      pointerEvents: 'none'
-                    }}>
-                      <Typography variant="h4" sx={{ fontWeight: 300, color: 'text.primary' }}>
-                        {invoiceTotalForChart}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                        Total
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ mt: 2 }}>
-                    {invoiceStatusData.map((item, index) => {
-                      const pct = invoiceTotalForChart > 0 ? (item.value / invoiceTotalForChart) * 100 : 0
-                      return (
-                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Box 
-                          sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            borderRadius: '50%', 
-                            backgroundColor: item.color, 
-                            mr: 1 
-                          }} 
-                        />
-                        <Typography variant="body2" sx={{ flex: 1 }}>
-                          {item.name}
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 300 }}>
-                          {item.value} ({pct.toFixed(0)}%)
-                        </Typography>
-                      </Box>
-                    )})}
-                  </Box>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-
-
-
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, 
-              gap: 3 
-            }}>
-              <Card>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
-                      Recent Activity
-                    </Typography>
-                    <IconButton size="small">
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
-                  
-                  {recentActivities.length === 0 ? (
-                    <Typography color="text.secondary" sx={{ fontWeight: 300, py: 2 }}>
-                      No recent activity
-                    </Typography>
-                  ) : (
-                  <List>
-                    {recentActivities.map((activity, index) => (
-                      <Box key={activity.id}>
-                        <ListItem
-                          sx={{
-                            px: 0,
-                            py: 1.5,
-                            minHeight: 54,
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 40, mt: 0.25 }}>
-                            {getStatusIcon(activity.status)}
-                          </ListItemIcon>
-                          <Box
-                            sx={{
-                              flex: 1,
-                              display: 'flex',
-                              flexDirection: { xs: 'column', sm: 'row' },
-                              alignItems: { xs: 'flex-start', sm: 'center' },
-                              justifyContent: 'space-between',
-                              gap: { xs: 1, sm: 0 },
-                              minWidth: 0,
-                              width: '100%',
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ fontWeight: 500, flex: 1, mr: { xs: 0, sm: 2 }, wordBreak: 'break-word' }}>
-                              {activity.action}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: { xs: 0, sm: 0 }, alignSelf: { xs: 'flex-start', sm: 'center' } }}>
-                              <Avatar sx={{ width: 20, height: 20, mr: 1, fontSize: '0.75rem' }}>
-                                {activity.user.charAt(0).toUpperCase()}
-                              </Avatar>
-                              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: { xs: 'normal', sm: 'nowrap' } }}>
-                                {activity.user} • {activity.time}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </ListItem>
-                        {index < recentActivities.length - 1 && <Divider />}
-                      </Box>
-                    ))}
-                  </List>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 300, mb: 3 }}>
-                    Top clients (by revenue)
-                  </Typography>
-                  
-                  {topClients.length === 0 ? (
-                    <Typography color="text.secondary" sx={{ fontWeight: 300 }}>
-                      No client data yet
-                    </Typography>
-                  ) : (
-                  topClients.map((client, index) => (
-                    <Box key={client.name} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {client.name}
-                        </Typography>
-                        <Chip 
-                          label={`$${client.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {client.invoices} invoice{client.invoices === 1 ? '' : 's'}
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary"
-                          sx={{ fontWeight: 500 }}
-                        >
-                          Avg. ${client.avg.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </Typography>
-                      </Box>
-                      {index < topClients.length - 1 && <Divider sx={{ mt: 2 }} />}
-                    </Box>
-                  )))}
-                </CardContent>
-              </Card>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+                gap: 3,
+              }}
+            >
+              <RecentActivity items={recentActivities} />
+              <TopClients clients={topClients} />
             </Box>
           </Box>
         </FadeInContent>
