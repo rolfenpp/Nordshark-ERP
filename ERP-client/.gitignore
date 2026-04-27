@@ -22,8 +22,15 @@ yarn-error.log*
 .env.*.local
 env.development
 
-# Demo seed scripts — run from ERP-client; never commit passwords (use .env / shell env).
-# See package.json:
+# Demo seed scripts — local only; npm scripts in package.json still point here.
+# If you clone fresh, copy these from a teammate or restore from history.
+scripts/seed-*.mjs
+
+# Optional local env for seeds (never commit secrets)
+scripts/.env
+scripts/.env.local
+
+# Demo seed commands (use .env / shell for GUEST_PASSWORD; never commit secrets):
 #   npm run seed:invoices
 #   npm run seed:invoices:prod
 #   npm run seed:invoices:mock
