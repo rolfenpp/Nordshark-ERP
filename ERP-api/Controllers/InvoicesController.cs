@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
-[Route("invoices")]
+[Route("api/invoices")]
 [Authorize]
 public class InvoicesController : ControllerBase
 {
@@ -21,6 +21,7 @@ public class InvoicesController : ControllerBase
     private int GetCompanyId() => _tenantProvider.CompanyId;
 
     [HttpGet]
+    [Authorize(Policy = Permissions.ViewInvoices)]
     public async Task<ActionResult<IEnumerable<InvoiceListDto>>> GetAll()
     {
         var companyId = GetCompanyId();
@@ -50,6 +51,7 @@ public class InvoicesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = Permissions.ViewInvoices)]
     public async Task<ActionResult<InvoiceDetailDto>> GetById(int id)
     {
         var companyId = GetCompanyId();

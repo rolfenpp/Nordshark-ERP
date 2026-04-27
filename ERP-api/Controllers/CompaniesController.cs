@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using ErpApi.Services;
 
 [ApiController]
-[Route("companies")]
+[Route("api/companies")]
 public class CompaniesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
