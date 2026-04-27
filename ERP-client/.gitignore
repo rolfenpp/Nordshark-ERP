@@ -22,6 +22,15 @@ yarn-error.log*
 .env.*.local
 env.development
 
+# Demo seed scripts — run from ERP-client; never commit passwords (use .env / shell env).
+# See package.json:
+#   npm run seed:invoices
+#   npm run seed:invoices:prod
+#   npm run seed:invoices:mock
+#   npm run seed:invoices:mock:prod
+#   npm run seed:projects
+#   npm run seed:projects:prod
+
 # Coverage
 coverage/
 
