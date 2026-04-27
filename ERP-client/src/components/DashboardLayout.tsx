@@ -43,6 +43,13 @@ import { colors } from '@/theme/theme'
 
 const DRAWER_WIDTH = 240
 
+function drawerItemActive(pathname: string, itemPath: string): boolean {
+  const p = pathname.replace(/\/+$/, '') || '/'
+  const m = itemPath.replace(/\/+$/, '') || '/'
+  if (m === '/dashboard') return p === m
+  return p === m || p.startsWith(`${m}/`)
+}
+
 const DEMONSTRATION_DISCLAIMER =
   'Demonstration only. Not a commercial product or live service.'
 
@@ -65,7 +72,7 @@ const getMenuItems = (userRole: string) => {
     {
       title: 'Management',
       items: [
-        { text: 'Users', icon: <People />, path: '/users/', roles: ['admin'] },
+        { text: 'Users', icon: <People />, path: '/users', roles: ['admin'] },
         { text: 'Settings', icon: <Settings />, path: '/settings', roles: ['admin', 'manager'] },
         { text: 'Help', icon: <Help />, path: '/help', roles: ['admin', 'user', 'manager'] },
       ]
@@ -147,7 +154,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Typography>
             <List sx={{ px: 1 }}>
               {category.items.map((item) => {
-                const isActive = location.pathname === item.path
+                const isActive = drawerItemActive(location.pathname, item.path)
                 return (
                   <ListItem key={item.text} disablePadding sx={{ mb: 2 }}>
                     <ListItemButton 
