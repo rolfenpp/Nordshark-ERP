@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Http;
-using ErpApi.Seeding;
 
 namespace ErpApi
 {
@@ -130,21 +129,6 @@ namespace ErpApi
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 db.Database.Migrate();
                 SeedRolesAsync(scope.ServiceProvider).GetAwaiter().GetResult();
-                if (app.Environment.IsDevelopment())
-                {
-                    DevelopmentTenantSeeder.EnsureLocalDemoFromConfigAsync(
-                        app.Configuration,
-                        app.Environment,
-                        scope.ServiceProvider).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    ProductionGuestDemoSeeder.RunIfEnabledAsync(
-                        app.Configuration,
-                        app.Environment,
-                        scope.ServiceProvider,
-                        CancellationToken.None).GetAwaiter().GetResult();
-                }
             }
 
             if (app.Environment.IsDevelopment())
