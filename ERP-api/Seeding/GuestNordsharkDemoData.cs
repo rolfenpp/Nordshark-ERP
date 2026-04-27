@@ -127,10 +127,11 @@ public static class GuestNordsharkDemoData
     private static async Task SeedProjectsAsync(
         ApplicationDbContext db, int companyId, DateTime now, CancellationToken ct)
     {
-        if (await db.Projects.AsNoTracking().AnyAsync(p => p.CompanyId == companyId, ct))
+        if (await db.Projects.CountAsync(p => p.CompanyId == companyId, cancellationToken: ct) >= 5)
             return;
 
-        db.Projects.AddRange(
+        var seed = new[]
+        {
             new Project
             {
                 Name = "Website Redesign",
@@ -194,8 +195,33 @@ public static class GuestNordsharkDemoData
                 EndDate = new DateTime(2024, 6, 30, 0, 0, 0, DateTimeKind.Utc),
                 CompanyId = companyId,
                 CreatedUtc = now
+            },
+            new Project
+            {
+                Name = "Customer Support Portal",
+                Description = "Self-service knowledge base, tickets, and live chat widget.",
+                Client = "Nordshark Internal",
+                Manager = "Chris Lee",
+                Status = "active",
+                Priority = "low",
+                Progress = 60,
+                Budget = 12000m,
+                Tags = "support, portal, docs",
+                StartDate = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                EndDate = new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+                CompanyId = companyId,
+                CreatedUtc = now
             }
-        );
+        };
+
+        foreach (var p in seed)
+        {
+            if (await db.Projects.AsNoTracking()
+                    .AnyAsync(x => x.CompanyId == companyId && x.Name == p.Name, ct)
+                .ConfigureAwait(false))
+                continue;
+            await db.Projects.AddAsync(p, ct).ConfigureAwait(false);
+        }
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
     }
@@ -203,10 +229,10 @@ public static class GuestNordsharkDemoData
     private static async Task SeedInvoicesAsync(
         ApplicationDbContext db, int companyId, DateTime now, CancellationToken ct)
     {
-        if (await db.Invoices.AsNoTracking().AnyAsync(i => i.CompanyId == companyId, ct))
+        if (await db.Invoices.CountAsync(i => i.CompanyId == companyId, cancellationToken: ct) >= 5)
             return;
 
-        void AddInvoice(
+        async Task AddInvoiceIfMissing(
             string number,
             DateTime issue,
             DateTime due,
@@ -219,8 +245,13 @@ public static class GuestNordsharkDemoData
             string? notes,
             string? payment,
             DateTime? paid,
-            params (string desc, int qty, decimal rate)[] lines)
+            (string desc, int qty, decimal rate)[] lines)
         {
+            if (await db.Invoices.AsNoTracking()
+                    .AnyAsync(i => i.CompanyId == companyId && i.InvoiceNumber == number, ct)
+                .ConfigureAwait(false))
+                return;
+
             var tax = Math.Round(subtotal * (taxRate / 100m), 2, MidpointRounding.AwayFromZero);
             var total = subtotal + tax;
             var inv = new Invoice
@@ -245,15 +276,14 @@ public static class GuestNordsharkDemoData
                 CreatedUtc = now
             };
 
-            var n = 0;
-            foreach (var (desc, qty, rate) in lines)
+            for (var i = 0; i < lines.Length; i++)
             {
-                n++;
+                var (desc, qty, rate) = lines[i];
                 var amt = qty * rate;
                 inv.Lines.Add(new InvoiceLine
                 {
                     CompanyId = companyId,
-                    LineNumber = n,
+                    LineNumber = i + 1,
                     Description = desc,
                     Quantity = qty,
                     UnitPrice = rate,
@@ -261,48 +291,53 @@ public static class GuestNordsharkDemoData
                 });
             }
 
-            db.Invoices.Add(inv);
+            await db.Invoices.AddAsync(inv, ct).ConfigureAwait(false);
         }
 
-        AddInvoice(
+        await AddInvoiceIfMissing(
             "INV-2024-001",
             D(2024, 1, 15), D(2024, 2, 15),
             "Acme Corporation", "accounts@acme.com", "123 Business St, New York, NY",
             "paid", 1250m, 10m,
             "Website development services",
             "Bank Transfer", D(2024, 1, 20),
-            ("Website Design & UX", 1, 800m),
-            ("Development Hours", 10, 45m));
+            new[] { ("Website Design & UX", 1, 800m), ("Development Hours", 10, 45m) }).ConfigureAwait(false);
 
-        AddInvoice(
+        await AddInvoiceIfMissing(
             "INV-2024-002",
             D(2024, 1, 16), D(2024, 2, 16),
             "Tech Solutions Inc.", "finance@techsolutions.com", null,
             "pending", 3450m, 10m,
             "Software licensing and support",
             null, null,
-            ("Enterprise License", 5, 600m),
-            ("Support Package", 1, 450m));
+            new[] { ("Enterprise License", 5, 600m), ("Support Package", 1, 450m) }).ConfigureAwait(false);
 
-        AddInvoice(
+        await AddInvoiceIfMissing(
             "INV-2024-003",
             D(2024, 1, 10), D(2024, 2, 10),
             "Global Industries", "ap@globalindustries.com", null,
             "overdue", 8900m, 10m,
             "Consulting services for Q1",
             null, null,
-            ("Strategic Consulting", 40, 200m),
-            ("Report Generation", 1, 900m));
+            new[] { ("Strategic Consulting", 40, 200m), ("Report Generation", 1, 900m) }).ConfigureAwait(false);
 
-        AddInvoice(
+        await AddInvoiceIfMissing(
             "INV-2024-004",
             D(2024, 1, 20), D(2024, 2, 20),
             "StartupXYZ", "hello@startupxyz.com", null,
             "draft", 2200m, 10m,
             "Mobile app development",
             null, null,
-            ("App Design", 1, 1200m),
-            ("Development", 20, 50m));
+            new[] { ("App Design", 1, 1200m), ("Development", 20, 50m) }).ConfigureAwait(false);
+
+        await AddInvoiceIfMissing(
+            "INV-2024-005",
+            D(2024, 2, 1), D(2024, 3, 3),
+            "Coastal Logistics LLC", "billing@coastlogistics.com", "90 Harbor Way, Boston, MA",
+            "pending", 5100m, 10m,
+            "Cloud infrastructure and support — February",
+            null, null,
+            new[] { ("AWS Hosting (monthly)", 1, 2100m), ("On-call support hours", 15, 200m) }).ConfigureAwait(false);
 
         await db.SaveChangesAsync(ct).ConfigureAwait(false);
     }
