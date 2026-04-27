@@ -137,6 +137,14 @@ namespace ErpApi
                         app.Environment,
                         scope.ServiceProvider).GetAwaiter().GetResult();
                 }
+                else
+                {
+                    ProductionGuestDemoSeeder.RunIfEnabledAsync(
+                        app.Configuration,
+                        app.Environment,
+                        scope.ServiceProvider,
+                        CancellationToken.None).GetAwaiter().GetResult();
+                }
             }
 
             if (app.Environment.IsDevelopment())
