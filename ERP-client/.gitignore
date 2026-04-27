@@ -9,10 +9,8 @@ yarn-error.log*
 .env*
 !.env.example
 env.development
-# Ad-hoc `npm run seed:*` driver scripts; shared seeds are whitelisted below.
+# `npm run seed:*` drivers (covers seed-guest-invoices.mjs, seed-guest-projects.mjs, and any seed-*.mjs)
 scripts/seed-*.mjs
-!scripts/seed-guest-invoices.mjs
-!scripts/seed-guest-projects.mjs
 coverage/
 *.local
 8706cd2c-*
