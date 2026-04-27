@@ -26,6 +26,7 @@ import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
+import { formatDisplayDate } from '@/lib/dates'
 import { useUsers } from '@/api/users'
 
 export const Route = createFileRoute('/users/')({
@@ -67,8 +68,7 @@ function getStatusColor(status: string) {
 
 function formatLastLogin(value: string) {
   if (value === '—') return '—'
-  const t = new Date(value).getTime()
-  return Number.isNaN(t) ? '—' : new Date(value).toLocaleDateString()
+  return formatDisplayDate(value)
 }
 
 const USER_ACTIONS_UNAVAILABLE = 'Not available in this app version.'

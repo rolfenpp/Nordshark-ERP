@@ -1,5 +1,8 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { appDateLocale } from '@/lib/dates'
 import { ThemeProvider } from '@/theme/ThemeProvider'
 import { AuthProvider } from '@/auth/AuthProvider'
 import { useAuth } from '@/auth/AuthProvider'
@@ -79,9 +82,11 @@ export const Route = createRootRoute({
   component: () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <RootComponent />
-        </AuthProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={appDateLocale}>
+          <AuthProvider>
+            <RootComponent />
+          </AuthProvider>
+        </LocalizationProvider>
       </ThemeProvider>
     </QueryClientProvider>
   ),

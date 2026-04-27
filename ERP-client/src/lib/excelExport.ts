@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx'
+import { format } from 'date-fns'
+import { appDateLocale } from '@/lib/dates'
 
 export interface ExcelExportOptions {
   filename?: string
@@ -56,7 +58,7 @@ export function exportTableToExcel(
     allKeys.map(key => {
       const value = item[key]
       if (value instanceof Date) {
-        return value.toLocaleDateString()
+        return format(value, 'P', { locale: appDateLocale })
       }
       if (typeof value === 'number') {
         return value

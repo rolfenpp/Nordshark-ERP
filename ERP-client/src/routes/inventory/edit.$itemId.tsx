@@ -30,6 +30,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '@/api/inventory'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/inventory/edit/$itemId')({
   component: EditInventoryComponent,
@@ -300,14 +301,11 @@ function EditInventoryComponent() {
                     label="Track expiration date"
                   />
                   {formData.trackExpiry && (
-                    <TextField
-                      fullWidth
-                      type="date"
+                    <FormYmdDatePicker
                       label="Expiry Date"
                       value={formData.expiryDate}
-                      onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ mt: 2 }}
+                      onChange={(v) => handleInputChange('expiryDate', v)}
+                      slotSx={{ mt: 2 }}
                     />
                   )}
                 </Box>

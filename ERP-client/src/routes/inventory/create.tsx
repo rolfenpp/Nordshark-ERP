@@ -38,6 +38,7 @@ import { z } from 'zod'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { showSuccess, showError } from '@/lib/toast'
+import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
 export const Route = createFileRoute('/inventory/create')({
   component: CreateInventoryComponent,
@@ -422,15 +423,15 @@ function CreateInventoryComponent() {
                       name="expiryDate"
                       control={control}
                       render={({ field, fieldState }) => (
-                        <TextField
-                          {...field}
-                          fullWidth
-                          type="date"
+                        <FormYmdDatePicker
                           label="Expiry Date"
-                          error={!!fieldState.error}
-                          helperText={fieldState.error?.message}
-                          InputLabelProps={{ shrink: true }}
-                          sx={{ mt: 2 }}
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                          textFieldProps={{
+                            error: !!fieldState.error,
+                            helperText: fieldState.error?.message,
+                          }}
+                          slotSx={{ mt: 2 }}
                         />
                       )}
                     />

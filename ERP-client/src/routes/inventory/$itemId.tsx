@@ -25,6 +25,7 @@ import {
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useInventoryItem, useDeleteInventoryItem, type InventoryItemDto } from '@/api/inventory'
+import { formatDisplayDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/inventory/$itemId')({
   component: InventoryItemComponent,
@@ -239,11 +240,11 @@ function InventoryItemComponent() {
                   }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">Created Date</Typography>
-                      <Typography variant="body1">{new Date(item.createdDate).toLocaleDateString()}</Typography>
+                      <Typography variant="body1">{formatDisplayDate(item.createdDate)}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">Last Updated</Typography>
-                      <Typography variant="body1">{new Date(item.lastUpdated).toLocaleDateString()}</Typography>
+                      <Typography variant="body1">{formatDisplayDate(item.lastUpdated)}</Typography>
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">Active Status</Typography>

@@ -39,6 +39,7 @@ import { useInventoryItems, useDeleteInventoryItem, type InventoryItemDto } from
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
+import { formatDisplayDate, parseApiDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/inventory/')({
   component: InventoryIndexComponent,
@@ -192,8 +193,8 @@ function InventoryIndexComponent() {
         label: 'Last Updated',
         hideOnCompact: true,
         sortable: true,
-        sortAccessor: (it) => new Date(it.updatedUtc || it.createdUtc).getTime(),
-        render: (it) => new Date(it.updatedUtc || it.createdUtc).toLocaleDateString(),
+        sortAccessor: (it) => parseApiDate(it.updatedUtc || it.createdUtc)?.getTime() ?? 0,
+        render: (it) => formatDisplayDate(it.updatedUtc || it.createdUtc),
       },
       {
         id: 'actions',
@@ -252,7 +253,6 @@ function InventoryIndexComponent() {
 
   return (
     <ResourceListPage title="Inventory Management" actions={headerActions}>
-      {/* Fetch errors: inline Alert only (no duplicate toast), same pattern as invoices/projects/users. */}
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error?.message || 'Failed to load inventory. You can retry from the browser or after signing in again.'}
@@ -316,7 +316,7 @@ function InventoryIndexComponent() {
                   Quantity: <strong>{item.quantityOnHand}</strong> • Price: <strong>${item.unitPrice.toFixed(2)}</strong>
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Updated: {new Date(item.updatedUtc || item.createdUtc).toLocaleDateString()}
+                  Updated: {formatDisplayDate(item.updatedUtc || item.createdUtc)}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
                   <Button size="small" onClick={() => toItem(item.id)} startIcon={<Visibility />}>

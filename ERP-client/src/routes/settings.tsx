@@ -20,6 +20,7 @@ import {
 import { Save, Notifications, Security, Palette } from '@mui/icons-material'
 import { useState } from 'react'
 import { PageHeader } from '@/components/PageHeader'
+import { formatDisplayDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsComponent,
@@ -174,7 +175,7 @@ function SettingsComponent() {
                     <strong>Version:</strong> 1.0.0
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Last Updated:</strong> {new Date().toLocaleDateString()}
+                    <strong>Last Updated:</strong> {formatDisplayDate(new Date())}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     <strong>Database:</strong> PostgreSQL 14.0

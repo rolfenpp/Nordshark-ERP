@@ -34,6 +34,7 @@ import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 import { useProjects, useDeleteProject, type ProjectDto } from '@/api/projects'
 import { normalizeProjectStatus } from '@/lib/statusNormalize'
+import { formatDisplayDate, parseApiDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/projects/')({
   component: ProjectsIndexComponent,
@@ -201,11 +202,11 @@ function ProjectsIndexComponent() {
         label: 'Timeline',
         hideOnCompact: true,
         sortable: true,
-        sortAccessor: (p) => new Date(p.startDate || 0).getTime(),
+        sortAccessor: (p) => (p.startDate ? parseApiDate(p.startDate)?.getTime() ?? 0 : 0),
         render: (p) => (
           <Typography variant="body2">
-            {p.startDate ? new Date(p.startDate).toLocaleDateString() : '—'} -{' '}
-            {p.endDate ? new Date(p.endDate).toLocaleDateString() : '—'}
+            {p.startDate ? formatDisplayDate(p.startDate) : '—'} -{' '}
+            {p.endDate ? formatDisplayDate(p.endDate) : '—'}
           </Typography>
         ),
       },
@@ -348,8 +349,8 @@ function ProjectsIndexComponent() {
                   Budget: <strong>${(project.budget ?? 0).toLocaleString()}</strong>
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {project.startDate ? new Date(project.startDate).toLocaleDateString() : '—'} -{' '}
-                  {project.endDate ? new Date(project.endDate).toLocaleDateString() : '—'}
+                  {project.startDate ? formatDisplayDate(project.startDate) : '—'} -{' '}
+                  {project.endDate ? formatDisplayDate(project.endDate) : '—'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button size="small" onClick={() => toProject(project.id)} startIcon={<Visibility />}>
