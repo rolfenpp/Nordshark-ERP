@@ -202,7 +202,6 @@ export const typography = {
     textTransform: 'none' as const,
   },
 
-  // Special text styles
   kpi: {
     fontSize: '2.5rem',
     fontWeight: 700,

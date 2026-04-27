@@ -3,10 +3,6 @@ export type AppConfig = {
   clientUrl: string
 }
 
-/**
- * If `VITE_API_BASE_URL` is only the origin (no `/api`), requests become
- * `https://host/Account/refresh` → 404. This app’s routes live under `/api/*`.
- */
 function normalizeApiBaseUrl(url: string): string {
   const raw = url.trim().replace(/\/$/, '')
   if (!raw) return raw
@@ -48,7 +44,6 @@ export const CONFIG: AppConfig = {
   clientUrl: envClientUrl || base.clientUrl,
 }
 
-/** Base URL of the API (axios `baseURL`), no trailing slash. Use a path prefix when the API is under `/api`, e.g. `https://host/api`. */
 export const API_URL = CONFIG.apiBaseUrl
 
 export const API_ROOT = CONFIG.apiBaseUrl

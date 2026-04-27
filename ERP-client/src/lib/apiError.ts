@@ -1,6 +1,5 @@
 import { isAxiosError } from 'axios'
 
-/** User-facing API errors: prefer `apiRequest` / `parseApiError` in queryFn and mutations so message text stays DRY. */
 function extractBodyMessage(data: unknown): string | null {
   if (data == null) return null
   if (typeof data === 'string' && data.trim()) return data.trim()
