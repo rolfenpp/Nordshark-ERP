@@ -7,6 +7,7 @@ using ErpApi.Services;
 
 [ApiController]
 [Route("api/companies")]
+[Route("companies")]
 public class CompaniesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;

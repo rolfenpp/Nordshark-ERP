@@ -9,6 +9,7 @@ using System.Text;
 
 [ApiController]
 [Route("api/[controller]")]
+[Route("[controller]")]
 public class AccountController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;

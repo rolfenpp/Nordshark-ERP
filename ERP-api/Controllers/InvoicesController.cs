@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/invoices")]
+[Route("invoices")]
 [Authorize]
 public class InvoicesController : ControllerBase
 {

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/users")]
+[Route("users")]
 [Authorize]
 public class UsersController : ControllerBase
 {
