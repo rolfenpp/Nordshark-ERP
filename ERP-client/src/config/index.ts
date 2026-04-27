@@ -3,8 +3,26 @@ export type AppConfig = {
   clientUrl: string
 }
 
+/**
+ * If `VITE_API_BASE_URL` is only the origin (no `/api`), requests become
+ * `https://host/Account/refresh` → 404. This app’s routes live under `/api/*`.
+ */
 function normalizeApiBaseUrl(url: string): string {
-  return url.trim().replace(/\/$/, '')
+  const raw = url.trim().replace(/\/$/, '')
+  if (!raw) return raw
+  try {
+    const u = new URL(raw)
+    const p = (u.pathname || '/').replace(/\/$/, '') || '/'
+    if (p === '/' || p === '') {
+      return `${u.origin}/api`
+    }
+    if (p === '/api' || p.startsWith('/api/')) {
+      return `${u.origin}${p === '/api' ? '/api' : p}`
+    }
+    return raw
+  } catch {
+    return raw
+  }
 }
 
 const MODE = import.meta.env.MODE || 'development'
