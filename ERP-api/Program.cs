@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Http;
 using ErpApi.Seeding;
 
 namespace ErpApi
@@ -46,6 +47,7 @@ namespace ErpApi
 
             auth.AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -154,6 +156,7 @@ namespace ErpApi
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
             app.Run();
         }

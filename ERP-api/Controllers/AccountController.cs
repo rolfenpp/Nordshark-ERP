@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;

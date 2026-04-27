@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
-[Route("invoices")]
+[Route("api/invoices")]
 [Authorize]
 public class InvoicesController : ControllerBase
 {

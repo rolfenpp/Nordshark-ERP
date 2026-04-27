@@ -35,5 +35,6 @@ export const CONFIG: AppConfig = {
 }
 
 export const API_URL = `${CONFIG.apiBaseUrl}`
-export const API_URL_WITH_PREFIX = `${CONFIG.apiBaseUrl}/api`
+
+export const API_ROOT = `${CONFIG.apiBaseUrl}/api`
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { setAccessToken } from '../lib/axios'
-import { API_URL } from '../config'
+import { API_ROOT } from '../config'
 
 export type AuthContextValue = {
   isAuthenticated: boolean
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const hydrate = async () => {
       try {
         const { data } = await axios.post(
-          `${API_URL}/Account/refresh`,
+          `${API_ROOT}/Account/refresh`,
           {},
           { 
             withCredentials: true,
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(null)
         setError(null)
         void axios
-          .post(`${API_URL}/Account/logout`, {}, { withCredentials: true })
+          .post(`${API_ROOT}/Account/logout`, {}, { withCredentials: true })
           .catch(() => {})
       },
     }),

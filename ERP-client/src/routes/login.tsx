@@ -6,7 +6,7 @@ import { setAccessToken } from '../lib/axios'
 import { NordsharkBrand } from '../components/NordsharkBrand'
 import { showSuccess, showError } from '../lib/toast'
 import { useLogin } from '../api/auth'
-import { CONFIG } from '../config'
+import { API_ROOT, CONFIG } from '../config'
 
 export const Route = createFileRoute('/login')({
   component: LoginRoute,
@@ -57,9 +57,8 @@ function LoginRoute() {
   }
 
   function handleGoogleLogin() {
-    const apiBase = CONFIG.apiBaseUrl
     const returnUrl = `${window.location.origin}/auth/callback`
-    window.location.href = `${apiBase}/Account/google?returnUrl=${encodeURIComponent(returnUrl)}`
+    window.location.href = `${API_ROOT}/account/google?returnUrl=${encodeURIComponent(returnUrl)}`
   }
 
 

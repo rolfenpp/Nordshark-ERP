@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { API_URL } from '../config'
+import { API_ROOT } from '../config'
 
 let accessToken: string | null = null
 
@@ -9,7 +9,7 @@ export const setAccessToken = (t: string | null) => {
 
 export const getStoredToken = () => accessToken
 
-export const http = axios.create({ baseURL: API_URL, withCredentials: true })
+export const http = axios.create({ baseURL: API_ROOT, withCredentials: true })
 
 http.interceptors.request.use(cfg => {
   if (accessToken) {
@@ -35,7 +35,7 @@ http.interceptors.response.use(
         isRefreshing = true
         try {
           const { data } = await axios.post(
-            `${API_URL}/Account/refresh`,
+            `${API_ROOT}/Account/refresh`,
             {},
             { withCredentials: true },
           )
