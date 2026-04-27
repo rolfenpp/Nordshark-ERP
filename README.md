@@ -6,6 +6,12 @@ A **business system dashboard**: **backend API** (ASP.NET Core) and **web client
 
 **AI-assisted development:** [Claude](https://www.anthropic.com/claude) (including **Claude Code** in the editor) was used for much of the **backend** work in `ERP-api`—API controllers, EF Core models and migrations, demo seeding, and related C#—while the React client and UX were built with a mix of other tooling and manual work.
 
+## Production vs local
+
+- **Production (deployed):** Push to the branch your host uses (for example `main`). The **Vercel** build publishes the client; **Render** (or your host) runs the API with `ASPNETCORE_ENVIRONMENT=Production`. Base `appsettings.json` sets **`Seeding:EnsureLocalDemoTenant` to false**, so the API does **not** create a demo company or users on startup. New tenants and admins are created like a real product: **`POST /companies/register`** (or the app’s **Register** screen), then sign in. Keep secrets in platform environment variables, not in the repository.
+
+- **Local (full stack):** Run PostgreSQL (often via `ERP-api/docker-compose.dev.yml`), the API in Development (`dotnet run` in `ERP-api`), and the client (`npm run dev` in `ERP-client`). With **`appsettings.Development.json`**, you can enable **`Seeding:EnsureLocalDemoTenant`** so the first run creates the demo company and admin using the **same** code path as **`POST /companies/register`** (same `Company`, `ApplicationUser`, and **Admin** role as a self-registered tenant). Demo inventory/projects/invoices follow when **`Seeding:LoadDemoDataWhenTenantExists`** is true. Prefer [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) or env vars for passwords. Do not enable local-only seeding flags in production.
+
 ## Nordshark business system
 
 The web client is a light themed **Nordshark** admin UI with left navigation, headline KPIs (invoices, revenue, users, pending amounts), a revenue trend chart, invoice status breakdown, recent activity, and top clients: typical ERP style monitoring in one view.
@@ -20,10 +26,8 @@ You can run database services and the API with Docker Desktop using the compose 
 
 This is only a **local tooling** view: resource usage and port bindings are environment specific and do not reflect production. No secrets belong in screenshots; keep API keys and connection strings out of the repo (use `.env` / user secrets, never commit real credentials).
 
-## Local development
+## Local development (step by step)
 
-Typical flow on your machine (ports follow `ERP-api/Properties/launchSettings.json` and `ERP-client` config):
-
-1. **PostgreSQL** — From `ERP-api`, start the dev database, e.g. `docker compose -f docker-compose.dev.yml up -d db`. Use the host port and database name from that compose file (and match `ConnectionStrings:DefaultConnection` in `appsettings.Development.json` or override with the `ConnectionStrings__DefaultConnection` environment variable).
-2. **API** — From `ERP-api`, run `dotnet run`. In Development, Swagger is at `http://localhost:8080/swagger`.
-3. **Web client** — From `ERP-client`, run `npm install` then `npm run dev`. By default the app targets the API base URL in `ERP-client/src/config` (override with `VITE_API_BASE_URL` if needed).
+1. **Database** — From `ERP-api`, e.g. `docker compose -f docker-compose.dev.yml up -d db`. Make `ConnectionStrings:DefaultConnection` in `appsettings.Development.json` (or `ConnectionStrings__DefaultConnection` in the environment) use the same **host port** and **database name** as the container.
+2. **API** — `cd ERP-api` → `dotnet run` → `http://localhost:8080` (Swagger: `/swagger` in Development).
+3. **Client** — `cd ERP-client` → `npm install` → `npm run dev` → open the printed dev URL; it calls the API from `ERP-client/src/config` (override with `VITE_API_BASE_URL` for a remote API). First local API start can seed the demo **tenant and demo data** as described in **Production vs local** (Development only, driven by `Seeding` in `appsettings.Development.json`).

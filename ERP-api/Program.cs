@@ -130,10 +130,10 @@ namespace ErpApi
                 SeedRolesAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                 if (app.Environment.IsDevelopment())
                 {
-                    SeedDevelopmentDemoUserAsync(scope.ServiceProvider).GetAwaiter().GetResult();
-                    GuestNordsharkDemoData.SeedIfEmptyAsync(
-                        scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
-                        db).GetAwaiter().GetResult();
+                    DevelopmentTenantSeeder.EnsureLocalDemoFromConfigAsync(
+                        app.Configuration,
+                        app.Environment,
+                        scope.ServiceProvider).GetAwaiter().GetResult();
                 }
             }
 
@@ -172,38 +172,5 @@ namespace ErpApi
             }
         }
 
-        private static async Task SeedDevelopmentDemoUserAsync(IServiceProvider services)
-        {
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            var db = services.GetRequiredService<ApplicationDbContext>();
-
-            const string email = GuestNordsharkDemoData.GuestEmail;
-            const string password = "Password123!";
-
-            if (await userManager.FindByEmailAsync(email) != null)
-                return;
-
-            var company = await db.Companies.FirstOrDefaultAsync();
-            if (company == null)
-            {
-                company = new Company { Name = "Local Development" };
-                db.Companies.Add(company);
-                await db.SaveChangesAsync();
-            }
-
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true,
-                CompanyId = company.Id,
-            };
-
-            var create = await userManager.CreateAsync(user, password);
-            if (!create.Succeeded)
-                return;
-
-            await userManager.AddToRoleAsync(user, "Admin");
-        }
     }
 }

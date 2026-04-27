@@ -3,6 +3,14 @@ export type AppConfig = {
   clientUrl: string
 }
 
+function normalizeApiBaseUrl(url: string): string {
+  let u = url.trim().replace(/\/$/, '')
+  if (/\/api$/i.test(u)) {
+    u = u.replace(/\/api$/i, '')
+  }
+  return u
+}
+
 const MODE = import.meta.env.MODE || 'development'
 
 const defaults: Record<string, AppConfig> = {
@@ -22,7 +30,7 @@ const envClientUrl = (import.meta.env.VITE_CLIENT_URL as string | undefined)?.re
 const base: AppConfig = defaults[MODE] ?? defaults.development
 
 export const CONFIG: AppConfig = {
-  apiBaseUrl: envApiBaseUrl || base.apiBaseUrl,
+  apiBaseUrl: normalizeApiBaseUrl(envApiBaseUrl || base.apiBaseUrl),
   clientUrl: envClientUrl || base.clientUrl,
 }
 

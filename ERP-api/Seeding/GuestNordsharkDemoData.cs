@@ -7,8 +7,6 @@ namespace ErpApi.Seeding;
 
 public static class GuestNordsharkDemoData
 {
-    public const string GuestEmail = "guest@nordshark.com";
-
     private const string DemoPassword = "Password123!";
 
     public static readonly string[] DemoTeamEmails =
@@ -21,9 +19,10 @@ public static class GuestNordsharkDemoData
     public static async Task SeedIfEmptyAsync(
         UserManager<ApplicationUser> userManager,
         ApplicationDbContext db,
+        string tenantAdminEmail,
         CancellationToken cancellationToken = default)
     {
-        var user = await userManager.FindByEmailAsync(GuestEmail).ConfigureAwait(false);
+        var user = await userManager.FindByEmailAsync(tenantAdminEmail).ConfigureAwait(false);
         if (user is null || user.CompanyId < 1)
             return;
 

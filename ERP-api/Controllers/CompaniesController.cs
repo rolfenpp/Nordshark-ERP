@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using ErpApi.Services;
 
 [ApiController]
 [Route("companies")]
@@ -31,34 +32,16 @@ public class CompaniesController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var name = req.Name.Trim();
-        if (await _db.Companies.AnyAsync(c => c.Name == name))
-            return Conflict("A company with this name already exists.");
-
-        var company = new Company { Name = name };
-        _db.Companies.Add(company);
-        await _db.SaveChangesAsync();
-
-        var email = req.AdminEmail.Trim();
-        var existing = await _userManager.FindByEmailAsync(email);
-        if (existing != null)
-            return Conflict("A user with this email already exists.");
-
-        var admin = new ApplicationUser
+        var (ok, failure, message, company, admin) = await CompanyRegistration.TryRegisterCompanyAsync(
+            _db, _userManager, req, HttpContext.RequestAborted);
+        if (!ok || company is null || admin is null)
         {
-            UserName = email,
-            Email = email,
-            CompanyId = company.Id,
-            EmailConfirmed = true
-        };
-
-        var createResult = await _userManager.CreateAsync(admin, req.AdminPassword);
-        if (!createResult.Succeeded)
-            return BadRequest(createResult.Errors);
-
-        var roleResult = await _userManager.AddToRoleAsync(admin, "Admin");
-        if (!roleResult.Succeeded)
-            return BadRequest(roleResult.Errors);
+            return failure switch
+            {
+                CompanyRegistrationFailure.CompanyNameTaken or CompanyRegistrationFailure.EmailTaken => Conflict(message),
+                _ => BadRequest(message ?? "Registration failed."),
+            };
+        }
 
         var roles = await _userManager.GetRolesAsync(admin);
         var claims = await _userManager.GetClaimsAsync(admin);
