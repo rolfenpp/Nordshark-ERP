@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Box, Button, Paper, TextField, Typography, Stack, Alert, Fade, CircularProgress } from '@mui/material'
 import { Google } from '@mui/icons-material'
-import { useAuth } from '../auth/AuthProvider'
-import { setAccessToken } from '../lib/axios'
-import { NordsharkBrand } from '../components/NordsharkBrand'
-import { showSuccess, showError } from '../lib/toast'
-import { useLogin } from '../api/auth'
-import { API_ROOT, CONFIG } from '../config'
+import { useAuth } from '@/auth/AuthProvider'
+import { setAccessToken } from '@/lib/axios'
+import { NordsharkBrand } from '@/components/NordsharkBrand'
+import { showSuccess, showError } from '@/lib/toast'
+import { useLogin } from '@/api/auth'
+import { API_ROOT, CONFIG } from '@/config'
 
 export const Route = createFileRoute('/login')({
   component: LoginRoute,

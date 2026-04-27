@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../components/DashboardLayout'
-import { ProtectedRoute } from '../components/ProtectedRoute'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import {
   Box,
   Typography,
@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 import { Save, Notifications, Security, Palette } from '@mui/icons-material'
 import { useState } from 'react'
-import { PageHeader } from '../components/PageHeader'
+import { PageHeader } from '@/components/PageHeader'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsComponent,

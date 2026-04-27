@@ -45,17 +45,6 @@ export interface UpdateInventoryItemDto {
   reorderLevel?: number
 }
 
-export interface ApiResponse<T> {
-  data: T
-  success: boolean
-  message?: string
-}
-
-export interface ApiError {
-  message: string
-  errors?: Record<string, string[]>
-}
-
 export const inventoryKeys = {
   all: ['inventory'] as const,
   lists: () => [...inventoryKeys.all, 'list'] as const,

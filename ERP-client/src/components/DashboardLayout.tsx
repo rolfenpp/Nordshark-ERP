@@ -34,12 +34,12 @@ import {
   DarkMode,
   InfoOutlined,
 } from '@mui/icons-material'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '@/auth/AuthProvider'
 import { NordsharkBrand } from './NordsharkBrand'
 import { UpgradeButton } from './UpgradeButton'
 import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
-import { useTheme as useAppTheme } from '../theme/ThemeProvider'
-import { colors } from '../theme/theme'
+import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
+import { colors } from '@/theme/theme'
 
 const DRAWER_WIDTH = 240
 
@@ -65,7 +65,7 @@ const getMenuItems = (userRole: string) => {
     {
       title: 'Management',
       items: [
-        { text: 'Users', icon: <People />, path: '/users', roles: ['admin'] },
+        { text: 'Users', icon: <People />, path: '/users/', roles: ['admin'] },
         { text: 'Settings', icon: <Settings />, path: '/settings', roles: ['admin', 'manager'] },
         { text: 'Help', icon: <Help />, path: '/help', roles: ['admin', 'user', 'manager'] },
       ]

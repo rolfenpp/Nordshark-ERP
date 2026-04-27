@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ResourceListPage } from '../../components/ResourceListPage'
-import { ListStatsGrid } from '../../components/ListStatsGrid'
-import { ListSummaryFooter } from '../../components/ListSummaryFooter'
-import { DataTable, type DataTableColumn } from '../../components/DataTable'
-import { TableSkeleton } from '../../components/Skeletons'
+import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListStatsGrid } from '@/components/ListStatsGrid'
+import { ListStatCard } from '@/components/ListStatCard'
+import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { DataTable, type DataTableColumn } from '@/components/DataTable'
+import { TableSkeleton } from '@/components/Skeletons'
 import {
   Alert,
   Box,
@@ -28,11 +29,11 @@ import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { useCompactListLayout } from '../../hooks/useCompactListLayout'
-import { LIST_SEARCH_DEBOUNCE_MS } from '../../lib/listBreakpoints'
-import { useProjects, useDeleteProject, type ProjectDto } from '../../api/projects'
-import { normalizeProjectStatus } from '../../lib/statusNormalize'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useCompactListLayout } from '@/hooks/useCompactListLayout'
+import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
+import { useProjects, useDeleteProject, type ProjectDto } from '@/api/projects'
+import { normalizeProjectStatus } from '@/lib/statusNormalize'
 
 export const Route = createFileRoute('/projects/')({
   component: ProjectsIndexComponent,
@@ -257,50 +258,15 @@ function ProjectsIndexComponent() {
       }
     >
       <ListStatsGrid compact={compactList}>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Assignment color="primary" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{projects.length}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Projects</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <TrendingUp color="success" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{activeProjects}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Active Projects</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Schedule color="info" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{completedProjects}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Completed</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AttachMoney color="warning" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>${(totalBudget / 1000).toFixed(0)}k</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Budget</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+        <ListStatCard icon={Assignment} iconColor="primary" value={projects.length} label="Total Projects" />
+        <ListStatCard icon={TrendingUp} iconColor="success" value={activeProjects} label="Active Projects" />
+        <ListStatCard icon={Schedule} iconColor="info" value={completedProjects} label="Completed" />
+        <ListStatCard
+          icon={AttachMoney}
+          iconColor="warning"
+          value={`$${(totalBudget / 1000).toFixed(0)}k`}
+          label="Total Budget"
+        />
       </ListStatsGrid>
 
       {isError && (

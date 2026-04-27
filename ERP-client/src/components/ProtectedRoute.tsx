@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '@/auth/AuthProvider'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
 interface ProtectedRouteProps {

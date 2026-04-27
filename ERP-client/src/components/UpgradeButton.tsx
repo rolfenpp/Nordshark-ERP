@@ -8,7 +8,7 @@ import {
   PLAN_FEATURE_ROWS,
   PLANS_FOR_COMPARISON,
   type OrganizationPlanId,
-} from '../lib/subscriptionPlans'
+} from '@/lib/subscriptionPlans'
 
 const BRAND_GRADIENT_ID = 'diamondGradient'
 

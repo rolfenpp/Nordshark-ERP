@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../../components/DashboardLayout'
-import { ProtectedRoute } from '../../components/ProtectedRoute'
-import { FadeInContent } from '../../components/FadeInContent'
-import { DetailPageHeader } from '../../components/DetailPageHeader'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { FadeInContent } from '@/components/FadeInContent'
+import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '../../api/inventory'
+import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '@/api/inventory'
 
 export const Route = createFileRoute('/inventory/edit/$itemId')({
   component: EditInventoryComponent,

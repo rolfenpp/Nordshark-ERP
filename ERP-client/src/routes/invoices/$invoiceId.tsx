@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../../components/DashboardLayout'
-import { ProtectedRoute } from '../../components/ProtectedRoute'
-import { FadeInContent } from '../../components/FadeInContent'
-import { DetailPageHeader } from '../../components/DetailPageHeader'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { FadeInContent } from '@/components/FadeInContent'
+import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Alert } from '@mui/material'
 import { Edit, Delete, CheckCircle, Schedule, Warning, Receipt } from '@mui/icons-material'
 import { useNavigate } from '@tanstack/react-router'
-import { useInvoice, useDeleteInvoice } from '../../api/invoices'
+import { useInvoice, useDeleteInvoice } from '@/api/invoices'
 
 export const Route = createFileRoute('/invoices/$invoiceId')({
   component: InvoiceViewComponent,

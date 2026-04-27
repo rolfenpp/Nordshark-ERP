@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../../components/DashboardLayout'
-import { ProtectedRoute } from '../../components/ProtectedRoute'
-import { FadeInContent } from '../../components/FadeInContent'
-import { DetailPageHeader } from '../../components/DetailPageHeader'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { FadeInContent } from '@/components/FadeInContent'
+import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -33,11 +33,11 @@ import {
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useCreateInventoryItem, type CreateInventoryItemDto } from '../../api/inventory'
+import { useCreateInventoryItem, type CreateInventoryItemDto } from '@/api/inventory'
 import { z } from 'zod'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { showSuccess, showError } from '../../lib/toast'
+import { showSuccess, showError } from '@/lib/toast'
 
 export const Route = createFileRoute('/inventory/create')({
   component: CreateInventoryComponent,

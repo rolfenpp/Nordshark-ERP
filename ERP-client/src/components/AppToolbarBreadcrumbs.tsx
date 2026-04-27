@@ -1,7 +1,7 @@
 import { Breadcrumbs, Link, Typography } from '@mui/material'
 import { Link as RouterLink } from '@tanstack/react-router'
 import { NavigateNext } from '@mui/icons-material'
-import { getAppBreadcrumbs, type AppBreadcrumbItem } from '../lib/appBreadcrumbs'
+import { getAppBreadcrumbs, type AppBreadcrumbItem } from '@/lib/appBreadcrumbs'
 
 type AppToolbarBreadcrumbsProps = {
   pathname: string

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../components/DashboardLayout'
-import { ProtectedRoute } from '../components/ProtectedRoute'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Box, Typography, Paper, Avatar, TextField, Button, Divider } from '@mui/material'
 import { AccountCircle, Email, Business, Phone } from '@mui/icons-material'
 

@@ -17,17 +17,18 @@ import { Add, Edit, Delete, Visibility, Search, Person, AdminPanelSettings, Supe
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useMemo, useState } from 'react'
-import { TableSkeleton } from '../components/Skeletons'
-import { ResourceListPage } from '../components/ResourceListPage'
-import { ListStatsGrid } from '../components/ListStatsGrid'
-import { ListSummaryFooter } from '../components/ListSummaryFooter'
-import { DataTable, type DataTableColumn } from '../components/DataTable'
-import { useDebouncedValue } from '../hooks/useDebouncedValue'
-import { useCompactListLayout } from '../hooks/useCompactListLayout'
-import { LIST_SEARCH_DEBOUNCE_MS } from '../lib/listBreakpoints'
-import { useUsers } from '../api/users'
+import { TableSkeleton } from '@/components/Skeletons'
+import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListStatsGrid } from '@/components/ListStatsGrid'
+import { ListStatCard } from '@/components/ListStatCard'
+import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { DataTable, type DataTableColumn } from '@/components/DataTable'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useCompactListLayout } from '@/hooks/useCompactListLayout'
+import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
+import { useUsers } from '@/api/users'
 
-export const Route = createFileRoute('/users')({
+export const Route = createFileRoute('/users/')({
   component: UsersComponent,
 })
 
@@ -210,50 +211,15 @@ function UsersComponent() {
       }
     >
       <ListStatsGrid compact={compactList}>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Person color="primary" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{totalUsers}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Users</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <PersonAdd color="success" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{activeUsers}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Active Users</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AdminPanelSettings color="error" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{adminUsers}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Admins</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <SupervisorAccount color="warning" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{standardUsers}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Standard users</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+        <ListStatCard icon={Person} iconColor="primary" value={totalUsers.toLocaleString()} label="Total Users" />
+        <ListStatCard icon={PersonAdd} iconColor="success" value={activeUsers.toLocaleString()} label="Active Users" />
+        <ListStatCard icon={AdminPanelSettings} iconColor="error" value={adminUsers.toLocaleString()} label="Admins" />
+        <ListStatCard
+          icon={SupervisorAccount}
+          iconColor="warning"
+          value={standardUsers.toLocaleString()}
+          label="Standard users"
+        />
       </ListStatsGrid>
 
       {isError && (
@@ -299,7 +265,9 @@ function UsersComponent() {
                     <Chip label={u.status} color={getStatusColor(u.status)} size="small" />
                   </Box>
                 </Box>
-                <Typography variant="body2" color="text.secondary">{u.email}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {u.email}
+                </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Last login: {formatLastLogin(u.lastLogin)}
                 </Typography>
@@ -328,13 +296,19 @@ function UsersComponent() {
       <ListSummaryFooter
         primary={
           <Typography variant="body2" color="text.secondary">
-            Showing {filteredUsers.length} of {users.length} users
+            Showing {filteredUsers.length.toLocaleString()} of {users.length.toLocaleString()} users
           </Typography>
         }
       >
-        <Typography variant="body2" color="text.secondary">Active: <strong>{activeUsers}</strong></Typography>
-        <Typography variant="body2" color="text.secondary">Admins: <strong>{adminUsers}</strong></Typography>
-        <Typography variant="body2" color="text.secondary">Standard: <strong>{standardUsers}</strong></Typography>
+        <Typography variant="body2" color="text.secondary">
+          Active: <strong>{activeUsers.toLocaleString()}</strong>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Admins: <strong>{adminUsers.toLocaleString()}</strong>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Standard: <strong>{standardUsers.toLocaleString()}</strong>
+        </Typography>
       </ListSummaryFooter>
     </ResourceListPage>
   )

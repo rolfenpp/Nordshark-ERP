@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TableSkeleton } from '../../components/Skeletons'
-import { ResourceListPage } from '../../components/ResourceListPage'
-import { ListStatsGrid } from '../../components/ListStatsGrid'
-import { ListSummaryFooter } from '../../components/ListSummaryFooter'
-import { DataTable, type DataTableColumn } from '../../components/DataTable'
+import { TableSkeleton } from '@/components/Skeletons'
+import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListStatsGrid } from '@/components/ListStatsGrid'
+import { ListStatCard } from '@/components/ListStatCard'
+import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import {
   Alert,
   Box,
@@ -44,12 +45,12 @@ import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { exportToExcel } from '../../lib/excelExport'
-import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { useCompactListLayout } from '../../hooks/useCompactListLayout'
-import { LIST_SEARCH_DEBOUNCE_MS } from '../../lib/listBreakpoints'
-import { useInvoices, useDeleteInvoice, type InvoiceListDto, type InvoiceStatus } from '../../api/invoices'
-import { normalizeInvoiceStatus } from '../../lib/statusNormalize'
+import { exportToExcel } from '@/lib/excelExport'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useCompactListLayout } from '@/hooks/useCompactListLayout'
+import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
+import { useInvoices, useDeleteInvoice, type InvoiceListDto, type InvoiceStatus } from '@/api/invoices'
+import { normalizeInvoiceStatus } from '@/lib/statusNormalize'
 
 const exportSpinner = keyframes`
   0% { transform: rotate(0deg); }
@@ -371,56 +372,15 @@ function InvoicesIndexComponent() {
       }
     >
       <ListStatsGrid compact={compactList}>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Receipt color="primary" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {totalInvoices.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
-                  Total Invoices
-                </Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <CheckCircle color="success" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{paidInvoices.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Paid</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Schedule color="info" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>
-                  {list.filter((i) => normalizeInvoiceStatus(i.status) === 'pending').length.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Pending</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Warning color="warning" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{overdueInvoices.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Overdue</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+        <ListStatCard icon={Receipt} iconColor="primary" value={totalInvoices.toLocaleString()} label="Total Invoices" />
+        <ListStatCard icon={CheckCircle} iconColor="success" value={paidInvoices.toLocaleString()} label="Paid" />
+        <ListStatCard
+          icon={Schedule}
+          iconColor="info"
+          value={list.filter((i) => normalizeInvoiceStatus(i.status) === 'pending').length.toLocaleString()}
+          label="Pending"
+        />
+        <ListStatCard icon={Warning} iconColor="warning" value={overdueInvoices.toLocaleString()} label="Overdue" />
       </ListStatsGrid>
 
       {isError && (

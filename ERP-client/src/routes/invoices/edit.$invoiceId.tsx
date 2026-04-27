@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../../components/DashboardLayout'
-import { ProtectedRoute } from '../../components/ProtectedRoute'
-import { FadeInContent } from '../../components/FadeInContent'
-import { DetailPageHeader } from '../../components/DetailPageHeader'
-import { SectionHeader } from '../../components/PageHeader'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { FadeInContent } from '@/components/FadeInContent'
+import { DetailPageHeader } from '@/components/DetailPageHeader'
+import { SectionHeader } from '@/components/PageHeader'
 import {
   Box,
   Typography,
@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '../../api/invoices'
+import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '@/api/invoices'
 
 export const Route = createFileRoute('/invoices/edit/$invoiceId')({
   component: EditInvoiceComponent,

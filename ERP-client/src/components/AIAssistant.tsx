@@ -27,8 +27,8 @@ import {
   History as HistoryIcon,
   Lightbulb as LightbulbIcon
 } from '@mui/icons-material'
-import { useAuth } from '../auth/AuthProvider'
-import { askAI } from '../lib/ai'
+import { useAuth } from '@/auth/AuthProvider'
+import { askAI } from '@/lib/ai'
 
 interface Message {
   id: string

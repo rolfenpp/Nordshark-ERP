@@ -10,12 +10,12 @@ import {
   Fade,
   CircularProgress,
 } from '@mui/material'
-import { useAuth } from '../auth/AuthProvider'
-import { setAccessToken } from '../lib/axios'
-import { NordsharkBrand } from '../components/NordsharkBrand'
-import { showSuccess, showError } from '../lib/toast'
-import { useRegisterCompany } from '../api/companies'
-import { useLogin } from '../api/auth'
+import { useAuth } from '@/auth/AuthProvider'
+import { setAccessToken } from '@/lib/axios'
+import { NordsharkBrand } from '@/components/NordsharkBrand'
+import { showSuccess, showError } from '@/lib/toast'
+import { useRegisterCompany } from '@/api/companies'
+import { useLogin } from '@/api/auth'
 
 export const Route = createFileRoute('/register')({
   component: RegisterRoute,

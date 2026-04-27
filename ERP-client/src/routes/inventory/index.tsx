@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TableSkeleton } from '../../components/Skeletons'
-import { ResourceListPage } from '../../components/ResourceListPage'
-import { ListStatsGrid } from '../../components/ListStatsGrid'
-import { ListSummaryFooter } from '../../components/ListSummaryFooter'
-import { DataTable, type DataTableColumn } from '../../components/DataTable'
+import { TableSkeleton } from '@/components/Skeletons'
+import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListStatsGrid } from '@/components/ListStatsGrid'
+import { ListStatCard } from '@/components/ListStatCard'
+import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import {
   Alert,
   Box,
@@ -34,10 +35,10 @@ import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useInventoryItems, useDeleteInventoryItem, type InventoryItemDto } from '../../api/inventory'
-import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { useCompactListLayout } from '../../hooks/useCompactListLayout'
-import { LIST_SEARCH_DEBOUNCE_MS } from '../../lib/listBreakpoints'
+import { useInventoryItems, useDeleteInventoryItem, type InventoryItemDto } from '@/api/inventory'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useCompactListLayout } from '@/hooks/useCompactListLayout'
+import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 
 export const Route = createFileRoute('/inventory/')({
   component: InventoryIndexComponent,
@@ -259,50 +260,15 @@ function InventoryIndexComponent() {
       )}
 
       <ListStatsGrid compact={compactList}>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <InventoryIcon color="primary" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{inventoryItems.length}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Items</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <InventoryIcon color="success" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{totalItems}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Quantity</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Warning color="warning" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>{lowStockItems}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Low Stock Items</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AttachMoney color="info" sx={{ mr: 2 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 300 }}>${totalValue.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>Total Value</Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+        <ListStatCard icon={InventoryIcon} iconColor="primary" value={inventoryItems.length} label="Total Items" />
+        <ListStatCard icon={InventoryIcon} iconColor="success" value={totalItems} label="Total Quantity" />
+        <ListStatCard icon={Warning} iconColor="warning" value={lowStockItems} label="Low Stock Items" />
+        <ListStatCard
+          icon={AttachMoney}
+          iconColor="info"
+          value={`$${totalValue.toLocaleString()}`}
+          label="Total Value"
+        />
       </ListStatsGrid>
 
       <Paper sx={{ p: 2, mb: 3 }}>

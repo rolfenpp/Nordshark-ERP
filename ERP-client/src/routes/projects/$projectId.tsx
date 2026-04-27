@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '../../components/DashboardLayout'
-import { ProtectedRoute } from '../../components/ProtectedRoute'
-import { FadeInContent } from '../../components/FadeInContent'
-import { DetailPageHeader } from '../../components/DetailPageHeader'
+import { DashboardLayout } from '@/components/DashboardLayout'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { FadeInContent } from '@/components/FadeInContent'
+import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Chip, LinearProgress, List, ListItem, ListItemText, ListItemIcon, IconButton, Tabs, Tab, Alert } from '@mui/material'
 import { Edit, Delete, Assignment, Person, AttachMoney, TrendingUp, Share } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useProject, useDeleteProject } from '../../api/projects'
+import { useProject, useDeleteProject } from '@/api/projects'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectDetailComponent,
