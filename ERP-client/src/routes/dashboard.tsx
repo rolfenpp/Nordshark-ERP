@@ -43,6 +43,8 @@ export const Route = createFileRoute('/dashboard')({
 
 const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'draft'] as const
 
+const REVENUE_CHART_MONTHS = 24
+
 function normStatus(s: string | undefined): string {
   return (s ?? '').toLowerCase().trim()
 }
@@ -195,12 +197,11 @@ function DashboardComponent() {
         it.reorderLevel != null && it.reorderLevel > 0 && (it.quantityOnHand ?? 0) <= it.reorderLevel
     )
 
-    // Last 8 months of paid revenue
     const monthBuckets: { month: string; revenue: number; y: number; m0: number }[] = []
-    for (let i = 7; i >= 0; i--) {
+    for (let i = REVENUE_CHART_MONTHS - 1; i >= 0; i--) {
       const d = new Date(y, m - i, 1)
       monthBuckets.push({
-        month: d.toLocaleString('default', { month: 'short' }),
+        month: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
         revenue: 0,
         y: d.getFullYear(),
         m0: d.getMonth(),
@@ -489,11 +490,15 @@ function DashboardComponent() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" opacity={0.3} />
-                        <XAxis 
-                          dataKey="month" 
+                        <XAxis
+                          dataKey="month"
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                          interval={1}
+                          angle={-35}
+                          textAnchor="end"
+                          height={48}
+                          tick={{ fontSize: 10, fill: theme.palette.text.secondary }}
                         />
                         <YAxis 
                           domain={[0, maxRevenue * 1.05]}
