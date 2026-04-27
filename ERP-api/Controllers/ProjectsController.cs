@@ -6,6 +6,7 @@ using ErpApi;
 
 [ApiController]
 [Route("api/projects")]
+[Route("projects")]
 [Authorize]
 public class ProjectsController : ControllerBase
 {

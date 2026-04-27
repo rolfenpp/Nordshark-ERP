@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/account")]
+[Route("account")]
 public class GoogleAccountController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
