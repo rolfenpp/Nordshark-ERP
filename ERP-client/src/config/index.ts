@@ -3,6 +3,9 @@ export type AppConfig = {
   clientUrl: string
 }
 
+function normalizeApiBaseUrl(url: string): string {
+  return url.trim().replace(/\/$/, '')
+}
 
 const MODE = import.meta.env.MODE || 'development'
 
@@ -27,10 +30,7 @@ export const CONFIG: AppConfig = {
   clientUrl: envClientUrl || base.clientUrl,
 }
 
-/**
- * Base URL of the API used as axios `baseURL` (no trailing slash).
- * Include a path prefix when the host mounts the app there, e.g. `http://localhost:8080/api`.
- */
+/** Base URL of the API (axios `baseURL`), no trailing slash. Use a path prefix when the API is under `/api`, e.g. `https://host/api`. */
 export const API_URL = CONFIG.apiBaseUrl
 
 export const API_ROOT = CONFIG.apiBaseUrl
