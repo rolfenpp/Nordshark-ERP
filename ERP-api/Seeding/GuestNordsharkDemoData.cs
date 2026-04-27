@@ -2,6 +2,7 @@ using System.Security.Claims;
 using ErpApi;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ErpApi.Seeding;
 
@@ -20,21 +21,36 @@ public static class GuestNordsharkDemoData
         UserManager<ApplicationUser> userManager,
         ApplicationDbContext db,
         string tenantAdminEmail,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ILogger? log = null)
     {
         var user = await userManager.FindByEmailAsync(tenantAdminEmail).ConfigureAwait(false);
-        if (user is null || user.CompanyId < 1)
+        if (user is null)
+        {
+            log?.LogWarning(
+                "GuestNordshark demo: no user with email {Email} — check Seeding:DemoAdminEmail matches an existing account, or let the seeder create one.",
+                tenantAdminEmail);
             return;
+        }
 
-        await EnsureViewInvoicesClaimForUserAsync(userManager, user, cancellationToken).ConfigureAwait(false);
+        if (user.CompanyId < 1)
+        {
+            log?.LogWarning("GuestNordshark demo: user {Email} has invalid CompanyId; skipping.", tenantAdminEmail);
+            return;
+        }
 
         var companyId = user.CompanyId;
+        log?.LogInformation("GuestNordshark demo: seeding inventory/projects/invoices for CompanyId={CompanyId}.", companyId);
+
+        await EnsureAllPermissionClaimsForDemoAdminAsync(userManager, user, cancellationToken).ConfigureAwait(false);
+
         var now = DateTime.UtcNow;
 
         await SeedInventoryAsync(db, companyId, now, cancellationToken).ConfigureAwait(false);
         await SeedProjectsAsync(db, companyId, now, cancellationToken).ConfigureAwait(false);
         await SeedInvoicesAsync(db, companyId, now, cancellationToken).ConfigureAwait(false);
         await SeedDemoTeamUsersAsync(userManager, companyId, cancellationToken).ConfigureAwait(false);
+        log?.LogInformation("GuestNordshark demo: finished for CompanyId={CompanyId}.", companyId);
     }
 
     private static async Task SeedInventoryAsync(
@@ -345,15 +361,21 @@ public static class GuestNordsharkDemoData
     private static DateTime D(int y, int m, int d) =>
         new DateTime(y, m, d, 0, 0, 0, DateTimeKind.Utc);
 
-    private static async Task EnsureViewInvoicesClaimForUserAsync(
+    private static async Task EnsureAllPermissionClaimsForDemoAdminAsync(
         UserManager<ApplicationUser> userManager, ApplicationUser user, CancellationToken ct)
     {
-        var perms = await userManager.GetClaimsAsync(user).ConfigureAwait(false);
-        if (perms.Any(c => c.Type == "perm" && c.Value == Permissions.ViewInvoices))
-            return;
-        await userManager
-            .AddClaimAsync(user, new Claim("perm", Permissions.ViewInvoices))
-            .ConfigureAwait(false);
+        var existing = await userManager.GetClaimsAsync(user).ConfigureAwait(false);
+        var have = new HashSet<string>(
+            existing.Where(c => c.Type == "perm").Select(c => c.Value),
+            StringComparer.Ordinal);
+
+        foreach (var p in Permissions.All)
+        {
+            if (have.Contains(p))
+                continue;
+            await userManager.AddClaimAsync(user, new Claim("perm", p)).ConfigureAwait(false);
+            have.Add(p);
+        }
     }
 
     private static async Task SeedDemoTeamUsersAsync(
