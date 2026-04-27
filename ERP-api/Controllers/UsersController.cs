@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
-[Route("users")]
+[Route("api/users")]
 [Authorize]
 public class UsersController : ControllerBase
 {

@@ -3,23 +3,19 @@ export type AppConfig = {
   clientUrl: string
 }
 
-function trimApiBase(url: string): string {
-  let u = url.trim().replace(/\/$/, '')
-  if (/\/api$/i.test(u)) {
-    u = u.replace(/\/api$/i, '')
-  }
-  return u
+function normalizeApiBaseUrl(url: string): string {
+  return url.trim().replace(/\/$/, '')
 }
 
 const MODE = import.meta.env.MODE || 'development'
 
 const defaults: Record<string, AppConfig> = {
   development: {
-    apiBaseUrl: 'http://localhost:8080',
+    apiBaseUrl: 'http://localhost:8080/api',
     clientUrl: 'http://localhost:5173',
   },
   production: {
-    apiBaseUrl: 'https://erp-api-bfp3.onrender.com',
+    apiBaseUrl: 'https://erp-api-bfp3.onrender.com/api',
     clientUrl: 'https://erp-client-flame.vercel.app',
   },
 }
@@ -30,12 +26,14 @@ const envClientUrl = (import.meta.env.VITE_CLIENT_URL as string | undefined)?.re
 const base: AppConfig = defaults[MODE] ?? defaults.development
 
 export const CONFIG: AppConfig = {
-  apiBaseUrl: trimApiBase((envApiBaseUrl || base.apiBaseUrl).trim() || base.apiBaseUrl),
+  apiBaseUrl: normalizeApiBaseUrl((envApiBaseUrl || base.apiBaseUrl).trim() || base.apiBaseUrl),
   clientUrl: envClientUrl || base.clientUrl,
 }
 
-/** Base URL of the API (no `/api` path segment). */
+/**
+ * Base URL of the API used as axios `baseURL` (no trailing slash).
+ * Include a path prefix when the host mounts the app there, e.g. `http://localhost:8080/api`.
+ */
 export const API_URL = CONFIG.apiBaseUrl
 
-/** Same as `API_URL` — used as axios `baseURL` for all backend calls. */
 export const API_ROOT = CONFIG.apiBaseUrl

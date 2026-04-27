@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using ErpApi;
 
 [ApiController]
-[Route("projects")]
+[Route("api/projects")]
 [Authorize]
 public class ProjectsController : ControllerBase
 {
@@ -21,6 +21,7 @@ public class ProjectsController : ControllerBase
 
 
     [HttpGet]
+    [Authorize(Policy = Permissions.ViewProjects)]
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAll()
     {
         var companyId = GetCompanyId();
@@ -51,6 +52,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = Permissions.ViewProjects)]
     public async Task<ActionResult<ProjectDto>> GetById(int id)
     {
         var companyId = GetCompanyId();
