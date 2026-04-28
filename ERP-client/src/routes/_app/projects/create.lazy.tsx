@@ -1,6 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -322,8 +321,6 @@ function CreateProjectComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader showBack={false} title="Create New Project" />
-
         <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
           <Stepper activeStep={activeStep} alternativeLabel>
             {steps.map((label) => (

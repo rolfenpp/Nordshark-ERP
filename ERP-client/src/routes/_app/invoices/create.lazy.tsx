@@ -1,7 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
-import { SectionHeader } from '@/components/PageHeader'
 import {
   Box,
   Typography,
@@ -157,8 +155,6 @@ function CreateInvoiceComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader showBack={false} title="Create New Invoice" />
-
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             Invoice Details
@@ -285,14 +281,36 @@ function CreateInvoiceComponent() {
         </Paper>
 
         <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
-          <SectionHeader
-            title="Invoice Items"
-            actions={
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
+              justifyContent: 'space-between',
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <Typography variant="h6" component="h2" sx={{ fontWeight: 300 }}>
+              Invoice Items
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                flexWrap: 'wrap',
+                gap: 1.5,
+                '& .MuiButton-root': {
+                  width: { xs: '100%', sm: 'auto' },
+                  minHeight: { xs: 44, sm: undefined },
+                },
+              }}
+            >
               <Button variant="outlined" startIcon={<Add />} onClick={addItem}>
                 Add Item
               </Button>
-            }
-          />
+            </Box>
+          </Box>
 
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table>

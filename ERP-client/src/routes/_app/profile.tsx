@@ -9,10 +9,6 @@ export const Route = createFileRoute('/_app/profile')({
 function ProfileComponent() {
   return (
     <Box>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 300 }}>
-            Profile
-          </Typography>
-
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 3 }}>
             <Paper sx={{ p: 3, textAlign: 'center' }}>
               <Avatar sx={{ width: 100, height: 100, mx: 'auto', mb: 2 }}>

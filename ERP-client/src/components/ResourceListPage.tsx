@@ -1,10 +1,8 @@
 import { Box } from '@mui/material'
 import type { ReactNode } from 'react'
 import { FadeInContent } from './FadeInContent'
-import { PageHeader } from './PageHeader'
 
 export type ResourceListPageProps = {
-  title: ReactNode
   actions?: ReactNode
   children: ReactNode
   fadeDelay?: number
@@ -12,16 +10,34 @@ export type ResourceListPageProps = {
 }
 
 export function ResourceListPage({
-  title,
   actions,
   children,
-  fadeDelay = 100,
-  fadeDuration = 600,
+  fadeDelay,
+  fadeDuration,
 }: ResourceListPageProps) {
   return (
-    <FadeInContent delay={fadeDelay} duration={fadeDuration}>
+    <FadeInContent delay={fadeDelay ?? 100} duration={fadeDuration ?? 600}>
       <Box>
-        <PageHeader title={title} actions={actions} />
+        {actions && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              flexWrap: 'wrap',
+              gap: 1.5,
+              alignItems: 'stretch',
+              justifyContent: { xs: 'stretch', sm: 'flex-end' },
+              mb: 2,
+              width: '100%',
+              '& .MuiButton-root': {
+                width: { xs: '100%', sm: 'auto' },
+                minHeight: { xs: 44, sm: undefined },
+              },
+            }}
+          >
+            {actions}
+          </Box>
+        )}
         {children}
       </Box>
     </FadeInContent>

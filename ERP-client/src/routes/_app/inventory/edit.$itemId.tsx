@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -130,12 +129,6 @@ function EditInventoryComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader
-          backLabel="Back to Item"
-          onBack={() => navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } })}
-          title="Edit Inventory Item"
-        />
-
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             Item Information

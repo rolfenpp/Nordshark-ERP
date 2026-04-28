@@ -67,15 +67,6 @@ function HelpComponent() {
 
   return (
     <Box>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 300 }}>
-              Help & Support
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Find answers to common questions and get help when you need it
-            </Typography>
-          </Box>
-
           <Paper sx={{ p: 2, mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Search color="action" />

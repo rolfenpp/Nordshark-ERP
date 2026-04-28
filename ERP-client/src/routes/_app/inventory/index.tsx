@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
@@ -21,7 +22,6 @@ import {
 } from '@mui/material'
 import type { ChipProps } from '@mui/material/Chip'
 import {
-  Add,
   Search,
   Edit,
   Delete,
@@ -237,22 +237,18 @@ function InventoryIndexComponent() {
   const totalItems = inventoryItems.reduce((sum, item) => sum + item.quantityOnHand, 0)
   const lowStockItems = inventoryItems.filter((item) => item.reorderLevel && item.quantityOnHand <= item.reorderLevel).length
 
-  const headerActions = (
-    <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: '/inventory/create' })}>
-      Add New Item
-    </Button>
-  )
+  const headerActions = <PrimaryActionButton label="Add New Item" to="/inventory/create" />
 
   if (isLoading) {
     return (
-      <ResourceListPage title="Inventory Management" actions={headerActions}>
+      <ResourceListPage actions={headerActions}>
         <TableSkeleton rows={8} columns={9} />
       </ResourceListPage>
     )
   }
 
   return (
-    <ResourceListPage title="Inventory Management" actions={headerActions}>
+    <ResourceListPage actions={headerActions}>
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error?.message || 'Failed to load inventory. You can retry from the browser or after signing in again.'}

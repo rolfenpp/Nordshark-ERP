@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
@@ -24,7 +25,7 @@ import {
   MenuItem,
   Tooltip,
 } from '@mui/material'
-import { Add, Search, Edit, Delete, Visibility, Assignment, TrendingUp, Schedule, AttachMoney } from '@mui/icons-material'
+import { Search, Edit, Delete, Visibility, Assignment, TrendingUp, Schedule, AttachMoney } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useMemo, useCallback } from 'react'
@@ -251,12 +252,7 @@ function ProjectsIndexComponent() {
     <ResourceListPage
       fadeDelay={200}
       fadeDuration={800}
-      title="Projects Management"
-      actions={
-        <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: "/projects/create" })}>
-          Create New Project
-        </Button>
-      }
+      actions={<PrimaryActionButton label="Create New Project" to="/projects/create" />}
     >
       <ListStatsGrid compact={compactList}>
         <ListStatCard icon={Assignment} iconColor="primary" value={projects.length} label="Total Projects" />

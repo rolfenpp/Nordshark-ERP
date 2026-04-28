@@ -137,7 +137,7 @@ function SummaryCardView({ c }: { c: SummaryCard }) {
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
               {label}
             </Typography>
-            {sublabel != null && !skeleton && (
+            {sublabel && !skeleton && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                 {sublabel}
               </Typography>

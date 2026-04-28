@@ -23,7 +23,7 @@ export function ListStatCard({ icon: Icon, iconColor = 'primary', value, label, 
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 300 }}>
               {label}
             </Typography>
-            {sublabel != null && (
+            {sublabel && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                 {sublabel}
               </Typography>
