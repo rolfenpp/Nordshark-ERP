@@ -1,6 +1,6 @@
 # ERP monorepo
 
-Disclaimer: This is a hobby project, not a commercial or supported product. AI (coding assistants) was used heavily to build and evolve it; I also like to try coding agents with different contexts (separate conversations, rules, or focused tasks) to implement or adjust specific parts of the app and see how that plays out. Throughout its journey, this repository has been deleted, rebuilt, taken apart, and reassembled more than once, not a single tidy greenfield.
+Disclaimer: This is a hobby project, not a commercial or supported product. AI (coding assistants) was used heavily to build and evolve it. I also like to try coding agents with different contexts (separate conversations, rules, or focused tasks) to implement or adjust specific parts of the app and see how that plays out. Throughout its journey, this repository has been deleted, rebuilt, taken apart, and reassembled more than once, not a single tidy greenfield. It used to live on GitLab before I moved it to GitHub.
 
 It is deployed to real hosting (e.g. Vercel and on Render) mainly to simulate a production-style setup: separate services, environment configuration, HTTPS, and deployment pipelines. When you work in a real environment, it is normal to land small fixes in a corner of the system you do not fully understand yet (who has not done that). Part of the goal is to observe what actually happens in production when things go wrong: a failing build or deploy, a bad release that only breaks at runtime, VITE or a wrong API base URL, CORS and SameSite cookie issues, stale cached client assets, 500s and error surfaces you do not get locally, EF migrations and DB connection string mistakes, missing or incorrect secrets, cold starts and slowness on small hosts, and the usual “works on my machine” gap—not to ship junk to end users, but to learn. None of that implies this app is production-ready for real business or sensitive data.
 
@@ -16,9 +16,9 @@ In a big production org somewhere else, the same worries just wear a blazer. Dep
 
 ## Production vs local
 
-- Production (deployed): Push to the branch your host uses (for example `main`). The Vercel build publishes the client; Render (or your host) runs the API with `ASPNETCORE_ENVIRONMENT=Production`. The API does not create demo companies or users on startup (only EF migrations and Identity roles). New tenants and admins are created with `POST /api/companies/register` (or the app’s Register screen), then sign in. JSON endpoints are under the `/api` prefix (e.g. `GET /api/invoices`); the client uses `VITE_API_BASE_URL` (or the default in `ERP-client/src/config`) as the full API base including `/api`, and calls paths like `/invoices` from there. Redeploy the API after you add new controllers so production stays in sync. Keep secrets in platform environment variables, not in the repository.
+- Production (deployed): Push to the branch your host uses (for example `main`). The Vercel build publishes the client, and Render (or your host) runs the API with `ASPNETCORE_ENVIRONMENT=Production`. The API does not create demo companies or users on startup (only EF migrations and Identity roles). New tenants and admins are created with `POST /api/companies/register` (or the app’s Register screen), then sign in. JSON endpoints are under the `/api` prefix (e.g. `GET /api/invoices`). The client uses `VITE_API_BASE_URL` (or the default in `ERP-client/src/config`) as the full API base including `/api`, and calls paths like `/invoices` from there. Redeploy the API after you add new controllers so production stays in sync. Keep secrets in platform environment variables, not in the repository.
 
-- Local (full stack): Run PostgreSQL (often via `ERP-api/docker-compose.dev.yml`), the API in Development (`dotnet run` in `ERP-api`), and the client (`npm run dev` in `ERP-client`). Create a tenant the same way as production (`POST /api/companies/register` or the Register screen). Demo invoices and projects are not inserted by the API; use the scripts in `ERP-client/scripts` (e.g. `npm run seed:guest:local` from `ERP-client`) after a user exists. Prefer [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) or env vars for passwords.
+- Local (full stack): Run PostgreSQL (often via `ERP-api/docker-compose.dev.yml`), the API in Development (`dotnet run` in `ERP-api`), and the client (`npm run dev` in `ERP-client`). Create a tenant the same way as production (`POST /api/companies/register` or the Register screen). Demo invoices and projects are not inserted by the API. Use the scripts in `ERP-client/scripts` (e.g. `npm run seed:guest:local` from `ERP-client`) after a user exists. Prefer [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) or env vars for passwords.
 
 ## Nordshark business system
 
@@ -32,7 +32,7 @@ You can run database services and the API with Docker Desktop using the compose 
 
 ![Docker Desktop: compose project with Postgres, pgAdmin, and API containers running locally](docs/images/docker-desktop-containers.png)
 
-This is only a local tooling view: resource usage and port bindings are environment specific and do not reflect production. No secrets belong in screenshots; keep API keys and connection strings out of the repo (use `.env` / user secrets, never commit real credentials).
+This is only a local tooling view: resource usage and port bindings are environment specific and do not reflect production. No secrets belong in screenshots. Keep API keys and connection strings out of the repo (use `.env` / user secrets, never commit real credentials).
 
 ## Local development (step by step)
 
