@@ -11,7 +11,7 @@ yarn-error.log*
 env.development
 # `npm run seed:*` drivers (covers seed-guest-invoices.mjs, seed-guest-projects.mjs, and any seed-*.mjs)
 scripts/seed-*.mjs
-# Local npm aliases for seeds — use `copy package.example.json package.json` in scripts/ (template is tracked)
+# Local-only npm aliases for demo seeds (optional `package.json` in scripts/)
 scripts/package.json
 scripts/package-lock.json
 coverage/
