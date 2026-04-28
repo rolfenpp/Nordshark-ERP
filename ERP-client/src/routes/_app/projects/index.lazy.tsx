@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
@@ -36,7 +36,7 @@ import { useProjects, useDeleteProject, type ProjectDto } from '@/api/projects'
 import { normalizeProjectStatus } from '@/lib/statusNormalize'
 import { formatDisplayDate, parseApiDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/_app/projects/')({
+export const Route = createLazyFileRoute('/_app/projects/')({
   component: ProjectsIndexComponent,
 })
 

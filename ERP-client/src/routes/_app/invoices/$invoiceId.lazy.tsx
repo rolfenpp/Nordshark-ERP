@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
 import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Alert } from '@mui/material'
@@ -7,7 +7,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useInvoice, useDeleteInvoice } from '@/api/invoices'
 import { formatDisplayDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/_app/invoices/$invoiceId')({
+export const Route = createLazyFileRoute('/_app/invoices/$invoiceId')({
   component: InvoiceViewComponent,
 })
 

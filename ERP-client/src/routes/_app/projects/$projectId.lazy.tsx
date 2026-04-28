@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
 import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Chip, LinearProgress, List, ListItem, ListItemText, ListItemIcon, IconButton, Tabs, Tab, Alert } from '@mui/material'
@@ -8,7 +8,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useProject, useDeleteProject } from '@/api/projects'
 import { formatDisplayDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/_app/projects/$projectId')({
+export const Route = createLazyFileRoute('/_app/projects/$projectId')({
   component: ProjectDetailComponent,
 })
 

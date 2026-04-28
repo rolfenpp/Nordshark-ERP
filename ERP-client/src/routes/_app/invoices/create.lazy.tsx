@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
 import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { SectionHeader } from '@/components/PageHeader'
@@ -32,14 +32,15 @@ import {
   Delete,
   AttachMoney,
 } from '@mui/icons-material'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '@/api/invoices'
+import { addDays, format } from 'date-fns'
+import { useCreateInvoice, type CreateInvoiceDto } from '@/api/invoices'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
-export const Route = createFileRoute('/_app/invoices/edit/$invoiceId')({
-  component: EditInvoiceComponent,
+export const Route = createLazyFileRoute('/_app/invoices/create')({
+  component: CreateInvoiceComponent,
 })
 
 interface InvoiceItem {
@@ -50,16 +51,13 @@ interface InvoiceItem {
   amount: number
 }
 
-function EditInvoiceComponent() {
+function CreateInvoiceComponent() {
   const navigate = useNavigate()
-  const { invoiceId } = Route.useParams()
-  const id = Number(invoiceId)
-  const { data: inv, isLoading } = useInvoice(id)
-  const update = useUpdateInvoice()
+  const create = useCreateInvoice()
   const [formData, setFormData] = useState({
     invoiceNumber: '',
-    date: '',
-    dueDate: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
     client: '',
     clientEmail: '',
     clientAddress: '',
@@ -67,40 +65,12 @@ function EditInvoiceComponent() {
     terms: 'Net 30',
     taxRate: 10,
     currency: 'USD',
-    status: 'draft' as string,
-    paymentMethod: '',
-    paidDate: '',
+    status: 'draft' as const,
   })
-
-  const [items, setItems] = useState<InvoiceItem[]>([])
-
-  useEffect(() => {
-    if (!inv) return
-    setFormData({
-      invoiceNumber: inv.invoiceNumber,
-      date: inv.issueDate.slice(0, 10),
-      dueDate: inv.dueDate.slice(0, 10),
-      client: inv.clientName,
-      clientEmail: inv.clientEmail ?? '',
-      clientAddress: inv.clientAddress ?? '',
-      notes: inv.notes ?? '',
-      terms: inv.terms ?? 'Net 30',
-      taxRate: inv.taxRatePercent,
-      currency: inv.currency,
-      status: inv.status as 'draft' | 'pending' | 'paid' | 'overdue',
-      paymentMethod: inv.paymentMethod ?? '',
-      paidDate: inv.paidDate ? inv.paidDate.slice(0, 10) : '',
-    })
-    setItems(
-      inv.lines.map((l) => ({
-        id: String(l.id),
-        description: l.description,
-        quantity: l.quantity,
-        rate: l.unitPrice,
-        amount: l.amount,
-      }))
-    )
-  }, [inv])
+  
+  const [items, setItems] = useState<InvoiceItem[]>([
+    { id: '1', description: '', quantity: 1, rate: 0, amount: 0 }
+  ])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -147,11 +117,12 @@ function EditInvoiceComponent() {
   }
 
   const handleSubmit = () => {
-    const body: UpdateInvoiceDto = {
-      invoiceNumber: formData.invoiceNumber,
+    const number = formData.invoiceNumber.trim() || `INV-${Date.now()}`
+    const body: CreateInvoiceDto = {
+      invoiceNumber: number,
       issueDate: formYmdToApiIso(formData.date)!,
       dueDate: formYmdToApiIso(formData.dueDate)!,
-      clientName: formData.client,
+      clientName: formData.client.trim() || 'Client',
       clientEmail: formData.clientEmail || undefined,
       clientAddress: formData.clientAddress || undefined,
       status: formData.status,
@@ -159,45 +130,34 @@ function EditInvoiceComponent() {
       terms: formData.terms,
       currency: formData.currency,
       notes: formData.notes || undefined,
-      paymentMethod: formData.paymentMethod || undefined,
-      paidDate: formYmdToApiIso(formData.paidDate),
-      lines: items.map((it, i) => ({
-        lineNumber: i + 1,
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: it.rate,
-      })),
+      lines: items
+        .filter((it) => it.description.trim() !== '')
+        .map((it, i) => ({
+          lineNumber: i + 1,
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.rate,
+        })),
     }
-    update.mutate(
-      { id, body },
-      { onSuccess: () => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } }) }
-    )
+    if (body.lines.length === 0) {
+      return
+    }
+    create.mutate(body, {
+      onSuccess: (res) => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(res.id) } }),
+    })
   }
 
   const handleCancel = () => {
-    navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } })
+    navigate({ to: '/invoices/' })
   }
 
   const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD']
   const terms = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Due on Receipt']
-  const statuses = ['draft', 'pending', 'paid', 'overdue']
-
-  if (isLoading || !inv) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading invoice data...</Typography>
-      </Box>
-    )
-  }
 
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader
-          backLabel="Back to Invoice"
-          onBack={() => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } })}
-          title="Edit Invoice"
-        />
+        <DetailPageHeader showBack={false} title="Create New Invoice" />
 
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
@@ -218,22 +178,6 @@ function EditInvoiceComponent() {
                 required
                 helperText="Auto-generated if left empty"
               />
-            </Box>
-            <Box>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={formData.status}
-                  label="Status"
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                >
-                  {statuses.map((status) => (
-                    <MenuItem key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Box>
             <Box>
               <FormYmdDatePicker
@@ -528,12 +472,12 @@ function EditInvoiceComponent() {
             Cancel
           </Button>
           <Button variant="contained" onClick={handleSubmit} startIcon={<Save />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            Save Changes
+            Create Invoice
           </Button>
         </Box>
 
         <Alert severity="info" sx={{ mt: 3 }}>
-          Changes will be applied immediately. You can always revert changes from the invoice history.
+          The invoice will be created as a draft. You can edit it later and send it to the client when ready.
         </Alert>
       </Box>
     </FadeInContent>

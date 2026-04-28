@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
 import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
@@ -32,7 +32,7 @@ import { useCreateProject, type CreateProjectDto } from '@/api/projects'
 import { formYmdToApiIso } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
-export const Route = createFileRoute('/_app/projects/create')({
+export const Route = createLazyFileRoute('/_app/projects/create')({
   component: CreateProjectComponent,
 })
 

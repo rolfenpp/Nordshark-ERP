@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
@@ -59,7 +59,7 @@ const exportSpinner = keyframes`
   100% { transform: rotate(360deg); }
 `
 
-export const Route = createFileRoute('/_app/invoices/')({
+export const Route = createLazyFileRoute('/_app/invoices/')({
   component: InvoicesIndexComponent,
 })
 
