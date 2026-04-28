@@ -34,7 +34,7 @@ services:
       Jwt__Issuer: ${JWT_ISSUER:-recipt-api}
       Jwt__Audience: ${JWT_AUDIENCE:-recipt-api-users}
     ports:
-      - "5002:8080" # was 5001:8080
+      - "5002:8080"
     volumes:
       - ./:/src
       - /src/bin
