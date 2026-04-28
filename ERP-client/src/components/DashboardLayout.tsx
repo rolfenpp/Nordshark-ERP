@@ -21,6 +21,8 @@ import {
 } from '@mui/material'
 import {
   Menu as MenuIcon,
+  ChevronLeft,
+  ChevronRight,
   Dashboard,
   Receipt,
   People,
@@ -40,9 +42,16 @@ import { UpgradeButton } from './UpgradeButton'
 import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
 import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
 import { colors } from '@/theme/theme'
+import { useDashboardShell } from '@/components/DashboardShellContext'
 
 const DRAWER_WIDTH = 240
+const DRAWER_WIDTH_MINI = 72
 
+/**
+ * Sidebar highlight: which drawer `item.path` matches the current URL (prefix + `/dashboard` exact-only).
+ * Breadcrumb copy and structure live in `@/lib/appBreadcrumbs` (`getAppBreadcrumbs`); that module maps
+ * pathnames to labels, not to “which nav row is active,” so we keep matching rules here on purpose.
+ */
 function drawerItemActive(pathname: string, itemPath: string): boolean {
   const p = pathname.replace(/\/+$/, '') || '/'
   const m = itemPath.replace(/\/+$/, '') || '/'
@@ -93,6 +102,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { logout } = useAuth()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { desktopDrawerCollapsed, setDesktopDrawerCollapsed } = useDashboardShell()
   const theme = useTheme()
   const { mode, toggleTheme } = useAppTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -129,71 +139,111 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }
 
+  const desktopMini = !isMobile && desktopDrawerCollapsed
+  const permanentDrawerWidth = desktopMini ? DRAWER_WIDTH_MINI : DRAWER_WIDTH
+  const drawerTransition = theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  })
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <NordsharkBrand size="medium" themeToggle />
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: desktopMini ? 'center' : 'flex-start',
+          p: desktopMini ? 1 : 2,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          minHeight: desktopMini ? 56 : undefined,
+        }}
+      >
+        {!desktopMini ? (
+          <Box sx={{ minWidth: 0, width: '100%' }}>
+            <NordsharkBrand size="medium" themeToggle />
+          </Box>
+        ) : (
+          <Box sx={{ width: 40, height: 8 }} aria-hidden />
+        )}
       </Box>
-      
-      <Box sx={{ flexGrow: 1, pt: 4 }}>
+
+      <Box sx={{ flexGrow: 1, pt: desktopMini ? 2 : 4 }}>
         {menuCategories.map((category) => (
-          <Box key={category.title} sx={{ mb: 3 }}>
-            <Typography
-              variant="overline"
-              sx={{
-                px: 3,
-                py: 1,
-                fontSize: '0.75rem',
-                fontWeight: 300,
-                color: 'text.secondary',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase'
-              }}
-            >
-              {category.title}
-            </Typography>
+          <Box key={category.title} sx={{ mb: desktopMini ? 1 : 3 }}>
+            {!desktopMini && (
+              <Typography
+                variant="overline"
+                sx={{
+                  px: 3,
+                  py: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 300,
+                  color: 'text.secondary',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {category.title}
+              </Typography>
+            )}
             <List sx={{ px: 1 }}>
               {category.items.map((item) => {
                 const isActive = drawerItemActive(location.pathname, item.path)
-                return (
-                  <ListItem key={item.text} disablePadding sx={{ mb: 2 }}>
-                    <ListItemButton 
-                      onClick={() => handleMenuClick(item.path)}
-                      sx={{
-                        mx: 1,
-                        mb: 1,
-                        minHeight: 32,
-                        py: 1,
+                const navButton = (
+                  <ListItemButton
+                    onClick={() => handleMenuClick(item.path)}
+                    sx={{
+                      mx: 1,
+                      mb: 1,
+                      minHeight: 40,
+                      py: 1,
+                      borderRadius: '6px',
+                      justifyContent: desktopMini ? 'center' : 'flex-start',
+                      px: desktopMini ? 1 : 2,
+                      backgroundColor: isActive ? 'primary.main' : 'transparent',
+                      color: isActive ? 'primary.contrastText' : 'text.primary',
+                      overflow: 'hidden',
+                      '&.MuiListItemButton-root': {
                         borderRadius: '6px',
-                        backgroundColor: isActive ? 'primary.main' : 'transparent',
-                        color: isActive ? 'primary.contrastText' : 'text.primary',
-                        overflow: 'hidden',
-                        '&.MuiListItemButton-root': {
-                          borderRadius: '6px',
-                        },
-                        '&:hover': {
-                          backgroundColor: isActive ? 'primary.dark' : 'action.hover',
-                        },
-                        transition: 'all 0.2s ease-in-out',
+                      },
+                      '&:hover': {
+                        backgroundColor: isActive ? 'primary.dark' : 'action.hover',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: isActive ? 'primary.contrastText' : (mode === 'light' ? lightIconColor : 'text.primary'),
+                        minWidth: desktopMini ? 0 : 40,
+                        mr: desktopMini ? 0 : undefined,
+                        justifyContent: 'center',
+                        transition: 'color 0.2s ease-in-out',
                       }}
                     >
-                      <ListItemIcon sx={{ 
-                        color: isActive ? 'primary.contrastText' : (mode === 'light' ? lightIconColor : 'text.primary'),
-                        minWidth: 40,
-                        transition: 'color 0.2s ease-in-out'
-                      }}>
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={item.text} 
-                        sx={{ 
-                          color: 'inherit',
-                          '& .MuiTypography-root': {
-                            fontWeight: 300,
-                          }
-                        }}
-                      />
-                    </ListItemButton>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      sx={{
+                        display: desktopMini ? 'none' : 'block',
+                        color: 'inherit',
+                        '& .MuiTypography-root': {
+                          fontWeight: 300,
+                        },
+                      }}
+                    />
+                  </ListItemButton>
+                )
+                return (
+                  <ListItem key={item.text} disablePadding sx={{ mb: desktopMini ? 0.5 : 2 }}>
+                    {desktopMini ? (
+                      <Tooltip title={item.text} placement="right">
+                        {navButton}
+                      </Tooltip>
+                    ) : (
+                      navButton
+                    )}
                   </ListItem>
                 )
               })}
@@ -209,9 +259,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <AppBar
         position="fixed"
         sx={{
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { md: `${DRAWER_WIDTH}px` },
+          width: { md: `calc(100% - ${permanentDrawerWidth}px)` },
+          ml: { md: `${permanentDrawerWidth}px` },
           bgcolor: 'background.secondary',
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         }}
       >
         <Toolbar
@@ -237,6 +291,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <MenuIcon />
           </IconButton>
+
+          <Tooltip title={desktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+            <IconButton
+              color="inherit"
+              aria-label={desktopDrawerCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              edge="start"
+              onClick={() => setDesktopDrawerCollapsed((c) => !c)}
+              sx={{
+                mr: 1,
+                display: { xs: 'none', md: 'inline-flex' },
+                color: mode === 'light' ? lightIconColor : 'text.primary',
+                alignSelf: 'center',
+              }}
+            >
+              {desktopDrawerCollapsed ? <ChevronRight /> : <ChevronLeft />}
+            </IconButton>
+          </Tooltip>
 
           <Box
             sx={{
@@ -384,7 +455,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <Box
         component="nav"
-        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
+        sx={{
+          width: { md: permanentDrawerWidth },
+          flexShrink: { md: 0 },
+          transition: { md: drawerTransition },
+        }}
       >
         <Drawer
           variant="temporary"
@@ -405,9 +480,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, bgcolor: 'background.secondary' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: permanentDrawerWidth,
+              bgcolor: 'background.secondary',
+              overflowX: 'hidden',
+              transition: drawerTransition,
+            },
           }}
-          open
         >
           {drawer}
         </Drawer>

@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider'
 import { AuthProvider } from '@/auth/AuthProvider'
 import { useAuth } from '@/auth/AuthProvider'
 import { AIAssistant } from '@/components/AIAssistant'
+import { DashboardShellProvider } from '@/components/DashboardShellContext'
 import { ToastContainer } from 'react-toastify'
 import { useTheme } from '@mui/material/styles'
 import { Box, Alert } from '@mui/material'
@@ -73,7 +74,9 @@ function RootComponent() {
         closeButton={false}
         icon={false}
       />
-      <Outlet />
+      <DashboardShellProvider>
+        <Outlet />
+      </DashboardShellProvider>
     </>
   )
 }
