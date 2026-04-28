@@ -12,7 +12,7 @@ export function getAppBreadcrumbs(pathname: string): AppBreadcrumbItem[] {
 
   if (p === '/profile') return [{ label: 'Profile' }]
   if (p === '/settings') return [{ label: 'Settings' }]
-  if (p === '/help') return [{ label: 'Help' }]
+  if (p === '/help') return [{ label: 'Help & Support' }]
   if (p === '/users') return [{ label: 'Users' }]
 
   if (p === '/invoices') return [{ label: 'Invoices' }]
