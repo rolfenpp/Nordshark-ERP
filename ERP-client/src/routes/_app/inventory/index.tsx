@@ -41,7 +41,7 @@ import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 import { formatDisplayDate, parseApiDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/inventory/')({
+export const Route = createFileRoute('/_app/inventory/')({
   component: InventoryIndexComponent,
 })
 

@@ -10,7 +10,6 @@ export type FormYmdDatePickerProps = {
   required?: boolean
   fullWidth?: boolean
   textFieldProps?: Partial<TextFieldProps>
-  /** Extra slot pass-through for layout (e.g. `sx: { mt: 2 }`). */
   slotSx?: SxProps<Theme>
 }
 

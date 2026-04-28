@@ -59,7 +59,7 @@ const exportSpinner = keyframes`
   100% { transform: rotate(360deg); }
 `
 
-export const Route = createFileRoute('/invoices/')({
+export const Route = createFileRoute('/_app/invoices/')({
   component: InvoicesIndexComponent,
 })
 

@@ -4,12 +4,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { appDateLocale } from '@/lib/dates'
 import { ThemeProvider } from '@/theme/ThemeProvider'
-import { AuthProvider } from '@/auth/AuthProvider'
-import { useAuth } from '@/auth/AuthProvider'
+import { AuthProvider, useAuth } from '@/auth/AuthProvider'
 import { AIAssistant } from '@/components/AIAssistant'
-import { DashboardShellProvider } from '@/components/DashboardShellContext'
-import { ToastContainer } from 'react-toastify'
-import { useTheme } from '@mui/material/styles'
 import { Box, Alert } from '@mui/material'
 import { ThreeDot } from 'react-loading-indicators'
 
@@ -24,8 +20,7 @@ const queryClient = new QueryClient({
 
 function RootComponent() {
   const { isAuthenticated, ready, error } = useAuth()
-  const theme = useTheme()
-  
+
   if (!ready) {
     return (
       <Box 
@@ -60,23 +55,7 @@ function RootComponent() {
         </Alert>
       )}
       {isAuthenticated && <AIAssistant />}
-      <ToastContainer
-        position="bottom-center"
-        autoClose={3000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={theme.palette.mode}
-        closeButton={false}
-        icon={false}
-      />
-      <DashboardShellProvider>
-        <Outlet />
-      </DashboardShellProvider>
+      <Outlet />
     </>
   )
 }

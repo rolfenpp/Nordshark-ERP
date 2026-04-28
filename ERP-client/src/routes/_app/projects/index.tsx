@@ -36,7 +36,7 @@ import { useProjects, useDeleteProject, type ProjectDto } from '@/api/projects'
 import { normalizeProjectStatus } from '@/lib/statusNormalize'
 import { formatDisplayDate, parseApiDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/projects/')({
+export const Route = createFileRoute('/_app/projects/')({
   component: ProjectsIndexComponent,
 })
 
@@ -127,12 +127,12 @@ function ProjectsIndexComponent() {
         sortAccessor: (p) => p.name.toLowerCase(),
         render: (project) => (
           <Box>
-            <Typography variant="subtitle2" sx={{ cursor: 'pointer' }} onClick={() => toProject(project.id)}>
+            <Typography variant="subtitle2" sx={{ cursor: "pointer" }} onClick={() => toProject(project.id)}>
               {project.name}
             </Typography>
             {compactList && (
               <Box sx={{ mt: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                   {project.client ?? '—'}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -253,7 +253,7 @@ function ProjectsIndexComponent() {
       fadeDuration={800}
       title="Projects Management"
       actions={
-        <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: '/projects/create' })}>
+        <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: "/projects/create" })}>
           Create New Project
         </Button>
       }

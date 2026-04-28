@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState, type SetStateAction } from 'react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
 import {
   Box,
@@ -42,7 +42,27 @@ import { UpgradeButton } from './UpgradeButton'
 import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
 import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
 import { colors } from '@/theme/theme'
-import { useDashboardShell } from '@/components/DashboardShellContext'
+const DRAWER_COLLAPSED_STORAGE_KEY = 'erp-dashboard-drawer-collapsed'
+
+function readStoredDrawerCollapsed(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const raw = localStorage.getItem(DRAWER_COLLAPSED_STORAGE_KEY)
+    if (raw === 'true') return true
+    if (raw === 'false') return false
+  } catch {
+    /* private mode / quota */
+  }
+  return false
+}
+
+function writeStoredDrawerCollapsed(value: boolean) {
+  try {
+    localStorage.setItem(DRAWER_COLLAPSED_STORAGE_KEY, String(value))
+  } catch {
+    /* ignore */
+  }
+}
 
 const DRAWER_WIDTH = 240
 const DRAWER_WIDTH_MINI = 72
@@ -102,7 +122,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { logout } = useAuth()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { desktopDrawerCollapsed, setDesktopDrawerCollapsed } = useDashboardShell()
+  const [desktopDrawerCollapsed, setDesktopDrawerCollapsedState] = useState(() =>
+    readStoredDrawerCollapsed()
+  )
+  const setDesktopDrawerCollapsed = useCallback((action: SetStateAction<boolean>) => {
+    setDesktopDrawerCollapsedState((prev) => {
+      const next = typeof action === 'function' ? action(prev) : action
+      writeStoredDrawerCollapsed(next)
+      return next
+    })
+  }, [])
   const theme = useTheme()
   const { mode, toggleTheme } = useAppTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
