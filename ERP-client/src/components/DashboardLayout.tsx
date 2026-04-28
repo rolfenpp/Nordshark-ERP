@@ -132,7 +132,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <NordsharkBrand size="medium" showSubtitle={true} themeToggle />
+        <NordsharkBrand size="medium" themeToggle />
       </Box>
       
       <Box sx={{ flexGrow: 1, pt: 4 }}>

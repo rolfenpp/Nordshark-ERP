@@ -83,7 +83,7 @@ function RegisterRoute() {
           pointerEvents: 'none',
         }}
       >
-        <NordsharkBrand size="large" showSubtitle={false} />
+        <NordsharkBrand size="large" />
       </Box>
       <Box
         sx={{
