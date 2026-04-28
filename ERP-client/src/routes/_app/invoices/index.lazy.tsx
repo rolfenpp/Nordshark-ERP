@@ -1,6 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
@@ -29,7 +30,6 @@ import {
 } from '@mui/material'
 import { keyframes } from '@mui/system'
 import {
-  Add,
   Search,
   Edit,
   Delete,
@@ -349,7 +349,6 @@ function InvoicesIndexComponent() {
 
   return (
     <ResourceListPage
-      title="Invoice Management"
       actions={
         <>
           <Button
@@ -367,9 +366,7 @@ function InvoicesIndexComponent() {
           >
             Export Excel
           </Button>
-          <Button variant="contained" startIcon={<Add />} onClick={() => navigate({ to: '/invoices/create' })}>
-            New Invoice
-          </Button>
+          <PrimaryActionButton label="New Invoice" to="/invoices/create" />
         </>
       }
     >

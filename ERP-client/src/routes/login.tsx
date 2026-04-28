@@ -333,7 +333,7 @@ function LoginRoute() {
                 variant="contained" 
                 size="large" 
                 disabled={loginMutation.isPending}
-                startIcon={loginMutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
+                startIcon={loginMutation.isPending && <CircularProgress size={20} color="inherit" />}
                 sx={{
                   py: 2,
                   px: 4,

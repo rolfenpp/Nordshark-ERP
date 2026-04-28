@@ -17,7 +17,6 @@ import {
 } from '@mui/material'
 import { Save, Notifications, Security, Palette } from '@mui/icons-material'
 import { useState } from 'react'
-import { PageHeader } from '@/components/PageHeader'
 import { formatDisplayDate } from '@/lib/dates'
 
 export const Route = createFileRoute('/_app/settings')({
@@ -41,14 +40,21 @@ function SettingsComponent() {
 
   return (
     <Box>
-          <PageHeader
-            title="Settings"
-            actions={
-              <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
-                Save Changes
-              </Button>
-            }
-          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              mb: 2,
+              '& .MuiButton-root': {
+                width: { xs: '100%', sm: 'auto' },
+                minHeight: { xs: 44, sm: undefined },
+              },
+            }}
+          >
+            <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
+              Save Changes
+            </Button>
+          </Box>
 
           <Box sx={{ 
             display: 'grid', 

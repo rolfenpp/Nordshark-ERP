@@ -1,6 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Alert } from '@mui/material'
 import { Edit, Delete, CheckCircle, Schedule, Warning, Receipt } from '@mui/icons-material'
 import { useNavigate } from '@tanstack/react-router'
@@ -52,10 +51,20 @@ function InvoiceViewComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader
-          backLabel="Back to Invoices"
-          onBack={() => navigate({ to: '/invoices/' })}
-          title={inv.invoiceNumber}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            justifyContent: { xs: 'flex-start', md: 'flex-end' },
+            mb: 3,
+            '& > .MuiButton-root': {
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: { sm: 'auto' },
+              minHeight: { xs: 44, sm: 36 },
+            },
+          }}
         >
           <Button
             variant="outlined"
@@ -76,7 +85,7 @@ function InvoiceViewComponent() {
           >
             Delete
           </Button>
-        </DetailPageHeader>
+        </Box>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3, mb: 3 }}>
           <Box>

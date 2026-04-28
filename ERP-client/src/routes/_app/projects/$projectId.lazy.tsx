@@ -1,6 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
 import { Box, Typography, Paper, Chip, LinearProgress, List, ListItem, ListItemText, ListItemIcon, IconButton, Tabs, Tab, Alert } from '@mui/material'
 import { Edit, Delete, Assignment, Person, AttachMoney, TrendingUp, Share } from '@mui/icons-material'
 import { useState } from 'react'
@@ -71,10 +70,18 @@ function ProjectDetailComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader
-          backLabel="Back to Projects"
-          onBack={() => navigate({ to: '/projects/' })}
-          title={p.name}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            justifyContent: { xs: 'flex-start', md: 'flex-end' },
+            mb: 3,
+            '& > .MuiIconButton-root': {
+              flexShrink: 0,
+            },
+          }}
         >
           <IconButton
             onClick={() => navigate({ to: '/projects/edit/$projectId', params: { projectId: projectIdParam } })}
@@ -99,7 +106,7 @@ function ProjectDetailComponent() {
           >
             <Delete />
           </IconButton>
-        </DetailPageHeader>
+        </Box>
 
         <Paper sx={{ mb: 3 }}>
           <Tabs

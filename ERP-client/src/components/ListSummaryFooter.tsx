@@ -19,7 +19,7 @@ export function ListSummaryFooter({ primary, children }: ListSummaryFooterProps)
         }}
       >
         <Box sx={{ color: 'text.secondary' }}>{primary}</Box>
-        {children != null && (
+        {children && (
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>{children}</Box>
         )}
       </Box>

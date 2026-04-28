@@ -13,12 +13,13 @@ import {
   CardContent,
   Tooltip,
 } from '@mui/material'
-import { Add, Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
+import { Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useMemo, useState } from 'react'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
@@ -199,15 +200,13 @@ function UsersComponent() {
 
   return (
     <ResourceListPage
-      title="Users Management"
       actions={
-        <Tooltip title={USER_ACTIONS_UNAVAILABLE}>
-          <span>
-            <Button variant="contained" startIcon={<Add />} disabled>
-              Add User
-            </Button>
-          </span>
-        </Tooltip>
+        <PrimaryActionButton
+          label="Add New User"
+          to="/users/"
+          disabled
+          disabledTooltip={USER_ACTIONS_UNAVAILABLE}
+        />
       }
     >
       <ListStatsGrid compact={compactList}>

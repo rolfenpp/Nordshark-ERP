@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FadeInContent } from '@/components/FadeInContent'
-import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
   Box,
   Typography,
@@ -104,10 +103,20 @@ function InventoryItemComponent() {
   return (
     <FadeInContent delay={200} duration={800}>
       <Box>
-        <DetailPageHeader
-          backLabel="Back to Inventory"
-          onBack={() => navigate({ to: '/inventory/' })}
-          title={item.name}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            justifyContent: { xs: 'flex-start', md: 'flex-end' },
+            mb: 3,
+            '& > .MuiButton-root': {
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: { sm: 'auto' },
+              minHeight: { xs: 44, sm: 36 },
+            },
+          }}
         >
           <Button variant="outlined" startIcon={<Edit />} onClick={handleEdit}>
             Edit
@@ -115,7 +124,7 @@ function InventoryItemComponent() {
           <Button variant="outlined" color="error" startIcon={<Delete />} onClick={handleDelete}>
             Delete
           </Button>
-        </DetailPageHeader>
+        </Box>
 
         <Alert 
           severity={statusDisplay.color as any} 
