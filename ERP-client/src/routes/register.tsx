@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/auth/AuthProvider'
 import { setAccessToken } from '@/lib/axios'
 import { NordsharkBrand } from '@/components/NordsharkBrand'
+import { AppToastContainer } from '@/components/AppToastContainer'
 import { showSuccess, showError } from '@/lib/toast'
 import { useRegisterCompany } from '@/api/companies'
 import { useLogin } from '@/api/auth'
@@ -50,8 +51,8 @@ function RegisterRoute() {
         setAccessToken(data.token)
         login(data.token)
       }
-      showSuccess('Your workspace is ready — welcome!')
       navigate({ to: '/dashboard' })
+      window.setTimeout(() => showSuccess('Your workspace is ready — welcome!'), 0)
     } catch (err: any) {
       const d = err?.response?.data
       let msg = 'Could not create company. Try a different name or email.'
@@ -74,6 +75,7 @@ function RegisterRoute() {
         background: 'linear-gradient(135deg, #f8f9fa 0%,rgb(156, 150, 156) 100%)',
       }}
     >
+      <AppToastContainer />
       <Box
         sx={{
           position: 'absolute',

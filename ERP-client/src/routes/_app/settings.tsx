@@ -1,6 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '@/components/DashboardLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import {
   Box,
   Typography,
@@ -22,7 +20,7 @@ import { useState } from 'react'
 import { PageHeader } from '@/components/PageHeader'
 import { formatDisplayDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/settings')({
+export const Route = createFileRoute('/_app/settings')({
   component: SettingsComponent,
 })
 
@@ -42,9 +40,7 @@ function SettingsComponent() {
   }
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <Box>
+    <Box>
           <PageHeader
             title="Settings"
             actions={
@@ -191,8 +187,6 @@ function SettingsComponent() {
           <Alert severity="info" sx={{ mt: 3 }}>
             Changes will take effect after saving. Some settings may require a page refresh.
           </Alert>
-        </Box>
-      </DashboardLayout>
-    </ProtectedRoute>
+    </Box>
   )
 }

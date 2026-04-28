@@ -1,7 +1,5 @@
 import { Box } from '@mui/material'
 import type { ReactNode } from 'react'
-import { DashboardLayout } from './DashboardLayout'
-import { ProtectedRoute } from './ProtectedRoute'
 import { FadeInContent } from './FadeInContent'
 import { PageHeader } from './PageHeader'
 
@@ -21,15 +19,11 @@ export function ResourceListPage({
   fadeDuration = 600,
 }: ResourceListPageProps) {
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <FadeInContent delay={fadeDelay} duration={fadeDuration}>
-          <Box>
-            <PageHeader title={title} actions={actions} />
-            {children}
-          </Box>
-        </FadeInContent>
-      </DashboardLayout>
-    </ProtectedRoute>
+    <FadeInContent delay={fadeDelay} duration={fadeDuration}>
+      <Box>
+        <PageHeader title={title} actions={actions} />
+        {children}
+      </Box>
+    </FadeInContent>
   )
 }

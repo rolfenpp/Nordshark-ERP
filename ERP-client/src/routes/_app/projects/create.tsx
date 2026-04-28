@@ -1,6 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '@/components/DashboardLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { FadeInContent } from '@/components/FadeInContent'
 import { DetailPageHeader } from '@/components/DetailPageHeader'
 import {
@@ -34,7 +32,7 @@ import { useCreateProject, type CreateProjectDto } from '@/api/projects'
 import { formYmdToApiIso } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 
-export const Route = createFileRoute('/projects/create')({
+export const Route = createFileRoute('/_app/projects/create')({
   component: CreateProjectComponent,
 })
 
@@ -322,72 +320,68 @@ function CreateProjectComponent() {
   }
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <FadeInContent delay={200} duration={800}>
-          <Box>
-            <DetailPageHeader showBack={false} title="Create New Project" />
+    <FadeInContent delay={200} duration={800}>
+      <Box>
+        <DetailPageHeader showBack={false} title="Create New Project" />
 
-            <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
-              <Stepper activeStep={activeStep} alternativeLabel>
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-            </Paper>
+        <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, overflowX: 'auto' }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
 
-            <Paper sx={{ p: 3, mb: 3 }}>
-              {renderStepContent(activeStep)}
-            </Paper>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          {renderStepContent(activeStep)}
+        </Paper>
 
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between',
-                alignItems: { xs: 'stretch', sm: 'center' },
-                gap: 2,
-              }}
-            >
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                sx={{ width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } }}
-              >
-                Back
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'stretch', sm: 'center' },
+            gap: 2,
+          }}
+        >
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            sx={{ width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } }}
+          >
+            Back
+          </Button>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 1,
+              width: { xs: '100%', sm: 'auto' },
+              '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } },
+            }}
+          >
+            <Button variant="outlined" onClick={() => navigate({ to: '/projects/' })} startIcon={<Cancel />}>
+              Cancel
+            </Button>
+            {activeStep === steps.length - 1 ? (
+              <Button variant="contained" onClick={handleSubmit} startIcon={<Save />}>
+                Create Project
               </Button>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: 1,
-                  width: { xs: '100%', sm: 'auto' },
-                  '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' }, minHeight: { xs: 44, sm: 36 } },
-                }}
-              >
-                <Button variant="outlined" onClick={() => navigate({ to: '/projects/' })} startIcon={<Cancel />}>
-                  Cancel
-                </Button>
-                {activeStep === steps.length - 1 ? (
-                  <Button variant="contained" onClick={handleSubmit} startIcon={<Save />}>
-                    Create Project
-                  </Button>
-                ) : (
-                  <Button variant="contained" onClick={handleNext}>
-                    Next
-                  </Button>
-                )}
-              </Box>
-            </Box>
-
-            <Alert severity="info" sx={{ mt: 3 }}>
-              You can always edit these details later from the project settings.
-            </Alert>
+            ) : (
+              <Button variant="contained" onClick={handleNext}>
+                Next
+              </Button>
+            )}
           </Box>
-        </FadeInContent>
-      </DashboardLayout>
-    </ProtectedRoute>
+        </Box>
+
+        <Alert severity="info" sx={{ mt: 3 }}>
+          You can always edit these details later from the project settings.
+        </Alert>
+      </Box>
+    </FadeInContent>
   )
 }

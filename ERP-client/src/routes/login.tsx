@@ -4,6 +4,7 @@ import { Google } from '@mui/icons-material'
 import { useAuth } from '@/auth/AuthProvider'
 import { setAccessToken } from '@/lib/axios'
 import { NordsharkBrand } from '@/components/NordsharkBrand'
+import { AppToastContainer } from '@/components/AppToastContainer'
 import { showSuccess, showError } from '@/lib/toast'
 import { useLogin } from '@/api/auth'
 import { API_ROOT, CONFIG } from '@/config'
@@ -33,8 +34,8 @@ function LoginRoute() {
         onSuccess: (data) => {
           setAccessToken(data.token)
           try { (login as any)?.(data.token) } catch { }
-          showSuccess('Welcome back! 👋')
           navigate({ to: '/dashboard' })
+          window.setTimeout(() => showSuccess('Welcome back! 👋'), 0)
         },
         onError: (error: any) => {
           if (!error.response) {
@@ -64,7 +65,7 @@ function LoginRoute() {
 
 
   return (
-    <Box 
+    <Box
       sx={{ 
         minHeight: { xs: '100dvh', sm: '100vh' },
         height: { xs: '100dvh', sm: 'auto' },
@@ -77,6 +78,7 @@ function LoginRoute() {
         background: 'linear-gradient(135deg, #f8f9fa 0%,rgb(156, 150, 156) 100%)',
       }}
     >
+      <AppToastContainer />
       <Box
         sx={{
           display: { xs: 'none', sm: 'block' },

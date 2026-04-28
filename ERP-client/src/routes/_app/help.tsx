@@ -1,6 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '@/components/DashboardLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import {
   Box,
   Typography,
@@ -29,7 +27,7 @@ import {
 } from '@mui/icons-material'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/help')({
+export const Route = createFileRoute('/_app/help')({
   component: HelpComponent,
 })
 
@@ -68,9 +66,7 @@ function HelpComponent() {
   ]
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <Box>
+    <Box>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 300 }}>
               Help & Support
@@ -220,8 +216,6 @@ function HelpComponent() {
               </Box>
             </Box>
           </Paper>
-        </Box>
-      </DashboardLayout>
-    </ProtectedRoute>
+    </Box>
   )
 }

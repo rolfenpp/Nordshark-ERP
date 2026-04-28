@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { Box, Alert, useTheme, Card, CardContent, Typography, Skeleton } from '@mui/material'
-import { DashboardLayout } from '@/components/DashboardLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { FadeInContent } from '@/components/FadeInContent'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
@@ -17,7 +15,7 @@ import { normalizeInvoiceStatus, normalizeProjectStatus } from '@/lib/statusNorm
 import { buildRevenuePeriodSeries, type RevenuePeriod } from '@/lib/revenuePeriodSeries'
 import { formatRelativeTime, parseApiDate } from '@/lib/dates'
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/_app/dashboard')({
   component: DashboardComponent,
 })
 
@@ -247,128 +245,124 @@ function DashboardComponent() {
   const showActivitySkeleton = (lInv || lPr || lIn) && recentActivities.length === 0
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <FadeInContent delay={200} duration={800}>
-          <Box>
-            {firstError && (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                {eInv && 'Some invoice data may be unavailable. '}
-                {ePr && 'Some project data may be unavailable. '}
-                {eIn && 'Some inventory data may be unavailable. '}
-                {eUs && 'Some user data may be unavailable. '}
-                {firstError?.message}
-              </Alert>
-            )}
+    <FadeInContent delay={200} duration={800}>
+      <Box>
+        {firstError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {eInv && 'Some invoice data may be unavailable. '}
+            {ePr && 'Some project data may be unavailable. '}
+            {eIn && 'Some inventory data may be unavailable. '}
+            {eUs && 'Some user data may be unavailable. '}
+            {firstError?.message}
+          </Alert>
+        )}
 
-            <SummaryCards
-              totalInvoices={totalInvoices}
-              totalRevenue={totalRevenue}
-              activeUsers={activeUsers}
-              pendingAmount={pendingAmount}
-              activeProjects={activeProjects}
-              completedProjects={completedProjects}
-              inventoryLineCount={inventoryLineCount}
-              lowStockCount={lowStockCount}
-              stockValue={stockValue}
-              sectionLoading={{
-                inv: lInv,
-                rev: lInv,
-                pend: lInv,
-                usr: lUs,
-                actp: lPr,
-                comp: lPr,
-                line: lIn,
-                low: lIn,
-              }}
+        <SummaryCards
+          totalInvoices={totalInvoices}
+          totalRevenue={totalRevenue}
+          activeUsers={activeUsers}
+          pendingAmount={pendingAmount}
+          activeProjects={activeProjects}
+          completedProjects={completedProjects}
+          inventoryLineCount={inventoryLineCount}
+          lowStockCount={lowStockCount}
+          stockValue={stockValue}
+          sectionLoading={{
+            inv: lInv,
+            rev: lInv,
+            pend: lInv,
+            usr: lUs,
+            actp: lPr,
+            comp: lPr,
+            line: lIn,
+            low: lIn,
+          }}
+        />
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 3,
+            mb: 4,
+          }}
+        >
+          {showRevenueBlockSkeleton ? (
+            <Card>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                  Revenue Overview
+                </Typography>
+                <Skeleton variant="rectangular" width="100%" height={200} />
+                <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+                  <Skeleton width={120} height={32} />
+                  <Skeleton width={120} height={32} />
+                </Box>
+              </CardContent>
+            </Card>
+          ) : (
+            <RevenueChart
+              revenueData={revenueData}
+              period={revenuePeriod}
+              onPeriodChange={setRevenuePeriod}
+              thisMonthRevenue={thisMonthRevenue}
+              lastMonthRevenue={lastMonthRevenue}
+              growthPct={growthPct}
             />
+          )}
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-                gap: 3,
-                mb: 4,
-              }}
-            >
-              {showRevenueBlockSkeleton ? (
-                <Card>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
-                      Revenue Overview
-                    </Typography>
-                    <Skeleton variant="rectangular" width="100%" height={200} />
-                    <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                      <Skeleton width={120} height={32} />
-                      <Skeleton width={120} height={32} />
-                    </Box>
-                  </CardContent>
-                </Card>
-              ) : (
-                <RevenueChart
-                  revenueData={revenueData}
-                  period={revenuePeriod}
-                  onPeriodChange={setRevenuePeriod}
-                  thisMonthRevenue={thisMonthRevenue}
-                  lastMonthRevenue={lastMonthRevenue}
-                  growthPct={growthPct}
-                />
-              )}
+          {lInv && invoices.length === 0 ? (
+            <Card>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                  Invoice Status
+                </Typography>
+                <Skeleton variant="circular" width={160} height={160} sx={{ mx: 'auto' }} />
+              </CardContent>
+            </Card>
+          ) : (
+            <InvoiceStatusChart slices={invoiceStatusData} total={invoiceStatusTotal} />
+          )}
+        </Box>
 
-              {lInv && invoices.length === 0 ? (
-                <Card>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
-                      Invoice Status
-                    </Typography>
-                    <Skeleton variant="circular" width={160} height={160} sx={{ mx: 'auto' }} />
-                  </CardContent>
-                </Card>
-              ) : (
-                <InvoiceStatusChart slices={invoiceStatusData} total={invoiceStatusTotal} />
-              )}
-            </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+            gap: 3,
+          }}
+        >
+          {showActivitySkeleton ? (
+            <Card>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                  Recent Activity
+                </Typography>
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} variant="text" height={40} sx={{ mb: 1 }} />
+                ))}
+              </CardContent>
+            </Card>
+          ) : (
+            <RecentActivity items={recentActivities} />
+          )}
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
-                gap: 3,
-              }}
-            >
-              {showActivitySkeleton ? (
-                <Card>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
-                      Recent Activity
-                    </Typography>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} variant="text" height={40} sx={{ mb: 1 }} />
-                    ))}
-                  </CardContent>
-                </Card>
-              ) : (
-                <RecentActivity items={recentActivities} />
-              )}
-
-              {showClientsSkeleton ? (
-                <Card>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
-                      Top clients (by revenue)
-                    </Typography>
-                    {[0, 1, 2, 3].map((i) => (
-                      <Skeleton key={i} variant="text" height={48} sx={{ mb: 1 }} />
-                    ))}
-                  </CardContent>
-                </Card>
-              ) : (
-                <TopClients clients={topClients} />
-              )}
-            </Box>
-          </Box>
-        </FadeInContent>
-      </DashboardLayout>
-    </ProtectedRoute>
+          {showClientsSkeleton ? (
+            <Card>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 300, mb: 2 }}>
+                  Top clients (by revenue)
+                </Typography>
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} variant="text" height={48} sx={{ mb: 1 }} />
+                ))}
+              </CardContent>
+            </Card>
+          ) : (
+            <TopClients clients={topClients} />
+          )}
+        </Box>
+      </Box>
+    </FadeInContent>
   )
 }

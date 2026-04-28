@@ -1,18 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DashboardLayout } from '@/components/DashboardLayout'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Box, Typography, Paper, Avatar, TextField, Button, Divider } from '@mui/material'
 import { AccountCircle, Email, Business, Phone } from '@mui/icons-material'
 
-export const Route = createFileRoute('/profile')({
+export const Route = createFileRoute('/_app/profile')({
   component: ProfileComponent,
 })
 
 function ProfileComponent() {
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <Box>
+    <Box>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 300 }}>
             Profile
           </Typography>
@@ -89,8 +85,6 @@ function ProfileComponent() {
               </Box>
             </Paper>
           </Box>
-        </Box>
-      </DashboardLayout>
-    </ProtectedRoute>
+    </Box>
   )
 }

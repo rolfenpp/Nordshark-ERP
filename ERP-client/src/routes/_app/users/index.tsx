@@ -29,7 +29,7 @@ import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 import { formatDisplayDate } from '@/lib/dates'
 import { useUsers } from '@/api/users'
 
-export const Route = createFileRoute('/users/')({
+export const Route = createFileRoute('/_app/users/')({
   component: UsersComponent,
 })
 
