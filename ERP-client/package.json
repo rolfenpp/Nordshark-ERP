@@ -4,11 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "seed:invoices": "node scripts/seed-guest-invoices.mjs",
-    "seed:invoices:prod": "node scripts/seed-guest-invoices.mjs --production",
-    "seed:projects": "node scripts/seed-guest-projects.mjs",
-    "seed:projects:prod": "node scripts/seed-guest-projects.mjs --production",
-    "seed:guest:local": "npm run seed:invoices && npm run seed:projects",
     "dev": "vite",
     "build": "npm run build:routes && tsc -b && vite build",
     "build:routes": "npx @tanstack/router-cli generate",
