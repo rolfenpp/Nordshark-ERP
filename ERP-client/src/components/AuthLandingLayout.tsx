@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Box } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { Box, CircularProgress, useTheme } from '@mui/material'
 import {
   AUTH_LANDING_HERO_SRC,
   authLandingCardSx,
@@ -27,6 +28,59 @@ type AuthLandingLayoutProps = {
 }
 
 export function AuthLandingLayout({ children, contentMaxWidth }: AuthLandingLayoutProps) {
+  const theme = useTheme()
+  const mdQuery = `(min-width:${theme.breakpoints.values.md}px)`
+
+  const [desktopHero, setDesktopHero] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(mdQuery).matches : false,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia(mdQuery)
+    setDesktopHero(mq.matches)
+    const sync = () => setDesktopHero(mq.matches)
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [mdQuery])
+
+  const [heroLoaded, setHeroLoaded] = useState(() =>
+    typeof window !== 'undefined' ? !window.matchMedia(mdQuery).matches : false,
+  )
+
+  useEffect(() => {
+    if (!desktopHero) {
+      setHeroLoaded(true)
+      return
+    }
+    setHeroLoaded(false)
+    let cancelled = false
+    const img = new Image()
+    const finish = () => {
+      if (!cancelled) setHeroLoaded(true)
+    }
+    img.onload = finish
+    img.onerror = finish
+    img.src = AUTH_LANDING_HERO_SRC
+    if (img.complete && img.naturalWidth > 0) finish()
+    return () => {
+      cancelled = true
+    }
+  }, [desktopHero])
+
+  if (!heroLoaded) {
+    return (
+      <Box
+        sx={{
+          ...authLandingPageSx,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <CircularProgress aria-label="Loading sign-in screen" disableShrink />
+      </Box>
+    )
+  }
+
   return (
     <Box sx={authLandingPageSx}>
       <Box sx={authLandingCardSx}>
@@ -69,3 +123,4 @@ export function AuthLandingLayout({ children, contentMaxWidth }: AuthLandingLayo
     </Box>
   )
 }
+

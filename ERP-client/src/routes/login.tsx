@@ -55,13 +55,6 @@ export const Route = createFileRoute('/login')({
   component: LoginRoute,
 })
 
-function showDemoGuestFields(): boolean {
-  return (
-    import.meta.env.DEV ||
-    import.meta.env.VITE_SHOW_DEMO_CREDS?.toLowerCase() === 'true'
-  )
-}
-
 function basicLoginClientValid(email: string, password: string): string | null {
   const em = email.trim()
   if (!em) return 'Enter your email.'
@@ -78,8 +71,6 @@ function LoginRoute() {
   const postAuthTarget = getSafeRedirectPath(search.redirect, DEFAULT_AFTER_AUTH)
   const errId = useId()
   const alertRef = useRef<HTMLDivElement | null>(null)
-  const showDemo = showDemoGuestFields()
-
   useEffect(() => {
     if (!loginMutation.isError || !alertRef.current) return
     const el = alertRef.current.querySelector(
@@ -168,7 +159,7 @@ function LoginRoute() {
                 variant="standard"
                 autoComplete="email"
                 inputMode="email"
-                defaultValue={showDemo ? demoEmail : ''}
+                defaultValue={demoEmail}
                 inputProps={{
                   'aria-describedby': loginMutation.isError ? errId : undefined,
                   'aria-label': 'Email',
@@ -183,7 +174,7 @@ function LoginRoute() {
                 required
                 variant="standard"
                 autoComplete="current-password"
-                defaultValue={showDemo ? demoPassword : ''}
+                defaultValue={demoPassword}
                 inputProps={{
                   'aria-label': 'Password',
                 }}
