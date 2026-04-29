@@ -23,6 +23,7 @@ import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useInventoryItem, useDeleteInventoryItem, type InventoryItemDto } from '@/api/inventory'
 import { formatDisplayDate } from '@/lib/dates'
+import { DetailRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createFileRoute('/_app/inventory/$itemId')({
   component: InventoryItemComponent,
@@ -83,11 +84,7 @@ function InventoryItemComponent() {
   }
 
   if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading item details...</Typography>
-      </Box>
-    )
+    return <DetailRouteSkeleton />
   }
 
   if (isError || !item) {

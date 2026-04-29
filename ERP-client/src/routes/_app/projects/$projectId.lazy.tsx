@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useProject, useDeleteProject } from '@/api/projects'
 import { formatDisplayDate } from '@/lib/dates'
+import { DetailRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createLazyFileRoute('/_app/projects/$projectId')({
   component: ProjectDetailComponent,
@@ -52,11 +53,7 @@ function ProjectDetailComponent() {
   }
 
   if (isLoading) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography>Loading project…</Typography>
-      </Box>
-    )
+    return <DetailRouteSkeleton />
   }
 
   if (isError || !p) {

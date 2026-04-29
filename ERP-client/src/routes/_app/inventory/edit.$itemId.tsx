@@ -28,6 +28,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '@/api/inventory'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
+import { EditFormRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createFileRoute('/_app/inventory/edit/$itemId')({
   component: EditInventoryComponent,
@@ -37,7 +38,7 @@ function EditInventoryComponent() {
   const navigate = useNavigate()
   const { itemId } = Route.useParams()
   const id = Number(itemId)
-  const { data: item, isLoading } = useInventoryItem(id)
+  const { data: item, isLoading, isError, error } = useInventoryItem(id)
   const update = useUpdateInventoryItem()
   const [formData, setFormData] = useState({
     name: '',
@@ -118,10 +119,14 @@ function EditInventoryComponent() {
     'Other'
   ]
 
-  if (isLoading || !item) {
+  if (isLoading) {
+    return <EditFormRouteSkeleton />
+  }
+
+  if (isError || !item) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading item data...</Typography>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{(error as Error)?.message || 'Item not found'}</Alert>
       </Box>
     )
   }

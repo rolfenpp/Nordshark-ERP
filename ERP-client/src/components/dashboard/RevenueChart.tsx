@@ -33,7 +33,6 @@ export function RevenueChart({
   const maxRevenue = Math.max(1, ...revenueData.map((d) => d.revenue))
   const yAxisFmt = (v: number) => (v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`)
   const tickGap = period === 'day' || period === '3y' || period === 'month' ? 10 : 16
-  // Recharts sometimes does not redraw the area when the `data` array updates in place; remount on change.
   const chartDataKey = useMemo(
     () =>
       `${period}:${revenueData.map((d) => d.revenue).join()}:${thisMonthRevenue}:${lastMonthRevenue}:${growthPct}`,

@@ -5,6 +5,7 @@ import { Edit, Delete, CheckCircle, Schedule, Warning, Receipt } from '@mui/icon
 import { useNavigate } from '@tanstack/react-router'
 import { useInvoice, useDeleteInvoice } from '@/api/invoices'
 import { formatDisplayDate } from '@/lib/dates'
+import { DetailRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createLazyFileRoute('/_app/invoices/$invoiceId')({
   component: InvoiceViewComponent,
@@ -33,9 +34,7 @@ function InvoiceViewComponent() {
   }
 
   if (isLoading) {
-    return (
-      <Box sx={{ p: 3 }}>Loading invoice…</Box>
-    )
+    return <DetailRouteSkeleton />
   }
 
   if (isError || !inv) {
