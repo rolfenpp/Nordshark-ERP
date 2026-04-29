@@ -1,41 +1,47 @@
 # ERP monorepo
 
-Disclaimer: This is a hobby project, not a commercial or supported product. AI (coding assistants) was used heavily to build and evolve it. I also like to try coding agents with different contexts (separate conversations, rules, or focused tasks) to implement or adjust specific parts of the app and see how that plays out. Throughout its journey, this repository has been deleted, rebuilt, taken apart, and reassembled more than once, not a single tidy greenfield. It used to live on GitLab before I moved it to GitHub.
+This is a hobby ERP style dashboard, not something I sell or support. The repo has been torn down and put back together more than once, and it moved from GitLab to GitHub along the way. I used coding assistants a lot, especially Claude and editor tooling, for much of the C# side in the backend dotnet project while the React client was a mix of manual work and other tools.
 
-It is deployed to real hosting (e.g. Vercel and on Render) mainly to simulate a production-style setup: separate services, environment configuration, HTTPS, and deployment pipelines. When you work in a real environment, it is normal to land small fixes in a corner of the system you do not fully understand yet (who has not done that). Part of the goal is to observe what actually happens in production when things go wrong: a failing build or deploy, a bad release that only breaks at runtime, VITE or a wrong API base URL, CORS and SameSite cookie issues, stale cached client assets, 500s and error surfaces you do not get locally, EF migrations and DB connection string mistakes, missing or incorrect secrets, cold starts and slowness on small hosts, and the usual “works on my machine” gap—not to ship junk to end users, but to learn. None of that implies this app is production-ready for real business or sensitive data.
+## How it works at a high level
 
-I also like to explore my own thinking. When a question first shows up, is it a quick patch or worth cleaning up later, and how do small choices pile on top of each other. For example, do you keep “are we logged in” in React state or lean on the cookie until you have time to read how both sides work. After you save a form, is refetch() from the server enough or do you need the API to return different fields. The first time a second API handler needs the same database filter or permission check, do you copy the code or stop and put shared logic in one place even if you are not sure what to name it yet. Demo data that should never hit production, do you only run that from a script on your machine or do you add a config flag and worry about every deploy. When the layout looks wrong on mobile, do you reach for the component the design system already gives you or a quick flex box that works for now. The point is not one “correct” architecture every time, but noticing when a decision is being made and why.
+You have two moving parts. The API is ASP.NET Core with Entity Framework Core and PostgreSQL. It serves JSON under the /api prefix. Identity handles users, roles, and claims, and most business tables carry a company id so one install can hold many tenants without mixing their rows. The web app is React with Vite, TanStack Router and Query, Material UI, and a small axios layer that sends a bearer token and uses an HttpOnly refresh cookie and tells axios to send credentials on cross origin requests so the browser can renew the session when the access token expires.
 
-Demo: [https://erp-client-flame.vercel.app](https://erp-client-flame.vercel.app)
+New companies register through POST /api/companies/register or the Register screen in the client, then someone signs in. In production the API applies migrations and seeds Identity roles on startup; it does not invent demo companies or demo invoices for you. Locally you do the same registration step, then if you want fake projects and invoices you run the guest seed scripts from the scripts folder in the React project after a user exists.
 
-A business system dashboard: backend API (ASP.NET Core) and web client (React + Vite).
+The deployed demo client lives on Vercel while the API can sit on Render or another host. That means the browser origin for the UI is not the same as the API origin, which matters for CORS and cookies.
 
-AI-assisted development: [Claude](https://www.anthropic.com/claude) (including Claude Code in the editor) was used for much of the backend work in `ERP-api`—API controllers, EF Core models and migrations, demo seeding, and related C#—while the React client and UX were built with a mix of other tooling and manual work.
+## Stuff that broke in real hosting and what I did about it
 
-In a big production org somewhere else, the same worries just wear a blazer. Deploying might mean a calendar event, a rubber stamp, and a prayer, not one shiny green button and a snack. Staging is “identical to prod” in the same way a cardboard cutout is identical to a person, which is how you learn a bug only likes real traffic. On call you debug a service you have never poked, from a runbook written by someone who has since retired, while the person who can open the firewall is in a time zone where it is still yesterday.(this is ai generated joke but i like it) A migration waits quietly in review while product asks if you can ship the feature before lunch. This repo is not that circus, but the jump from “I merged it” to “I sleep tonight” is the same story with fewer actors and no free pizza.
+The client build needs the right API address baked in at compile time. Vite only sees variables prefixed with VITE_. I pointed production builds at the real API using VITE_API_BASE_URL and kept a small config helper under src/config in the React app so a trailing slash or forgetting the /api segment does not leave you calling the wrong path. When the dashboard looked fine locally but every fetch failed in prod, the culprit was almost always that base URL or the client still serving an old bundle; redeploying the client after an env change fixed the second case.
 
-## Production vs local
+Cookies and cross site logins were the other recurring headache. The refresh token lives in an HttpOnly cookie. For a SPA on Vercel talking to an API on another domain you need CORS to allow the real origin, allow credentials, and you need the cookie flags to match how the browser will send it. I aligned allowed origins in the API config with the deployed site, used SameSite None with Secure for that cross site setup, and made sure the client axios instance always sent credentials on axios calls so refresh requests actually carried the cookie. When login worked in Development on localhost but refresh failed against production, tracing those three pieces usually ended the hunt.
 
-- Production (deployed): Push to the branch your host uses (for example `main`). The Vercel build publishes the client, and Render (or your host) runs the API with `ASPNETCORE_ENVIRONMENT=Production`. The API does not create demo companies or users on startup (only EF migrations and Identity roles). New tenants and admins are created with `POST /api/companies/register` (or the app’s Register screen), then sign in. JSON endpoints are under the `/api` prefix (e.g. `GET /api/invoices`). The client uses `VITE_API_BASE_URL` (or the default in `ERP-client/src/config`) as the full API base including `/api`, and calls paths like `/invoices` from there. Redeploy the API after you add new controllers so production stays in sync. Keep secrets in platform environment variables, not in the repository.
+Database surprises were mostly connection strings and migrations. On Render the host and port are not localhost, and the password lives in an environment variable, not in a checked in json file. If the API booted but every request errored, or startup failed, I compared the connection string to what the host actually provides and checked that migrations had run. Locally I often use the compose file in the backend project to run Postgres and pgAdmin, then point ConnectionStrings:DefaultConnection at that container.
 
-- Local (full stack): Run PostgreSQL (often via `ERP-api/docker-compose.dev.yml`), the API in Development (`dotnet run` in `ERP-api`), and the client (`npm run dev` in `ERP-client`). Create a tenant the same way as production (`POST /api/companies/register` or the Register screen). Demo invoices and projects are not inserted by the API. Use the scripts in `ERP-client/scripts` (e.g. `npm run seed:guest:local` from `ERP-client`) after a user exists. Prefer [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) or env vars for passwords.
+Demo and seed data was a policy choice rather than a bug. I did not want the production API to silently insert Nordshark demo rows for every deploy, so seeding stays in scripts you run on purpose from the React project when you need a believable inventory for screenshots or testing.
 
-## Nordshark business system
+## What you see in the Nordshark UI
 
-The web client is a light themed Nordshark admin UI with left navigation, headline KPIs (invoices, revenue, users, pending amounts), a revenue trend chart, invoice status breakdown, recent activity, and top clients: typical ERP style monitoring in one view.
+The client is a light admin shell: left navigation, KPI style cards for invoices and revenue and users and pending amounts, a revenue trend chart, invoice status mix, recent activity, and top clients. It is the usual “one screen to feel the health of the business” idea rather than a finished product for a paying customer.
 
-![Nordshark dashboard: KPIs, revenue chart, invoice status, activity, and top clients](docs/images/nordshark-dashboard.png)
+![Nordshark dashboard: KPIs, revenue chart, invoice status, activity, and top clients](assets/documentation/nordshark_erp_dashboard.png)
 
-## Docker (optional local stack)
+## Docker on your machine
 
-You can run database services and the API with Docker Desktop using the compose file under the API project. A typical setup includes a PostgreSQL container (development data), an optional pgAdmin instance for browsing the DB, and the API container, all grouped under one compose project, as shown below.
+Docker Desktop can run Postgres, optional pgAdmin, and optionally the API from the compose project in the API folder. The screenshot is only what my machine looked like; your ports and resource usage will differ.
 
-![Docker Desktop: compose project with Postgres, pgAdmin, and API containers running locally](docs/images/docker-desktop-containers.png)
+![Docker Desktop: compose project with Postgres, pgAdmin, and API containers running locally](docs/images/docker_desktop_containers.png)
 
-This is only a local tooling view: resource usage and port bindings are environment specific and do not reflect production. No secrets belong in screenshots. Keep API keys and connection strings out of the repo (use `.env` / user secrets, never commit real credentials).
+Do not put secrets in screenshots or in git. Use platform env vars on the host, user secrets or local env files on your laptop, and never commit real credentials.
 
-## Local development (step by step)
+## Running everything locally
 
-1. Database — From `ERP-api`, e.g. `docker compose -f docker-compose.dev.yml up -d db`. Make `ConnectionStrings:DefaultConnection` in `appsettings.Development.json` (or `ConnectionStrings__DefaultConnection` in the environment) use the same host port and database name as the container.
-2. API — `cd ERP-api` → `dotnet run` → `http://localhost:8080` (Swagger: `/swagger` in Development).
-3. Client — `cd ERP-client` → `npm install` → `npm run dev` → open the printed dev URL; it calls the API from `ERP-client/src/config` (override with `VITE_API_BASE_URL` for a remote API). Register a company locally first if the database is empty; optional demo data via `npm run seed:guest:local` (see Production vs local).
+1. Start Postgres. From the backend dotnet project folder, bring up the database service using the development Docker Compose yaml (the one that names docker, compose, and dev together in the filename). Set ConnectionStrings:DefaultConnection in appsettings.Development.json, or ConnectionStrings__DefaultConnection in the environment, to match the container host, port, and database name.
+
+2. Run the API. In that same backend folder run dotnet run. In Development you get Swagger at /swagger and the API listens on the port you configured (for example port 8080).
+
+3. Run the client. In the React project folder run npm install then npm run dev. Open the URL Vite prints. The client reads its API root from src/config unless you override with VITE_API_BASE_URL. If the database is empty, register a company first. Optional demo data: use the guest seed npm script documented in the React package when you already have a user.
+
+Pushing main (or whatever branch your host tracks) updates Vercel for the client and your API host separately. If you add API endpoints, redeploy the API so production picks them up. Keep JWT keys, Google client secrets, and database passwords in the host environment, never in the repository.
+
+This project is for learning how deploys, env vars, auth, and databases behave outside your laptop. It is not a promise that the design is ready for regulated data or heavy production load.
