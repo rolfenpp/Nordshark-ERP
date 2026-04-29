@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { useAuth } from '@/auth/AuthProvider'
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { attemptedPathForRedirect } from '@/lib/authRedirect'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -10,12 +11,23 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, token } = useAuth()
   const navigate = useNavigate()
+  const { pathname, search } = useRouterState({
+    select: (s) => ({
+      pathname: s.location.pathname,
+      search: s.location.search,
+    }),
+  })
 
   useEffect(() => {
     if (!isAuthenticated && !token) {
-      navigate({ to: '/login' })
+      const path = attemptedPathForRedirect(pathname, search)
+      navigate({
+        to: '/login',
+        replace: true,
+        ...(path ? { search: { redirect: path } } : {}),
+      })
     }
-  }, [isAuthenticated, token, navigate])
+  }, [isAuthenticated, token, navigate, pathname, search])
 
   if (!isAuthenticated && !token) {
     return (

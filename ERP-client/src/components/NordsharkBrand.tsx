@@ -3,10 +3,10 @@ import { colors } from '@/theme/theme'
 
 interface NordsharkBrandProps {
   size?: 'small' | 'medium' | 'large'
-  themeToggle?: boolean
+  variant?: 'onDark' | 'onLight'
 }
 
-export function NordsharkBrand({ size = 'medium', themeToggle }: NordsharkBrandProps) {
+export function NordsharkBrand({ size = 'medium', variant = 'onLight' }: NordsharkBrandProps) {
   const sizeConfig = {
     small: { text: '1.1rem' },
     medium: { text: '1.4rem' },
@@ -18,7 +18,7 @@ export function NordsharkBrand({ size = 'medium', themeToggle }: NordsharkBrandP
   const multiColorGradient =
     'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)'
 
-  const textColor = themeToggle ? colors.text.primary : '#212121'
+  const textColor = variant === 'onDark' ? colors.text.primary : colors.light.textPrimary
   const wordWeight = 400
   const erpWeight = 200
 
