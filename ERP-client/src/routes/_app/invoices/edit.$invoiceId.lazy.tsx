@@ -35,6 +35,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '@/api/invoices'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
+import { EditFormRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createLazyFileRoute('/_app/invoices/edit/$invoiceId')({
   component: EditInvoiceComponent,
@@ -52,7 +53,7 @@ function EditInvoiceComponent() {
   const navigate = useNavigate()
   const { invoiceId } = Route.useParams()
   const id = Number(invoiceId)
-  const { data: inv, isLoading } = useInvoice(id)
+  const { data: inv, isLoading, isError, error } = useInvoice(id)
   const update = useUpdateInvoice()
   const [formData, setFormData] = useState({
     invoiceNumber: '',
@@ -180,10 +181,14 @@ function EditInvoiceComponent() {
   const terms = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Due on Receipt']
   const statuses = ['draft', 'pending', 'paid', 'overdue']
 
-  if (isLoading || !inv) {
+  if (isLoading) {
+    return <EditFormRouteSkeleton />
+  }
+
+  if (isError || !inv) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading invoice data...</Typography>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{(error as Error)?.message || 'Invoice not found.'}</Alert>
       </Box>
     )
   }

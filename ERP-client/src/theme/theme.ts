@@ -267,16 +267,13 @@ export const spacing = {
 export const borderRadius = {
   none: '0',
   sm: '0.25rem',
-  /** Inputs, buttons — slightly softer corners */
   md: '0.625rem',
-  /** Cards, panels */
   lg: '0.875rem',
   xl: '1rem',
   xxl: '1.5rem',
   full: '9999px',
 }
 
-/** Default component radius in px; matches `borderRadius.md` (`0.625rem` @ 16px). */
 export const shapeBorderRadiusPx = 10
 
 export const transitions = {
@@ -293,8 +290,6 @@ export const breakpoints = {
   lg: 1200,
   xl: 1536,
 }
-
-// ——— Palettes only (single source each) ——————————————————
 
 const paletteDark = {
   mode: 'dark' as const,

@@ -28,6 +28,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useProject, useUpdateProject, type CreateProjectDto } from '@/api/projects'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
+import { EditFormRouteSkeleton } from '@/components/Skeletons'
 
 export const Route = createLazyFileRoute('/_app/projects/edit/$projectId')({
   component: EditProjectComponent,
@@ -37,7 +38,7 @@ function EditProjectComponent() {
   const navigate = useNavigate()
   const { projectId } = Route.useParams()
   const id = Number(projectId)
-  const { data: p, isLoading } = useProject(id)
+  const { data: p, isLoading, isError, error } = useProject(id)
   const update = useUpdateProject()
   const [formData, setFormData] = useState({
     name: '',
@@ -107,10 +108,14 @@ function EditProjectComponent() {
     navigate({ to: '/projects/$projectId', params: { projectId: String(id) } })
   }
 
-  if (isLoading || !p) {
+  if (isLoading) {
+    return <EditFormRouteSkeleton />
+  }
+
+  if (isError || !p) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Loading project data...</Typography>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{(error as Error)?.message || 'Project not found.'}</Alert>
       </Box>
     )
   }
