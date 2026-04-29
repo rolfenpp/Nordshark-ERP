@@ -11,10 +11,12 @@ export const ThemeToggle: React.FC = () => {
       <IconButton
         onClick={toggleTheme}
         sx={{
-          color: mode === 'light' ? colors.text.primary : colors.text.primary,
-          backgroundColor: mode === 'light' ? colors.background.tertiary : colors.background.tertiary,
+          color: 'text.primary',
+          backgroundColor: (t) =>
+            t.palette.mode === 'light' ? colors.light.elevated : colors.background.tertiary,
           '&:hover': {
-            backgroundColor: mode === 'light' ? colors.interactive.hover : colors.interactive.hover,
+            backgroundColor: (t) =>
+              t.palette.mode === 'light' ? colors.interactiveLight.hover : colors.interactive.hover,
             transform: 'scale(1.05)',
           },
           transition: 'all 0.2s ease',

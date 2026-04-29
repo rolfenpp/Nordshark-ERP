@@ -1,4 +1,6 @@
-import { createTheme, type ThemeOptions } from '@mui/material/styles'
+import { createTheme, type Theme, type ThemeOptions } from '@mui/material/styles'
+
+export type AppThemeMode = 'light' | 'dark'
 
 export const colors = {
   primary: {
@@ -35,15 +37,15 @@ export const colors = {
     primary: '#121a1f',
     secondary: '#172126',
     tertiary: '#1a232a',
-    border: '#1f2a30',
-    divider: '#26343a',
+    border: '#243038',
+    divider: '#2c3841',
   },
 
   text: {
-    primary: '#E6F1F3',
-    secondary: '#9BA6B2',
-    tertiary: '#6B7785',
-    disabled: '#4B5563',
+    primary: '#E8F0F3',
+    secondary: '#A8B4C0',
+    tertiary: '#7C8B99',
+    disabled: '#5C6570',
     inverse: '#0b0f10',
   },
 
@@ -76,12 +78,35 @@ export const colors = {
     selected: 'rgba(59, 130, 246, 0.24)',
   },
 
+  interactiveLight: {
+    hover: 'rgba(37, 99, 235, 0.08)',
+    active: 'rgba(37, 99, 235, 0.14)',
+    focus: 'rgba(37, 99, 235, 0.2)',
+    selected: 'rgba(37, 99, 235, 0.16)',
+  },
+
   shadows: {
-    card: '0 4px 20px rgba(0, 0, 0, 0.35)',
+    card: '0 2px 8px rgba(0, 0, 0, 0.24), 0 8px 24px rgba(0, 0, 0, 0.2)',
+    cardLight:
+      '0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 12px rgba(15, 23, 42, 0.06)',
+    cardLightHover: '0 4px 12px rgba(15, 23, 42, 0.08), 0 12px 28px rgba(15, 23, 42, 0.08)',
     elevated: '0 8px 32px rgba(0, 0, 0, 0.45)',
     modal: '0 16px 48px rgba(0, 0, 0, 0.55)',
     button: '0 2px 8px rgba(59, 130, 246, 0.25)',
     buttonHover: '0 4px 16px rgba(59, 130, 246, 0.35)',
+  },
+
+  light: {
+    canvas: '#EDF2F8',
+    paper: '#FFFFFF',
+    elevated: '#F7F9FC',
+    border: '#D6DEEA',
+    borderMuted: '#E8EEF6',
+    inputOutline: '#C5CDE0',
+    textPrimary: '#121A26',
+    textSecondary: '#3D4663',
+    textDisabled: '#6B7590',
+    divider: '#DDE6F0',
   },
 
   gradients: {
@@ -96,8 +121,15 @@ export const colors = {
     info: 'linear-gradient(135deg, #22D3EE 0%, #06b6d4 100%)',
     warning: 'linear-gradient(135deg, #F59E0B 0%, #fbbf24 100%)',
     error: 'linear-gradient(135deg, #EF4444 0%, #dc2626 100%)',
-  }
+  },
 }
+
+export const navChrome = {
+  background: colors.background.secondary,
+  divider: colors.surface.divider,
+  text: colors.text.primary,
+  textMuted: colors.text.secondary,
+} as const
 
 export const brand = {
   primary: '#3b82f6',
@@ -108,7 +140,7 @@ export const gradients = colors.gradients
 
 export const typography = {
   fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
-  
+
   display: {
     large: {
       fontSize: '3.5rem',
@@ -223,24 +255,29 @@ export const typography = {
 }
 
 export const spacing = {
-  xs: '0.25rem',      
-  sm: '0.5rem',     
-  md: '1rem',      
-  lg: '1.5rem',    
-  xl: '2rem',      
-  xxl: '3rem',     
+  xs: '0.25rem',
+  sm: '0.5rem',
+  md: '1rem',
+  lg: '1.5rem',
+  xl: '2rem',
+  xxl: '3rem',
   xxxl: '4rem',
 }
 
 export const borderRadius = {
   none: '0',
-  sm: '0.25rem',     
-  md: '0.5rem',      
-  lg: '0.75rem',     
-  xl: '1rem',        
-  xxl: '1.5rem',     
-  full: '9999px',    
+  sm: '0.25rem',
+  /** Inputs, buttons — slightly softer corners */
+  md: '0.625rem',
+  /** Cards, panels */
+  lg: '0.875rem',
+  xl: '1rem',
+  xxl: '1.5rem',
+  full: '9999px',
 }
+
+/** Default component radius in px; matches `borderRadius.md` (`0.625rem` @ 16px). */
+export const shapeBorderRadiusPx = 10
 
 export const transitions = {
   fast: 'all 0.15s ease',
@@ -257,302 +294,452 @@ export const breakpoints = {
   xl: 1536,
 }
 
-export const darkThemeOptions: ThemeOptions = {
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: colors.primary[500],
-      light: colors.primary[400],
-      dark: colors.primary[600],
-      contrastText: colors.text.inverse,
-    },
-    
-    secondary: {
-      main: colors.accent.indigo,
-      light: colors.accent.blueLight,
-      dark: colors.primary[700],
-      contrastText: colors.text.inverse,
-    },
-    
-    success: {
-      main: colors.status.success,
-      light: colors.status.successLight,
-      dark: colors.status.success,
-      contrastText: colors.text.inverse,
-    },
-    warning: {
-      main: colors.status.warning,
-      light: colors.status.warningLight,
-      dark: colors.status.warning,
-      contrastText: colors.text.inverse,
-    },
-    error: {
-      main: colors.status.error,
-      light: colors.status.errorLight,
-      dark: colors.status.error,
-      contrastText: colors.text.inverse,
-    },
-    info: {
-      main: colors.status.info,
-      light: colors.status.infoLight,
-      dark: colors.status.info,
-      contrastText: colors.text.inverse,
-    },
-    
-    background: {
-      default: colors.background.primary,
-      paper: colors.background.secondary,
-    },
-    
-    text: {
-      primary: colors.text.primary,
-      secondary: colors.text.secondary,
-      disabled: colors.text.disabled,
-    },
-    
-    divider: colors.surface.divider,
-    
-    action: {
-      active: colors.interactive.active,
-      hover: colors.interactive.hover,
-      selected: colors.interactive.selected,
-      disabled: colors.text.disabled,
-      disabledBackground: colors.surface.tertiary,
-    },
+// ——— Palettes only (single source each) ——————————————————
+
+const paletteDark = {
+  mode: 'dark' as const,
+  primary: {
+    main: colors.primary[500],
+    light: colors.primary[400],
+    dark: colors.primary[600],
+    contrastText: colors.text.inverse,
   },
-
-  typography: {
-    fontFamily: typography.fontFamily,
-    h1: typography.h1,
-    h2: typography.h2,
-    h3: typography.h3,
-    h4: typography.h4,
-    h5: typography.h5,
-    h6: typography.h6,
-    body1: typography.body1,
-    body2: typography.body2,
-    caption: typography.caption,
-    overline: typography.overline,
-    button: typography.button,
+  secondary: {
+    main: colors.accent.indigo,
+    light: colors.accent.blueLight,
+    dark: colors.primary[700],
+    contrastText: colors.text.inverse,
   },
-
-  spacing: 8,
-
- 
-  shape: {
-    borderRadius: parseInt(borderRadius.md),
+  success: {
+    main: colors.status.success,
+    light: colors.status.successLight,
+    dark: colors.status.success,
+    contrastText: colors.text.inverse,
   },
-
-  
-  shadows: [
-    'none',
-    colors.shadows.card,
-    colors.shadows.elevated,
-    colors.shadows.modal,
-    colors.shadows.button,
-    colors.shadows.buttonHover,
-    ...Array(19).fill('none'),
-  ] as any,
-
-  
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: borderRadius.md,
-          textTransform: 'none',
-          fontWeight: 600,
-          transition: transitions.normal,
-          '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: colors.shadows.buttonHover,
-          },
-        },
-        contained: {
-          background: colors.gradients.primary,
-          boxShadow: colors.shadows.button,
-          '&:hover': {
-            background: colors.gradients.secondary,
-          },
-        },
-        outlined: {
-          borderColor: colors.surface.border,
-          color: colors.text.primary,
-          '&:hover': {
-            borderColor: colors.primary[500],
-            backgroundColor: colors.interactive.hover,
-          },
-        },
-      },
-    },
-    
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundColor: colors.background.secondary,
-          borderRadius: borderRadius.lg,
-          boxShadow: colors.shadows.card,
-          border: `1px solid ${colors.surface.border}`,
-        },
-      },
-    },
-    
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundColor: colors.background.secondary,
-          borderRadius: borderRadius.lg,
-        },
-      },
-    },
-    
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            backgroundColor: colors.background.tertiary,
-            borderRadius: borderRadius.md,
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: colors.primary[500],
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: colors.primary[500],
-              borderWidth: '2px',
-            },
-          },
-        },
-      },
-    },
-    
-      MuiAppBar: {
-        defaultProps: {
-          color: 'default',
-          elevation: 0,
-        },
-        styleOverrides: {
-          root: {
-            backgroundColor: colors.background.secondary,
-            boxShadow: colors.shadows.card,
-            borderRadius: 0,
-          },
-          colorDefault: {
-            backgroundColor: colors.background.secondary,
-          },
-        },
-      },
-    
-          MuiDrawer: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: colors.background.secondary,
-            borderRight: `1px solid ${colors.surface.border}`,
-            borderRadius: 0,
-          },
-        },
-      },
-      
-      MuiList: {
-        styleOverrides: {
-          root: {
-            padding: 0,
-            '& .MuiListItem-root': {
-              padding: 0,
-              margin: 0,
-            },
-          },
-        },
-      },
-      
-      MuiListItemButton: {
-        styleOverrides: {
-          root: {
-            padding: '12px 16px',
-            borderRadius: 0,
-            '&:hover': {
-              backgroundColor: colors.interactive.hover,
-            },
-            '&.Mui-selected': {
-              backgroundColor: colors.interactive.selected,
-              '&:hover': {
-                backgroundColor: colors.interactive.active,
-              },
-            },
-          },
-        },
-      },
-
-      MuiTable: {
-        defaultProps: {
-          stickyHeader: true,
-          size: 'medium',
-        } as any,
-        styleOverrides: {
-          root: {
-            backgroundColor: 'transparent',
-          },
-        },
-      },
-      MuiTableContainer: {
-        styleOverrides: {
-          root: {
-            backgroundColor: 'transparent',
-          },
-        },
-      },
-      MuiTableHead: {
-        styleOverrides: {
-          root: ({ theme }) => ({
-            '& .MuiTableCell-root': {
-              backgroundColor: theme.palette.background.paper,
-              color: theme.palette.text.primary,
-              fontWeight: 600,
-              borderBottom: `1px solid ${theme.palette.divider}`,
-              '&.MuiTableCell-stickyHeader': {
-                backgroundColor: theme.palette.background.paper,
-                zIndex: 3,
-              },
-            },
-          }),
-        },
-      },
-      MuiTableCell: {
-        styleOverrides: {
-          root: {
-            borderBottom: `1px solid ${colors.surface.divider}`,
-          },
-          head: {
-            textTransform: 'none',
-            letterSpacing: '0.02em',
-          },
-        },
-      },
-      MuiTableRow: {
-        styleOverrides: {
-          root: {
-            '&:hover': {
-              backgroundColor: colors.interactive.hover,
-            },
-            '&.Mui-selected': {
-              backgroundColor: colors.interactive.selected,
-              '&:hover': {
-                backgroundColor: colors.interactive.active,
-              },
-            },
-          },
-        },
-      },
+  warning: {
+    main: colors.status.warning,
+    light: colors.status.warningLight,
+    dark: colors.status.warning,
+    contrastText: colors.text.inverse,
   },
+  error: {
+    main: colors.status.error,
+    light: colors.status.errorLight,
+    dark: colors.status.error,
+    contrastText: colors.text.inverse,
+  },
+  info: {
+    main: colors.status.info,
+    light: colors.status.infoLight,
+    dark: colors.status.info,
+    contrastText: colors.text.inverse,
+  },
+  background: {
+    default: colors.background.primary,
+    paper: colors.background.secondary,
+  },
+  text: {
+    primary: colors.text.primary,
+    secondary: colors.text.secondary,
+    disabled: colors.text.disabled,
+  },
+  divider: colors.surface.divider,
+  action: {
+    active: colors.interactive.active,
+    hover: colors.interactive.hover,
+    selected: colors.interactive.selected,
+    disabled: colors.text.disabled,
+    disabledBackground: colors.surface.tertiary,
+  },
+} satisfies ThemeOptions['palette']
+
+const paletteLight = {
+  mode: 'light' as const,
+  primary: {
+    main: colors.primary[600],
+    light: colors.primary[400],
+    dark: colors.primary[800],
+    contrastText: '#FFFFFF',
+  },
+  secondary: {
+    main: colors.accent.indigo,
+    light: colors.accent.blueLight,
+    dark: colors.primary[700],
+    contrastText: '#FFFFFF',
+  },
+  success: {
+    main: colors.status.success,
+    light: colors.status.successLight,
+    dark: colors.status.success,
+    contrastText: '#FFFFFF',
+  },
+  warning: {
+    main: colors.status.warning,
+    light: colors.status.warningLight,
+    dark: colors.status.warning,
+    contrastText: '#FFFFFF',
+  },
+  error: {
+    main: colors.status.error,
+    light: colors.status.errorLight,
+    dark: colors.status.error,
+    contrastText: '#FFFFFF',
+  },
+  info: {
+    main: colors.status.info,
+    light: colors.status.infoLight,
+    dark: colors.status.info,
+    contrastText: '#FFFFFF',
+  },
+  background: {
+    default: colors.light.canvas,
+    paper: colors.light.paper,
+  },
+  text: {
+    primary: colors.light.textPrimary,
+    secondary: colors.light.textSecondary,
+    disabled: colors.light.textDisabled,
+  },
+  divider: colors.light.divider,
+  action: {
+    active: colors.interactiveLight.active,
+    hover: colors.interactiveLight.hover,
+    selected: colors.interactiveLight.selected,
+    disabled: colors.light.textDisabled,
+    disabledBackground: colors.light.borderMuted,
+  },
+} satisfies ThemeOptions['palette']
+
+const shadowElevationDark = [
+  'none',
+  colors.shadows.card,
+  colors.shadows.elevated,
+  colors.shadows.modal,
+  colors.shadows.button,
+  colors.shadows.buttonHover,
+  ...Array(19).fill('none'),
+] as ThemeOptions['shadows']
+
+const shadowElevationLight = [
+  'none',
+  '0 1px 2px rgba(15, 23, 42, 0.045)',
+  '0 2px 8px rgba(15, 23, 42, 0.055)',
+  '0 8px 18px rgba(15, 23, 42, 0.065)',
+  '0 12px 28px rgba(15, 23, 42, 0.07)',
+  '0 18px 42px rgba(15, 23, 42, 0.08)',
+  ...Array(19).fill('none'),
+] as ThemeOptions['shadows']
+
+const muiTypography: NonNullable<ThemeOptions['typography']> = {
+  fontFamily: typography.fontFamily,
+  h1: typography.h1,
+  h2: typography.h2,
+  h3: typography.h3,
+  h4: typography.h4,
+  h5: typography.h5,
+  h6: typography.h6,
+  body1: typography.body1,
+  body2: typography.body2,
+  caption: typography.caption,
+  overline: typography.overline,
+  button: typography.button,
 }
 
-export const theme = createTheme(darkThemeOptions)
+function listTableInteractive(theme: Theme) {
+  const L = colors.interactiveLight
+  const D = colors.interactive
+  return theme.palette.mode === 'dark'
+    ? { hover: D.hover, selected: D.selected, selectedHover: D.active }
+    : { hover: L.hover, selected: L.selected, selectedHover: L.active }
+}
+
+const appComponents = {
+  MuiButton: {
+    styleOverrides: {
+      root: {
+        borderRadius: borderRadius.md,
+        textTransform: 'none',
+        fontWeight: 600,
+        transition: transitions.normal,
+        '&:hover': {
+          transform: 'translateY(-1px)',
+          boxShadow: colors.shadows.buttonHover,
+        },
+      },
+      contained: ({ theme }: { theme: Theme }) => ({
+        background: colors.gradients.primary,
+        boxShadow: colors.shadows.button,
+        '&:hover': {
+          background: colors.gradients.secondary,
+          ...(theme.palette.mode === 'light'
+            ? { boxShadow: colors.shadows.buttonHover }
+            : {}),
+        },
+      }),
+      outlined: ({ theme }: { theme: Theme }) =>
+        theme.palette.mode === 'dark'
+          ? {
+              borderColor: colors.surface.border,
+              color: colors.text.primary,
+              '&:hover': {
+                borderColor: colors.primary[500],
+                backgroundColor: colors.interactive.hover,
+              },
+            }
+          : {
+              borderColor: colors.light.inputOutline,
+              color: colors.light.textPrimary,
+              '&:hover': {
+                borderColor: colors.primary[600],
+                backgroundColor: colors.interactiveLight.hover,
+              },
+            },
+    },
+  },
+
+  MuiCard: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => ({
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: borderRadius.lg,
+        border: 'none',
+        boxShadow:
+          theme.palette.mode === 'dark'
+            ? colors.shadows.card
+            : colors.shadows.cardLight,
+        ...(theme.palette.mode === 'light' && {
+          '&:hover': { boxShadow: colors.shadows.cardLightHover },
+        }),
+      }),
+    },
+  },
+
+  MuiPaper: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => ({
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: borderRadius.lg,
+        border: 'none',
+        boxShadow:
+          theme.palette.mode === 'dark'
+            ? colors.shadows.card
+            : colors.shadows.cardLight,
+      }),
+    },
+  },
+
+  MuiTextField: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) =>
+        theme.palette.mode === 'dark'
+          ? {
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: colors.background.tertiary,
+                borderRadius: borderRadius.md,
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.primary[500],
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.primary[500],
+                  borderWidth: '2px',
+                },
+              },
+            }
+          : {
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: colors.light.paper,
+                borderRadius: borderRadius.md,
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.light.inputOutline,
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.primary[400],
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.primary[600],
+                  borderWidth: '2px',
+                },
+                '&.Mui-focused': {
+                  boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.18)',
+                },
+              },
+            },
+    },
+  },
+
+  MuiAppBar: {
+    defaultProps: {
+      color: 'default',
+      elevation: 0,
+    },
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => ({
+        backgroundColor: theme.palette.background.paper,
+        boxShadow:
+          theme.palette.mode === 'dark'
+            ? colors.shadows.card
+            : colors.shadows.cardLight,
+        borderRadius: 0,
+        ...(theme.palette.mode === 'light' && { borderBottom: 'none' }),
+      }),
+      colorDefault: ({ theme }: { theme: Theme }) =>
+        theme.palette.mode === 'dark'
+          ? { backgroundColor: theme.palette.background.paper }
+          : {},
+    },
+  },
+
+  MuiDrawer: {
+    styleOverrides: {
+      paper: ({ theme }: { theme: Theme }) => ({
+        backgroundColor: theme.palette.background.paper,
+        borderRight: 'none',
+        borderRadius: 0,
+        boxShadow:
+          theme.palette.mode === 'dark'
+            ? '4px 0 24px rgba(0, 0, 0, 0.35)'
+            : '2px 0 12px rgba(15, 23, 42, 0.06)',
+      }),
+    },
+  },
+
+  MuiDivider: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => ({
+        borderColor: theme.palette.divider,
+      }),
+    },
+  },
+
+  MuiList: {
+    styleOverrides: {
+      root: {
+        padding: 0,
+        '& .MuiListItem-root': {
+          padding: 0,
+          margin: 0,
+        },
+      },
+    },
+  },
+
+  MuiListItemButton: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => {
+        const i = listTableInteractive(theme)
+        return {
+          padding: '12px 16px',
+          borderRadius: 0,
+          '&:hover': {
+            backgroundColor: i.hover,
+          },
+          '&.Mui-selected': {
+            backgroundColor: i.selected,
+            '&:hover': {
+              backgroundColor: i.selectedHover,
+            },
+          },
+        }
+      },
+    },
+  },
+
+  MuiTable: {
+    defaultProps: {
+      stickyHeader: true,
+      size: 'medium',
+    } as any,
+    styleOverrides: {
+      root: {
+        backgroundColor: 'transparent',
+      },
+    },
+  },
+  MuiTableContainer: {
+    styleOverrides: {
+      root: {
+        backgroundColor: 'transparent',
+      },
+    },
+  },
+  MuiTableHead: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '& .MuiTableCell-root': {
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          fontWeight: 600,
+          borderBottom: 'none',
+          '&.MuiTableCell-stickyHeader': {
+            backgroundColor: theme.palette.background.paper,
+            zIndex: 3,
+          },
+        },
+      }),
+    },
+  },
+  MuiTableCell: {
+    styleOverrides: {
+      root: {
+        borderBottom: 'none',
+      },
+      head: {
+        textTransform: 'none',
+        letterSpacing: '0.02em',
+      },
+    },
+  },
+  MuiTableRow: {
+    styleOverrides: {
+      root: ({ theme }: { theme: Theme }) => {
+        const i = listTableInteractive(theme)
+        return {
+          '&:hover': {
+            backgroundColor: i.hover,
+          },
+          '&.Mui-selected': {
+            backgroundColor: i.selected,
+            '&:hover': {
+              backgroundColor: i.selectedHover,
+            },
+          },
+        }
+      },
+    },
+  },
+} satisfies ThemeOptions['components']
+
+function buildThemeOptions(mode: AppThemeMode): ThemeOptions {
+  return {
+    palette: mode === 'light' ? paletteLight : paletteDark,
+    shadows: mode === 'light' ? shadowElevationLight : shadowElevationDark,
+    typography: muiTypography,
+    spacing: 8,
+    shape: {
+      borderRadius: shapeBorderRadiusPx,
+    },
+    components: appComponents,
+  }
+}
 
 export const designTokens = {
   colors,
   brand,
   gradients,
+  navChrome,
   typography,
   spacing,
   borderRadius,
+  shapeBorderRadiusPx,
   transitions,
   breakpoints,
 }
+
+export function createAppTheme(mode: AppThemeMode): Theme {
+  return createTheme({
+    ...buildThemeOptions(mode),
+    designTokens,
+  })
+}
+
+export const theme = createAppTheme('dark')

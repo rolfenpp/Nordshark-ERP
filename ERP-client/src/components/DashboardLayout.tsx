@@ -41,7 +41,7 @@ import { NordsharkBrand } from './NordsharkBrand'
 import { UpgradeButton } from './UpgradeButton'
 import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
 import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
-import { colors } from '@/theme/theme'
+import { colors, navChrome } from '@/theme/theme'
 const DRAWER_COLLAPSED_STORAGE_KEY = 'erp-dashboard-drawer-collapsed'
 
 function readStoredDrawerCollapsed(): boolean {
@@ -138,7 +138,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const lightIconColor = theme.designTokens?.brand?.primary || theme.palette.primary.main
+  const drawerLabelInactive = colors.text.primary
+  const drawerIconInactive = colors.text.primary
+  const drawerItemActiveBg = colors.primary[500]
+  const drawerItemActiveHoverBg = colors.primary[600]
+
+  const lightIconColor = theme.designTokens?.brand?.primary ?? theme.palette.primary.main
 
   const userRole = 'admin'
   const menuCategories = getMenuItems(userRole)
@@ -183,7 +188,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           alignItems: 'center',
           justifyContent: desktopMini ? 'center' : 'flex-start',
           p: desktopMini ? 1 : 2,
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${navChrome.divider}`,
           minHeight: desktopMini ? 56 : undefined,
         }}
       >
@@ -207,7 +212,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   py: 1,
                   fontSize: '0.75rem',
                   fontWeight: 300,
-                  color: 'text.secondary',
+                  color: navChrome.textMuted,
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
                 }}
@@ -229,21 +234,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       borderRadius: '6px',
                       justifyContent: desktopMini ? 'center' : 'flex-start',
                       px: desktopMini ? 1 : 2,
-                      backgroundColor: isActive ? 'primary.main' : 'transparent',
-                      color: isActive ? 'primary.contrastText' : 'text.primary',
+                      backgroundColor: isActive ? drawerItemActiveBg : 'transparent',
+                      color: drawerLabelInactive,
                       overflow: 'hidden',
                       '&.MuiListItemButton-root': {
                         borderRadius: '6px',
                       },
                       '&:hover': {
-                        backgroundColor: isActive ? 'primary.dark' : 'action.hover',
+                        backgroundColor: isActive ? drawerItemActiveHoverBg : 'rgba(255, 255, 255, 0.06)',
                       },
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
                     <ListItemIcon
                       sx={{
-                        color: isActive ? 'primary.contrastText' : (mode === 'light' ? lightIconColor : 'text.primary'),
+                        color: drawerIconInactive,
                         minWidth: desktopMini ? 0 : 40,
                         mr: desktopMini ? 0 : undefined,
                         justifyContent: 'center',
@@ -254,12 +259,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </ListItemIcon>
                     <ListItemText
                       primary={item.text}
+                      primaryTypographyProps={{
+                        sx: {
+                          fontWeight: 300,
+                          color: drawerLabelInactive,
+                        },
+                      }}
                       sx={{
                         display: desktopMini ? 'none' : 'block',
-                        color: 'inherit',
-                        '& .MuiTypography-root': {
-                          fontWeight: 300,
-                        },
                       }}
                     />
                   </ListItemButton>
@@ -290,7 +297,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         sx={{
           width: { md: `calc(100% - ${permanentDrawerWidth}px)` },
           ml: { md: `${permanentDrawerWidth}px` },
-          bgcolor: 'background.secondary',
+          bgcolor: 'background.paper',
           transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
@@ -499,7 +506,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH, bgcolor: 'background.secondary' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: DRAWER_WIDTH,
+              bgcolor: navChrome.background,
+              color: navChrome.text,
+              borderRight: 'none',
+              boxShadow: '4px 0 24px rgba(0, 0, 0, 0.35)',
+            },
           }}
         >
           {drawer}
@@ -512,9 +526,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: permanentDrawerWidth,
-              bgcolor: 'background.secondary',
+              bgcolor: navChrome.background,
+              color: navChrome.text,
               overflowX: 'hidden',
               transition: drawerTransition,
+              borderRight: 'none',
+              boxShadow: '4px 0 24px rgba(0, 0, 0, 0.35)',
             },
           }}
         >
