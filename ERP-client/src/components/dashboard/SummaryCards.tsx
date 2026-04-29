@@ -93,7 +93,7 @@ function MiniInvoiceStatusBar({ slices }: { slices: InvoiceStatusSlice[] }) {
             contentStyle={{
               backgroundColor: theme.palette.background.paper,
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '8px',
+              borderRadius: '4px',
               fontSize: 12,
             }}
             formatter={(v: number) => [v, 'Invoices']}
@@ -130,7 +130,7 @@ function MiniRevenueSparkline({ points }: { points: { label: string; revenue: nu
             contentStyle={{
               backgroundColor: theme.palette.background.paper,
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '8px',
+              borderRadius: '4px',
               fontSize: 12,
             }}
           />
@@ -170,7 +170,7 @@ function MiniCashflowBars({ paidTotal, pendingTotal }: { paidTotal: number; pend
             contentStyle={{
               backgroundColor: theme.palette.background.paper,
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '8px',
+              borderRadius: '4px',
               fontSize: 12,
             }}
           />
@@ -230,7 +230,7 @@ function MiniStockDonut({ lowCount, lineCount }: { lowCount: number; lineCount: 
             contentStyle={{
               backgroundColor: theme.palette.background.paper,
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '8px',
+              borderRadius: '4px',
               fontSize: 12,
             }}
           />
