@@ -1,34 +1,84 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import {
+  Link,
+  Navigate,
+  redirect,
+  useNavigate,
+  createFileRoute,
+} from '@tanstack/react-router'
 import {
   Box,
   Button,
-  Paper,
   TextField,
   Typography,
   Stack,
   Alert,
-  Fade,
   CircularProgress,
 } from '@mui/material'
+import { useEffect, useId, useRef } from 'react'
 import { useAuth } from '@/auth/AuthProvider'
-import { setAccessToken } from '@/lib/axios'
 import { NordsharkBrand } from '@/components/NordsharkBrand'
 import { AppToastContainer } from '@/components/AppToastContainer'
+import { AuthLandingLayout } from '@/components/AuthLandingLayout'
 import { showSuccess, showError } from '@/lib/toast'
+import { formatRegisterMutationError } from '@/lib/authApiErrors'
+import { DEFAULT_AFTER_AUTH, getSafeRedirectPath } from '@/lib/authRedirect'
+import { getStoredToken } from '@/lib/axios'
 import { useRegisterCompany } from '@/api/companies'
 import { useLogin } from '@/api/auth'
+import { colors } from '@/theme/theme'
+import {
+  authLandingAlertErrorSx,
+  authLandingDarkUnderlineSx,
+  authLandingFooterLinkButtonSx,
+  authLandingPrimarySubmitSx,
+} from '@/theme/authLanding.styles'
 
 export const Route = createFileRoute('/register')({
+  validateSearch: (raw: Record<string, unknown>): { redirect?: string } => ({
+    redirect: typeof raw.redirect === 'string' ? raw.redirect : undefined,
+  }),
+  beforeLoad: ({ search }) => {
+    if (getStoredToken()) {
+      throw redirect({
+        to: getSafeRedirectPath(search.redirect ?? undefined),
+      })
+    }
+  },
   component: RegisterRoute,
 })
 
+function basicRegisterClientValid(
+  name: string,
+  email: string,
+  password: string,
+): string | null {
+  if (!name.trim()) return 'Enter your company name.'
+  const em = email.trim()
+  if (!em) return 'Enter your admin email.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return 'Enter a valid email address.'
+  if (!password) return 'Enter a password.'
+  return null
+}
+
 function RegisterRoute() {
-  const { login } = useAuth()
+  const { login, ready, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const registerMutation = useRegisterCompany()
   const loginMutation = useLogin()
+  const search = Route.useSearch()
+  const postAuthTarget = getSafeRedirectPath(search.redirect, DEFAULT_AFTER_AUTH)
+  const errId = useId()
+  const alertRef = useRef<HTMLDivElement | null>(null)
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (!registerMutation.isError || !alertRef.current) return
+    const el = alertRef.current.querySelector(
+      '[class*="MuiAlert-message"], .MuiAlert-message',
+    ) as HTMLElement | null
+    el?.focus?.()
+  }, [registerMutation.isError])
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const name = String(f.get('companyName') || '').trim()
@@ -36,211 +86,196 @@ function RegisterRoute() {
     const adminPassword = String(f.get('password') || '')
     const confirm = String(f.get('confirmPassword') || '')
 
+    const basicErr = basicRegisterClientValid(name, adminEmail, adminPassword)
+    if (basicErr) {
+      showError(basicErr)
+      return
+    }
+
     if (adminPassword !== confirm) {
       showError('Passwords do not match.')
       return
     }
 
-    try {
-      const data = await registerMutation.mutateAsync({ name, adminEmail, adminPassword })
-      try {
-        const loginData = await loginMutation.mutateAsync({ email: adminEmail, password: adminPassword })
-        setAccessToken(loginData.token)
-        login(loginData.token)
-      } catch {
-        setAccessToken(data.token)
-        login(data.token)
-      }
-      navigate({ to: '/dashboard' })
-      window.setTimeout(() => showSuccess('Your workspace is ready — welcome!'), 0)
-    } catch (err: any) {
-      const d = err?.response?.data
-      let msg = 'Could not create company. Try a different name or email.'
-      if (typeof d === 'string') msg = d
-      else if (d?.title && typeof d.title === 'string') msg = d.title
-      else if (d?.detail && typeof d.detail === 'string') msg = d.detail
-      showError(msg)
-    }
+    registerMutation.mutate(
+      { name, adminEmail, adminPassword },
+      {
+        async onSuccess(data) {
+          try {
+            const loginData = await loginMutation.mutateAsync({
+              email: adminEmail,
+              password: adminPassword,
+            })
+            login(loginData.token)
+          } catch {
+            login(data.token)
+          }
+          navigate({ replace: true, to: postAuthTarget })
+          window.setTimeout(
+            () => showSuccess('Your workspace is ready — welcome!'),
+            0,
+          )
+        },
+      },
+    )
+  }
+
+  if (ready && isAuthenticated) {
+    return <Navigate replace to={postAuthTarget} />
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 2,
-        position: 'relative',
-        background: 'linear-gradient(135deg, #f8f9fa 0%,rgb(156, 150, 156) 100%)',
-      }}
-    >
+    <>
       <AppToastContainer />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '3%',
-          left: '2%',
-          zIndex: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        <NordsharkBrand size="large" />
-      </Box>
-      <Box
-        sx={{
-          animation: 'slideUpFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
-          '@keyframes slideUpFromBottom': {
-            '0%': { transform: 'translateY(100px)', opacity: 0 },
-            '100%': { transform: 'translateY(0)', opacity: 1 },
-          },
-        }}
-      >
-        <Paper
-          sx={{
-            p: { xs: 4, sm: 5, md: 6 },
-            width: '100%',
-            maxWidth: 480,
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: `
-              0 20px 40px rgba(0, 0, 0, 0.1),
-              0 0 0 1px rgba(255, 255, 255, 0.05),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1)
-            `,
-            position: 'relative',
-            zIndex: 1,
-            borderRadius: 4,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-            },
-          }}
+      <AuthLandingLayout contentMaxWidth={460}>
+        <Stack
+          component="section"
+          aria-label="Create workspace"
+          aria-labelledby="register-heading"
+          spacing={3.25}
         >
-          <Fade in timeout={800}>
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  mb: 1,
-                  fontSize: { xs: '1.6rem', sm: '2rem' },
-                  color: 'transparent',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                Create your workspace
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666666', opacity: 0.9 }}>
-                Register a company and your admin account
-              </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: { xs: 'center', md: 'flex-start' },
+            }}
+          >
+            <Box sx={{ lineHeight: 0, '& svg': { display: 'block' } }}>
+              <NordsharkBrand size="medium" variant="onDark" />
             </Box>
-          </Fade>
+          </Box>
+
+          <Box>
+            <Typography
+              id="register-heading"
+              component="h1"
+              variant="h5"
+              sx={{
+                fontWeight: 600,
+                color: colors.text.primary,
+                fontSize: { xs: '1.35rem', sm: '1.5rem' },
+                letterSpacing: '-0.02em',
+                mb: 0.75,
+              }}
+            >
+              Create your workspace
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: colors.text.secondary, lineHeight: 1.5 }}
+            >
+              Register a company and your admin account
+            </Typography>
+          </Box>
 
           <Box component="form" onSubmit={onSubmit}>
             {registerMutation.isError && (
-              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-                Something went wrong. Check the fields and try again.
+              <Alert
+                ref={alertRef}
+                id={errId}
+                severity="error"
+                role="alert"
+                aria-live="assertive"
+                tabIndex={-1}
+                sx={{ ...authLandingAlertErrorSx, mb: 2.5 }}
+              >
+                {formatRegisterMutationError(registerMutation.error)}
               </Alert>
             )}
 
-            <Stack spacing={2.5}>
+            <Stack spacing={2.65}>
               <TextField
                 name="companyName"
-                label="Company name"
+                placeholder="Company name"
                 fullWidth
                 required
                 autoComplete="organization"
-                sx={textFieldSx}
+                variant="standard"
+                inputProps={{
+                  'aria-label': 'Company name',
+                  'aria-describedby': registerMutation.isError ? errId : undefined,
+                }}
+                sx={authLandingDarkUnderlineSx}
               />
               <TextField
                 name="email"
-                label="Admin email"
+                placeholder="Admin email"
                 type="email"
                 fullWidth
                 required
                 autoComplete="email"
-                sx={textFieldSx}
+                variant="standard"
+                inputMode="email"
+                inputProps={{
+                  'aria-label': 'Admin email',
+                  'aria-describedby': registerMutation.isError ? errId : undefined,
+                }}
+                sx={authLandingDarkUnderlineSx}
               />
               <TextField
                 name="password"
-                label="Password"
+                placeholder="Password"
                 type="password"
                 fullWidth
                 required
                 autoComplete="new-password"
-                sx={textFieldSx}
+                variant="standard"
+                inputProps={{
+                  'aria-label': 'Password',
+                  'aria-describedby': registerMutation.isError ? errId : undefined,
+                }}
+                sx={authLandingDarkUnderlineSx}
               />
               <TextField
                 name="confirmPassword"
-                label="Confirm password"
+                placeholder="Confirm password"
                 type="password"
                 fullWidth
                 required
                 autoComplete="new-password"
-                sx={textFieldSx}
+                variant="standard"
+                inputProps={{
+                  'aria-label': 'Confirm password',
+                  'aria-describedby': registerMutation.isError ? errId : undefined,
+                }}
+                sx={authLandingDarkUnderlineSx}
               />
+
               <Button
                 type="submit"
                 variant="contained"
-                size="large"
                 fullWidth
+                size="large"
+                disableElevation
                 disabled={registerMutation.isPending || loginMutation.isPending}
-                sx={{
-                  mt: 1,
-                  py: 1.25,
-                  borderRadius: 3,
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
-                  },
-                }}
+                aria-busy={registerMutation.isPending || loginMutation.isPending}
+                startIcon={
+                  registerMutation.isPending || loginMutation.isPending ? (
+                    <CircularProgress size={22} color="inherit" aria-hidden />
+                  ) : undefined
+                }
+                sx={authLandingPrimarySubmitSx}
               >
-                {registerMutation.isPending || loginMutation.isPending ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  'Create company'
-                )}
+                {registerMutation.isPending || loginMutation.isPending
+                  ? 'Creating…'
+                  : 'Create company'}
               </Button>
             </Stack>
           </Box>
 
-          <Fade in timeout={1200}>
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#666666' }}>
-                <Link
-                  to="/login"
-                  style={{
-                    textDecoration: 'none',
-                    color: '#667eea',
-                    fontWeight: 600,
-                  }}
-                >
-                  Already have an account? Sign in
-                </Link>
-              </Typography>
-            </Box>
-          </Fade>
-        </Paper>
-      </Box>
-    </Box>
+          <Box sx={{ textAlign: 'center', pt: 1 }}>
+            <Link
+              to="/login"
+              {...(search.redirect ? { search: { redirect: search.redirect } } : {})}
+              style={{ textDecoration: 'none' }}
+            >
+              <Button component="span" variant="text" sx={authLandingFooterLinkButtonSx}>
+                Already have an account? Sign in
+              </Button>
+            </Link>
+          </Box>
+        </Stack>
+      </AuthLandingLayout>
+    </>
   )
 }
-
-const textFieldSx = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 3,
-  },
-} as const

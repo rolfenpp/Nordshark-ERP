@@ -50,18 +50,14 @@ function readStoredDrawerCollapsed(): boolean {
     const raw = localStorage.getItem(DRAWER_COLLAPSED_STORAGE_KEY)
     if (raw === 'true') return true
     if (raw === 'false') return false
-  } catch {
-    /* private mode / quota */
-  }
+  } catch {}
   return false
 }
 
 function writeStoredDrawerCollapsed(value: boolean) {
   try {
     localStorage.setItem(DRAWER_COLLAPSED_STORAGE_KEY, String(value))
-  } catch {
-    /* skippa */
-  }
+  } catch {}
 }
 
 const DRAWER_WIDTH = 240
@@ -189,7 +185,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {!desktopMini ? (
           <Box sx={{ minWidth: 0, width: '100%' }}>
-            <NordsharkBrand size="medium" themeToggle />
+            <NordsharkBrand size="medium" variant="onDark" />
           </Box>
         ) : (
           <Box sx={{ width: 40, height: 8 }} aria-hidden />
