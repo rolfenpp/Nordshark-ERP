@@ -20,7 +20,6 @@ import { Edit, Delete, Visibility, Search, Person, AdminPanelSettings, Superviso
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useMemo, useState } from 'react'
-import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
@@ -207,6 +206,10 @@ function UsersComponent() {
   const adminUsers = users.filter((u) => u.role === 'admin').length
   const standardUsers = users.filter((u) => u.role === 'user').length
 
+  if (isLoading) {
+    return null
+  }
+
   return (
     <ResourceListPage>
       <ListStatsGrid compact={compactList}>
@@ -269,10 +272,7 @@ function UsersComponent() {
         }
       />
 
-      {isLoading ? (
-        <TableSkeleton />
-      ) : (
-        <DataTable<UserRow>
+      <DataTable<UserRow>
           columns={columns}
           rows={filteredUsers}
           getRowId={(r) => r.id}
@@ -316,7 +316,6 @@ function UsersComponent() {
             </Card>
           )}
         />
-      )}
 
       <ListSummaryFooter
         primary={

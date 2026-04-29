@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
@@ -294,12 +293,7 @@ function InventoryIndexComponent() {
   )
 
   if (isLoading) {
-    return (
-      <ResourceListPage>
-        {toolbar}
-        <TableSkeleton rows={8} columns={9} />
-      </ResourceListPage>
-    )
+    return null
   }
 
   return (

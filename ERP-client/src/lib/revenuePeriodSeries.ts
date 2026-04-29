@@ -16,7 +16,7 @@ export const REVENUE_PERIOD_LABELS: Record<RevenuePeriod, string> = {
 
 export type RevenuePoint = { label: string; revenue: number }
 
-function effectivePaidDate(inv: InvoiceListDto): string {
+export function effectivePaidDate(inv: InvoiceListDto): string {
   return inv.paidDate ?? inv.issueDate
 }
 
@@ -58,10 +58,61 @@ const MONTH_COUNT = 24
 const MONTHS_3Y = 36
 const YEAR_COUNT = 8
 
-/**
- * Buckets paid invoice totals into a time series for the chart. Amounts outside the visible
- * window are rolled into the first/last bucket (same as the original monthly chart).
- */
+type RollingMonthBucket = {
+  label: string
+  y: number
+  m0: number
+  revenue: number
+  startMs: number
+  endMs: number
+}
+
+function buildRollingMonthBuckets(count: number, now: Date): RollingMonthBucket[] {
+  const y = now.getFullYear()
+  const m = now.getMonth()
+  const buckets: RollingMonthBucket[] = []
+  for (let idx = 0; idx < count; idx++) {
+    const i = count - 1 - idx
+    const first = new Date(y, m - i, 1)
+    const y1 = first.getFullYear()
+    const m0 = first.getMonth()
+    const startMs = new Date(y1, m0, 1).getTime()
+    const endMs = new Date(y1, m0 + 1, 0, 23, 59, 59, 999).getTime()
+    buckets.push({
+      label: format(first, 'MMM yy', { locale: appDateLocale }),
+      y: y1,
+      m0,
+      revenue: 0,
+      startMs,
+      endMs,
+    })
+  }
+  return buckets
+}
+
+function revenueFromPaidIntoRollingMonthBuckets(
+  monthBuckets: RollingMonthBucket[],
+  paid: InvoiceListDto[]
+): RevenuePoint[] {
+  for (const inv of paid) {
+    const ds = effectivePaidDate(inv)
+    const dt = parseISO(ds)
+    if (Number.isNaN(dt.getTime())) continue
+    const t = dt.getTime()
+    const amount = inv.total ?? 0
+    const inWindow = monthBuckets.find((b) => b.y === dt.getFullYear() && b.m0 === dt.getMonth())
+    if (inWindow) {
+      inWindow.revenue += amount
+      continue
+    }
+    const firstB = monthBuckets[0]!
+    const lastB = monthBuckets[monthBuckets.length - 1]!
+    if (t < firstB.startMs) firstB.revenue += amount
+    else if (t > lastB.endMs) lastB.revenue += amount
+  }
+  return monthBuckets.map(({ label, revenue }) => ({ label, revenue }))
+}
+
 export function buildRevenuePeriodSeries(
   invoices: InvoiceListDto[],
   period: RevenuePeriod,
@@ -70,7 +121,6 @@ export function buildRevenuePeriodSeries(
   const now = new Date(nowInput)
   const paid = invoices.filter((i) => normalizeInvoiceStatus(i.status) === 'paid')
   const y = now.getFullYear()
-  const m = now.getMonth()
 
   if (period === 'day') {
     const endDayStart = startOfLocalDay(now)
@@ -125,79 +175,11 @@ export function buildRevenuePeriodSeries(
   }
 
   if (period === 'month') {
-    const count = MONTH_COUNT
-    const monthBuckets: { month: string; y: number; m0: number; revenue: number; startMs: number; endMs: number }[] = []
-    for (let idx = 0; idx < count; idx++) {
-      const i = count - 1 - idx
-      const first = new Date(y, m - i, 1)
-      const y1 = first.getFullYear()
-      const m0 = first.getMonth()
-      const startMs = new Date(y1, m0, 1).getTime()
-      const endMs = new Date(y1, m0 + 1, 0, 23, 59, 59, 999).getTime()
-      monthBuckets.push({
-        month: format(first, 'MMM yy', { locale: appDateLocale }),
-        y: y1,
-        m0,
-        revenue: 0,
-        startMs,
-        endMs,
-      })
-    }
-    for (const inv of paid) {
-      const ds = effectivePaidDate(inv)
-      const dt = parseISO(ds)
-      if (Number.isNaN(dt.getTime())) continue
-      const t = dt.getTime()
-      const amount = inv.total ?? 0
-      const inWindow = monthBuckets.find((b) => b.y === dt.getFullYear() && b.m0 === dt.getMonth())
-      if (inWindow) {
-        inWindow.revenue += amount
-        continue
-      }
-      const firstB = monthBuckets[0]!
-      const lastB = monthBuckets[monthBuckets.length - 1]!
-      if (t < firstB.startMs) firstB.revenue += amount
-      else if (t > lastB.endMs) lastB.revenue += amount
-    }
-    return monthBuckets.map(({ month, revenue }) => ({ label: month, revenue }))
+    return revenueFromPaidIntoRollingMonthBuckets(buildRollingMonthBuckets(MONTH_COUNT, now), paid)
   }
 
   if (period === '3y') {
-    const count = MONTHS_3Y
-    const monthBuckets: { month: string; y: number; m0: number; revenue: number; startMs: number; endMs: number }[] = []
-    for (let idx = 0; idx < count; idx++) {
-      const i = count - 1 - idx
-      const first = new Date(y, m - i, 1)
-      const y1 = first.getFullYear()
-      const m0 = first.getMonth()
-      const startMs = new Date(y1, m0, 1).getTime()
-      const endMs = new Date(y1, m0 + 1, 0, 23, 59, 59, 999).getTime()
-      monthBuckets.push({
-        month: format(first, 'MMM yy', { locale: appDateLocale }),
-        y: y1,
-        m0,
-        revenue: 0,
-        startMs,
-        endMs,
-      })
-    }
-    for (const inv of paid) {
-      const ds = effectivePaidDate(inv)
-      const dt = parseISO(ds)
-      if (Number.isNaN(dt.getTime())) continue
-      const t = dt.getTime()
-      const amount = inv.total ?? 0
-      const inWindow = monthBuckets.find((b) => b.y === dt.getFullYear() && b.m0 === dt.getMonth())
-      if (inWindow) {
-        inWindow.revenue += amount
-        continue
-      }
-      const firstB = monthBuckets[0]!
-      const lastB = monthBuckets[monthBuckets.length - 1]!
-      if (t < firstB.startMs) firstB.revenue += amount
-      else if (t > lastB.endMs) lastB.revenue += amount
-    }
-    return monthBuckets.map(({ month, revenue }) => ({ label: month, revenue }))
+    return revenueFromPaidIntoRollingMonthBuckets(buildRollingMonthBuckets(MONTHS_3Y, now), paid)
   }
 
   if (period === 'year') {

@@ -1,5 +1,4 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
@@ -365,6 +364,10 @@ function InvoicesIndexComponent() {
     </Button>
   )
 
+  if (isLoading) {
+    return null
+  }
+
   return (
     <ResourceListPage>
       <ListStatsGrid compact={compactList}>
@@ -427,15 +430,11 @@ function InvoicesIndexComponent() {
         }
       />
 
-      {isLoading ? (
-        <TableSkeleton />
-      ) : (
-        <DataTable<InvoiceListDto>
+      <DataTable<InvoiceListDto>
           columns={columns}
           rows={filteredInvoices}
           getRowId={(r) => r.id}
           compact={compactList}
-          loading={false}
           isDesktop={smUp}
           emptyMessage="No invoices match your filters."
           defaultRowsPerPage={10}
@@ -471,10 +470,8 @@ function InvoicesIndexComponent() {
             </Card>
           )}
         />
-      )}
 
-      {!isLoading && (
-        <ListSummaryFooter
+      <ListSummaryFooter
           primary={
             <Typography variant="body2" color="text.secondary">
               Showing {filteredInvoices.length} of {list.length} invoices
@@ -505,7 +502,6 @@ function InvoicesIndexComponent() {
             </strong>
           </Typography>
         </ListSummaryFooter>
-      )}
 
       <Dialog
         open={showExportDialog}

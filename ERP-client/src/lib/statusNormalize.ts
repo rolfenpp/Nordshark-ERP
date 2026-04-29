@@ -1,4 +1,4 @@
-const INVOICE_CANON = ['paid', 'pending', 'overdue', 'draft'] as const
+export const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'draft'] as const
 
 const PROJECT_CANON = ['active', 'planning', 'completed', 'on-hold'] as const
 export type NormalizedProjectStatus = (typeof PROJECT_CANON)[number] | 'unknown'
@@ -7,8 +7,8 @@ export function normalizeInvoiceStatus(status: string | undefined | null): strin
   return (status ?? '').toLowerCase().trim()
 }
 
-export function isKnownInvoiceStatus(s: string): s is (typeof INVOICE_CANON)[number] {
-  return (INVOICE_CANON as readonly string[]).includes(s)
+export function isKnownInvoiceStatus(s: string): s is (typeof INVOICE_STATUSES)[number] {
+  return (INVOICE_STATUSES as readonly string[]).includes(s)
 }
 
 export function normalizeProjectStatus(status: string | undefined | null): NormalizedProjectStatus {

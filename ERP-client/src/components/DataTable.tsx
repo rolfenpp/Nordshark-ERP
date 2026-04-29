@@ -13,7 +13,6 @@ import {
 import type { SxProps, Theme } from '@mui/material/styles'
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { TableSkeleton } from './Skeletons'
 
 export type DataTableColumn<T> = {
   id: string
@@ -43,7 +42,6 @@ export type DataTableProps<T> = {
   columns: DataTableColumn<T>[]
   getRowId: (row: T) => string | number
   compact?: boolean
-  loading?: boolean
   emptyMessage?: string
   isDesktop: boolean
   renderMobileRow?: (row: T) => ReactNode
@@ -58,7 +56,6 @@ export function DataTable<T>({
   columns,
   getRowId,
   compact = false,
-  loading = false,
   emptyMessage = 'No data',
   isDesktop,
   renderMobileRow,
@@ -122,10 +119,6 @@ export function DataTable<T>({
       labelRowsPerPage="Rows per page"
     />
   )
-
-  if (loading) {
-    return <TableSkeleton rows={8} columns={columns.length} />
-  }
 
   if (!isDesktop && renderMobileRow) {
     return (

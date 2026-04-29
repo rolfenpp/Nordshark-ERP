@@ -6,7 +6,6 @@ import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
-import { TableSkeleton } from '@/components/Skeletons'
 import {
   Alert,
   Box,
@@ -248,6 +247,10 @@ function ProjectsIndexComponent() {
   const activeProjects = projects.filter((p) => normalizeProjectStatus(p.status) === 'active').length
   const completedProjects = projects.filter((p) => normalizeProjectStatus(p.status) === 'completed').length
 
+  if (isLoading) {
+    return null
+  }
+
   return (
     <ResourceListPage fadeDelay={200} fadeDuration={800}>
       <ListStatsGrid compact={compactList}>
@@ -306,10 +309,7 @@ function ProjectsIndexComponent() {
         actions={<PrimaryActionButton label="Create New Project" to="/projects/create" />}
       />
 
-      {isLoading ? (
-        <TableSkeleton />
-      ) : (
-        <DataTable<ProjectDto>
+      <DataTable<ProjectDto>
           columns={columns}
           rows={filteredProjects}
           getRowId={(r) => r.id}
@@ -360,7 +360,6 @@ function ProjectsIndexComponent() {
             </Card>
           )}
         />
-      )}
 
       <ListSummaryFooter
         primary={
