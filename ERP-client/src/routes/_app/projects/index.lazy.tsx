@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
@@ -10,7 +11,6 @@ import {
   Alert,
   Box,
   Typography,
-  Paper,
   Button,
   IconButton,
   Chip,
@@ -249,11 +249,7 @@ function ProjectsIndexComponent() {
   const completedProjects = projects.filter((p) => normalizeProjectStatus(p.status) === 'completed').length
 
   return (
-    <ResourceListPage
-      fadeDelay={200}
-      fadeDuration={800}
-      actions={<PrimaryActionButton label="Create New Project" to="/projects/create" />}
-    >
+    <ResourceListPage fadeDelay={200} fadeDuration={800}>
       <ListStatsGrid compact={compactList}>
         <ListStatCard icon={Assignment} iconColor="primary" value={projects.length} label="Total Projects" />
         <ListStatCard icon={TrendingUp} iconColor="success" value={activeProjects} label="Active Projects" />
@@ -272,10 +268,11 @@ function ProjectsIndexComponent() {
         </Alert>
       )}
 
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 2, alignItems: 'center' }}>
+      <ListPageToolbar
+        search={
           <TextField
             fullWidth
+            size="small"
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -287,7 +284,9 @@ function ProjectsIndexComponent() {
               ),
             }}
           />
-          <FormControl fullWidth>
+        }
+        filters={
+          <FormControl fullWidth size="small">
             <InputLabel id="projects-status-filter-label">Status</InputLabel>
             <Select
               labelId="projects-status-filter-label"
@@ -303,8 +302,9 @@ function ProjectsIndexComponent() {
               <MenuItem value="on-hold">On Hold</MenuItem>
             </Select>
           </FormControl>
-        </Box>
-      </Paper>
+        }
+        actions={<PrimaryActionButton label="Create New Project" to="/projects/create" />}
+      />
 
       {isLoading ? (
         <TableSkeleton />

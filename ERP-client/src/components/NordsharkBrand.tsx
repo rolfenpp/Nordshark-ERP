@@ -1,4 +1,5 @@
-import { Box, Typography, useTheme } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+import { colors } from '@/theme/theme'
 
 interface NordsharkBrandProps {
   size?: 'small' | 'medium' | 'large'
@@ -6,7 +7,6 @@ interface NordsharkBrandProps {
 }
 
 export function NordsharkBrand({ size = 'medium', themeToggle }: NordsharkBrandProps) {
-  const theme = useTheme()
   const sizeConfig = {
     small: { text: '1.1rem' },
     medium: { text: '1.4rem' },
@@ -18,7 +18,7 @@ export function NordsharkBrand({ size = 'medium', themeToggle }: NordsharkBrandP
   const multiColorGradient =
     'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)'
 
-  const textColor = themeToggle ? theme.palette.text.primary : '#212121'
+  const textColor = themeToggle ? colors.text.primary : '#212121'
   const wordWeight = 400
   const erpWeight = 200
 

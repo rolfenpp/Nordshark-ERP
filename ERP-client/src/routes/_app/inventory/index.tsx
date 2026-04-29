@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
@@ -10,7 +11,6 @@ import {
   Alert,
   Box,
   Typography,
-  Paper,
   Button,
   Card,
   CardContent,
@@ -19,6 +19,10 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import type { ChipProps } from '@mui/material/Chip'
 import {
@@ -45,11 +49,20 @@ export const Route = createFileRoute('/_app/inventory/')({
   component: InventoryIndexComponent,
 })
 
+type StockStatusFilter = 'all' | 'out' | 'low' | 'inStock'
+
+function getStockTier(quantityOnHand: number, reorderLevel?: number): Exclude<StockStatusFilter, 'all'> {
+  if (quantityOnHand === 0) return 'out'
+  if (reorderLevel && quantityOnHand <= reorderLevel) return 'low'
+  return 'inStock'
+}
+
 function getStatusDisplay(quantity: number, reorderLevel?: number) {
-  if (quantity === 0) {
+  const tier = getStockTier(quantity, reorderLevel)
+  if (tier === 'out') {
     return { color: 'error' as const, icon: <Warning fontSize="small" />, label: 'Out of Stock' }
   }
-  if (reorderLevel && quantity <= reorderLevel) {
+  if (tier === 'low') {
     return { color: 'warning' as const, icon: <Warning fontSize="small" />, label: 'Low Stock' }
   }
   return { color: 'success' as const, icon: <CheckCircle fontSize="small" />, label: 'In Stock' }
@@ -63,6 +76,7 @@ function InventoryIndexComponent() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebouncedValue(searchTerm, LIST_SEARCH_DEBOUNCE_MS)
+  const [stockFilter, setStockFilter] = useState<StockStatusFilter>('all')
   const { data: inventoryItems = [], isLoading, isError, error } = useInventoryItems()
   const deleteItem = useDeleteInventoryItem()
 
@@ -76,15 +90,19 @@ function InventoryIndexComponent() {
   )
 
   const filteredInventory = useMemo(() => {
-    if (!debouncedSearchTerm.trim()) return inventoryItems
+    let rows = inventoryItems
+    if (stockFilter !== 'all') {
+      rows = rows.filter((item) => getStockTier(item.quantityOnHand, item.reorderLevel) === stockFilter)
+    }
+    if (!debouncedSearchTerm.trim()) return rows
     const q = debouncedSearchTerm.toLowerCase()
-    return inventoryItems.filter(
+    return rows.filter(
       (item) =>
         item.name.toLowerCase().includes(q) ||
         (item.sku && item.sku.toLowerCase().includes(q)) ||
         (item.category && item.category.toLowerCase().includes(q))
     )
-  }, [inventoryItems, debouncedSearchTerm])
+  }, [inventoryItems, debouncedSearchTerm, stockFilter])
 
   const toItem = useCallback(
     (id: number) => navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } }),
@@ -237,18 +255,55 @@ function InventoryIndexComponent() {
   const totalItems = inventoryItems.reduce((sum, item) => sum + item.quantityOnHand, 0)
   const lowStockItems = inventoryItems.filter((item) => item.reorderLevel && item.quantityOnHand <= item.reorderLevel).length
 
-  const headerActions = <PrimaryActionButton label="Add New Item" to="/inventory/create" />
+  const toolbar = (
+      <ListPageToolbar
+        search={
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search by name, SKU, or category..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+        }
+        filters={
+          <FormControl fullWidth size="small">
+            <InputLabel id="inventory-stock-filter-label">Stock</InputLabel>
+            <Select
+              labelId="inventory-stock-filter-label"
+              label="Stock"
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value as StockStatusFilter)}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="inStock">In stock</MenuItem>
+              <MenuItem value="low">Low stock</MenuItem>
+              <MenuItem value="out">Out of stock</MenuItem>
+            </Select>
+          </FormControl>
+        }
+        actions={<PrimaryActionButton label="Add New Item" to="/inventory/create" />}
+      />
+  )
 
   if (isLoading) {
     return (
-      <ResourceListPage actions={headerActions}>
+      <ResourceListPage>
+        {toolbar}
         <TableSkeleton rows={8} columns={9} />
       </ResourceListPage>
     )
   }
 
   return (
-    <ResourceListPage actions={headerActions}>
+    <ResourceListPage>
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error?.message || 'Failed to load inventory. You can retry from the browser or after signing in again.'}
@@ -267,21 +322,7 @@ function InventoryIndexComponent() {
         />
       </ListStatsGrid>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <TextField
-          fullWidth
-          placeholder="Search by name, SKU, or category..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Paper>
+      {toolbar}
 
       <DataTable<InventoryItemDto>
         columns={columns}
