@@ -60,18 +60,13 @@ function writeStoredDrawerCollapsed(value: boolean) {
   try {
     localStorage.setItem(DRAWER_COLLAPSED_STORAGE_KEY, String(value))
   } catch {
-    /* ignore */
+    /* skippa */
   }
 }
 
 const DRAWER_WIDTH = 240
 const DRAWER_WIDTH_MINI = 72
 
-/**
- * Sidebar highlight: which drawer `item.path` matches the current URL (prefix + `/dashboard` exact-only).
- * Breadcrumb copy and structure live in `@/lib/appBreadcrumbs` (`getAppBreadcrumbs`); that module maps
- * pathnames to labels, not to “which nav row is active,” so we keep matching rules here on purpose.
- */
 function drawerItemActive(pathname: string, itemPath: string): boolean {
   const p = pathname.replace(/\/+$/, '') || '/'
   const m = itemPath.replace(/\/+$/, '') || '/'
