@@ -1,6 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
@@ -10,7 +11,6 @@ import {
   Alert,
   Box,
   Typography,
-  Paper,
   Button,
   Card,
   CardContent,
@@ -347,29 +347,26 @@ function InvoicesIndexComponent() {
   const paidInvoices = list.filter((invoice) => normalizeInvoiceStatus(invoice.status) === 'paid').length
   const overdueInvoices = list.filter((invoice) => normalizeInvoiceStatus(invoice.status) === 'overdue').length
 
-  return (
-    <ResourceListPage
-      actions={
-        <>
-          <Button
-            variant="outlined"
-            startIcon={<Download />}
-            onClick={handleExportClick}
-            disabled={filteredInvoices.length === 0}
-            sx={{
-              borderColor: 'success.main',
-              color: 'success.main',
-              '&:hover': { borderColor: 'success.main', backgroundColor: 'success.main', color: 'white' },
-              '&:disabled': { borderColor: 'action.disabled', color: 'action.disabled' },
-            }}
-            ref={exportBtnRef}
-          >
-            Export Excel
-          </Button>
-          <PrimaryActionButton label="New Invoice" to="/invoices/create" />
-        </>
-      }
+  const exportButton = (
+    <Button
+      variant="outlined"
+      startIcon={<Download />}
+      onClick={handleExportClick}
+      disabled={filteredInvoices.length === 0}
+      sx={{
+        borderColor: 'success.main',
+        color: 'success.main',
+        '&:hover': { borderColor: 'success.main', backgroundColor: 'success.main', color: 'white' },
+        '&:disabled': { borderColor: 'action.disabled', color: 'action.disabled' },
+      }}
+      ref={exportBtnRef}
     >
+      Export Excel
+    </Button>
+  )
+
+  return (
+    <ResourceListPage>
       <ListStatsGrid compact={compactList}>
         <ListStatCard icon={Receipt} iconColor="primary" value={totalInvoices.toLocaleString()} label="Total Invoices" />
         <ListStatCard icon={CheckCircle} iconColor="success" value={paidInvoices.toLocaleString()} label="Paid" />
@@ -388,17 +385,11 @@ function InvoicesIndexComponent() {
         </Alert>
       )}
 
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
-            gap: 2,
-            alignItems: 'center',
-          }}
-        >
+      <ListPageToolbar
+        search={
           <TextField
             fullWidth
+            size="small"
             placeholder="Search by invoice number, client, or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -410,11 +401,14 @@ function InvoicesIndexComponent() {
               ),
             }}
           />
-          <FormControl fullWidth>
-            <InputLabel>Status Filter</InputLabel>
+        }
+        filters={
+          <FormControl fullWidth size="small">
+            <InputLabel id="invoices-status-filter-label">Status</InputLabel>
             <Select
+              labelId="invoices-status-filter-label"
               value={filterStatus}
-              label="Status Filter"
+              label="Status"
               onChange={(e) => setFilterStatus(e.target.value as 'all' | InvoiceStatus)}
             >
               <MenuItem value="all">All Statuses</MenuItem>
@@ -424,8 +418,14 @@ function InvoicesIndexComponent() {
               <MenuItem value="draft">Draft</MenuItem>
             </Select>
           </FormControl>
-        </Box>
-      </Paper>
+        }
+        actions={
+          <>
+            {exportButton}
+            <PrimaryActionButton label="New Invoice" to="/invoices/create" />
+          </>
+        }
+      />
 
       {isLoading ? (
         <TableSkeleton />

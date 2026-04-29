@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Typography,
-  Paper,
   Button,
   IconButton,
   Chip,
@@ -12,6 +11,10 @@ import {
   Card,
   CardContent,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import { Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
@@ -19,6 +22,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { useMemo, useState } from 'react'
 import { TableSkeleton } from '@/components/Skeletons'
 import { ResourceListPage } from '@/components/ResourceListPage'
+import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
 import { ListStatsGrid } from '@/components/ListStatsGrid'
 import { ListStatCard } from '@/components/ListStatCard'
@@ -81,6 +85,7 @@ function UsersComponent() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebouncedValue(searchTerm, LIST_SEARCH_DEBOUNCE_MS)
+  const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all')
   const { data: apiUsers = [], isLoading, isError, error } = useUsers()
 
   const users: UserRow[] = useMemo(
@@ -97,15 +102,19 @@ function UsersComponent() {
   )
 
   const filteredUsers = useMemo(() => {
-    if (!debouncedSearchTerm.trim()) return users
+    let list = users
+    if (filterRole !== 'all') {
+      list = list.filter((u) => u.role === filterRole)
+    }
+    if (!debouncedSearchTerm.trim()) return list
     const q = debouncedSearchTerm.toLowerCase()
-    return users.filter(
+    return list.filter(
       (user) =>
         user.name.toLowerCase().includes(q) ||
         user.email.toLowerCase().includes(q) ||
         user.role.toLowerCase().includes(q)
     )
-  }, [users, debouncedSearchTerm])
+  }, [users, debouncedSearchTerm, filterRole])
 
   const columns: DataTableColumn<UserRow>[] = useMemo(
     () => [
@@ -199,16 +208,7 @@ function UsersComponent() {
   const standardUsers = users.filter((u) => u.role === 'user').length
 
   return (
-    <ResourceListPage
-      actions={
-        <PrimaryActionButton
-          label="Add New User"
-          to="/users/"
-          disabled
-          disabledTooltip={USER_ACTIONS_UNAVAILABLE}
-        />
-      }
-    >
+    <ResourceListPage>
       <ListStatsGrid compact={compactList}>
         <ListStatCard icon={Person} iconColor="primary" value={totalUsers.toLocaleString()} label="Total Users" />
         <ListStatCard icon={PersonAdd} iconColor="success" value={activeUsers.toLocaleString()} label="Active Users" />
@@ -227,21 +227,47 @@ function UsersComponent() {
         </Alert>
       )}
 
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <TextField
-          fullWidth
-          placeholder="Search by name, email, or role..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Paper>
+      <ListPageToolbar
+        search={
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search by name, email, or role..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+        }
+        filters={
+          <FormControl fullWidth size="small">
+            <InputLabel id="users-role-filter-label">Role</InputLabel>
+            <Select
+              labelId="users-role-filter-label"
+              label="Role"
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value as 'all' | 'admin' | 'user')}
+            >
+              <MenuItem value="all">All roles</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="user">User</MenuItem>
+            </Select>
+          </FormControl>
+        }
+        actions={
+          <PrimaryActionButton
+            label="Add New User"
+            to="/users/"
+            disabled
+            disabledTooltip={USER_ACTIONS_UNAVAILABLE}
+          />
+        }
+      />
 
       {isLoading ? (
         <TableSkeleton />
