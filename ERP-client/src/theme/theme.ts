@@ -266,15 +266,15 @@ export const spacing = {
 
 export const borderRadius = {
   none: '0',
-  sm: '0.25rem',
-  md: '0.625rem',
-  lg: '0.875rem',
-  xl: '1rem',
-  xxl: '1.5rem',
+  sm: '2px',
+  md: '4px',
+  lg: '4px',
+  xl: '6px',
+  xxl: '10px',
   full: '9999px',
 }
 
-export const shapeBorderRadiusPx = 10
+export const shapeBorderRadiusPx = 4
 
 export const transitions = {
   fast: 'all 0.15s ease',

@@ -59,7 +59,7 @@ export function InvoiceStatusChart({ slices, total }: InvoiceStatusChartProps) {
                     contentStyle={{
                       backgroundColor: theme.palette.background.paper,
                       border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: '8px',
+                      borderRadius: '4px',
                       boxShadow: theme.shadows[2],
                       color: theme.palette.text.primary,
                     }}

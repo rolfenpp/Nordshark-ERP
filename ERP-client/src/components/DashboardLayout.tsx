@@ -226,14 +226,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       mb: 1,
                       minHeight: 40,
                       py: 1,
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       justifyContent: desktopMini ? 'center' : 'flex-start',
                       px: desktopMini ? 1 : 2,
                       backgroundColor: isActive ? drawerItemActiveBg : 'transparent',
                       color: drawerLabelInactive,
                       overflow: 'hidden',
                       '&.MuiListItemButton-root': {
-                        borderRadius: '6px',
+                        borderRadius: '4px',
                       },
                       '&:hover': {
                         backgroundColor: isActive ? drawerItemActiveHoverBg : 'rgba(255, 255, 255, 0.06)',

@@ -114,7 +114,7 @@ export function RevenueChart({
                 contentStyle={{
                   backgroundColor: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   boxShadow: theme.shadows[4],
                   color: theme.palette.text.primary,
                 }}

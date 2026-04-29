@@ -74,7 +74,7 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
           background: 'transparent',
           textTransform: 'none',
           position: 'relative',
-          borderRadius: '6px',
+          borderRadius: '4px',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -82,7 +82,7 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
             left: 0,
             right: 0,
             bottom: 0,
-            borderRadius: '6px',
+            borderRadius: '4px',
             padding: '2px',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
             mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
@@ -163,7 +163,7 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
                   textAlign: 'center',
                   py: 1,
                   px: 0.5,
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   ...(plan.recommended
                     ? {
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -228,7 +228,7 @@ export function UpgradeButton({ onClick }: { onClick?: () => void }) {
                       width: 100,
                       flexShrink: 0,
                       textAlign: 'center',
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       py: 0.5,
                       px: 0.5,
                       backgroundColor: recommended ? 'rgba(102, 126, 234, 0.08)' : 'transparent',
