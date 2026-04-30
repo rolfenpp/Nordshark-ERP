@@ -1,6 +1,5 @@
 import {
   borderRadius,
-  breakpoints,
   colors,
   gradients,
   navChrome,
@@ -15,10 +14,10 @@ export const authLandingPageSx = {
   minHeight: '100dvh',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: { xs: 'stretch', md: 'center' },
-  justifyContent: { xs: 'flex-start', md: 'center' },
-  px: { xs: 0, md: spacing.sm },
-  py: { xs: 0, md: spacing.md },
+  alignItems: 'stretch',
+  justifyContent: 'flex-start',
+  px: 0,
+  py: 0,
   gap: 0,
   overflow: 'auto',
   bgcolor: colors.light.canvas,
@@ -28,20 +27,17 @@ export const authLandingPageSx = {
 
 export const authLandingCardSx = {
   width: '100%',
-  maxWidth: { xs: '100%', md: breakpoints.xl },
-  mx: { xs: 0, md: 'auto' },
+  maxWidth: '100%',
+  mx: 0,
   flexShrink: 0,
   display: 'flex',
   flexDirection: { xs: 'column', md: 'row' },
   alignItems: 'stretch',
-  minHeight: {
-    xs: '100dvh',
-    md: `calc(100dvh - 2 * ${spacing.md})`,
-  },
-  maxHeight: { xs: '100dvh', md: `calc(100dvh - 2 * ${spacing.md})` },
+  minHeight: '100dvh',
+  maxHeight: { xs: '100dvh', md: 'none' },
   borderRadius: borderRadius.none,
   overflow: 'hidden',
-  boxShadow: { xs: 'none', md: colors.shadows.cardLightHover },
+  boxShadow: 'none',
   bgcolor: navChrome.background,
 }
 

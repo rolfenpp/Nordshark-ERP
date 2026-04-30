@@ -190,7 +190,7 @@ function LoginRoute() {
                 }
                 sx={authLandingPrimarySubmitSx}
               >
-                {loginMutation.isPending ? 'Signing in…' : 'Login'}
+                {loginMutation.isPending ? 'Signing in' : 'Sign in'}
               </Button>
             </Stack>
           </Box>
