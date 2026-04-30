@@ -29,6 +29,8 @@ import {
 } from '@mui/icons-material'
 import { useAuth } from '@/auth/AuthProvider'
 import { askAI } from '@/lib/ai'
+import { aiAssistantQuestionSchema } from '@/schemas/ai'
+import { showZodError } from '@/lib/zodToast'
 
 interface Message {
   id: string
@@ -52,8 +54,13 @@ export const AIAssistant = () => {
   const responseContainerRef = useRef<HTMLDivElement>(null)
 
   const handleAsk = async () => {
-    if (!question.trim()) return
-    
+    const parsed = aiAssistantQuestionSchema.safeParse({ question })
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
+    }
+    const trimmed = parsed.data.question
+
     setLoading(true)
     const context = {
       currentPage: window.location.pathname,
@@ -63,12 +70,12 @@ export const AIAssistant = () => {
     }
     
     try {
-      const response = await askAI(question, context)
+      const response = await askAI(trimmed, context)
       setAnswer(response || '')
       
       const newMessage: Message = {
         id: Date.now().toString(),
-        question: question,
+        question: trimmed,
         answer: response || '',
         timestamp: new Date()
       }

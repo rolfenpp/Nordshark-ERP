@@ -20,7 +20,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { NordsharkBrand } from '@/components/NordsharkBrand'
 import { AppToastContainer } from '@/components/AppToastContainer'
 import { AuthLandingLayout } from '@/components/AuthLandingLayout'
-import { showSuccess, showError } from '@/lib/toast'
+import { showSuccess } from '@/lib/toast'
 import {
   loginUnreachableMessage,
   formatLoginMutationError,
@@ -29,6 +29,8 @@ import { DEFAULT_AFTER_AUTH, getSafeRedirectPath } from '@/lib/authRedirect'
 import { getStoredToken } from '@/lib/axios'
 import { useLogin } from '@/api/auth'
 import { API_ROOT } from '@/config'
+import { loginRequestSchema } from '@/schemas/auth'
+import { showZodError } from '@/lib/zodToast'
 import {
   authLandingAlertErrorSx,
   authLandingDarkUnderlineSx,
@@ -55,14 +57,6 @@ export const Route = createFileRoute('/login')({
   component: LoginRoute,
 })
 
-function basicLoginClientValid(email: string, password: string): string | null {
-  const em = email.trim()
-  if (!em) return 'Enter your email.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return 'Enter a valid email address.'
-  if (!password) return 'Enter your password.'
-  return null
-}
-
 function LoginRoute() {
   const { login: setAuthToken, ready, isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -85,14 +79,14 @@ function LoginRoute() {
     const f = new FormData(e.currentTarget)
     const email = String(f.get('email') || '')
     const password = String(f.get('password') || '')
-    const clientErr = basicLoginClientValid(email, password)
-    if (clientErr) {
-      showError(clientErr)
+    const parsed = loginRequestSchema.safeParse({ email, password })
+    if (!parsed.success) {
+      showZodError(parsed.error)
       return
     }
 
     loginMutation.mutate(
-      { email: email.trim(), password },
+      parsed.data,
       {
         onSuccess: (data) => {
           setAuthToken(data.token)

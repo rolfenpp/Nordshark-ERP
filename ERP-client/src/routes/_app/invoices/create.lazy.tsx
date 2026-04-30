@@ -33,9 +33,12 @@ import {
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { addDays, format } from 'date-fns'
-import { useCreateInvoice, type CreateInvoiceDto } from '@/api/invoices'
+import { useCreateInvoice } from '@/api/invoices'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
+import { createInvoiceDtoSchema } from '@/schemas/invoices'
+import { showError } from '@/lib/toast'
+import { showZodError } from '@/lib/zodToast'
 
 export const Route = createLazyFileRoute('/_app/invoices/create')({
   component: CreateInvoiceComponent,
@@ -70,14 +73,14 @@ function CreateInvoiceComponent() {
     { id: '1', description: '', quantity: 1, rate: 0, amount: 0 }
   ])
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
   }
 
-  const handleItemChange = (id: string, field: string, value: any) => {
+  const handleItemChange = (id: string, field: string, value: string | number) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value }
@@ -116,10 +119,20 @@ function CreateInvoiceComponent() {
 
   const handleSubmit = () => {
     const number = formData.invoiceNumber.trim() || `INV-${Date.now()}`
-    const body: CreateInvoiceDto = {
+    const lines = items
+      .filter((it) => it.description.trim() !== '')
+      .map((it, i) => ({
+        lineNumber: i + 1,
+        description: it.description.trim(),
+        quantity: it.quantity,
+        unitPrice: it.rate,
+      }))
+    const issueDate = formYmdToApiIso(formData.date)
+    const dueDate = formYmdToApiIso(formData.dueDate)
+    const body = {
       invoiceNumber: number,
-      issueDate: formYmdToApiIso(formData.date)!,
-      dueDate: formYmdToApiIso(formData.dueDate)!,
+      issueDate,
+      dueDate,
       clientName: formData.client.trim() || 'Client',
       clientEmail: formData.clientEmail || undefined,
       clientAddress: formData.clientAddress || undefined,
@@ -128,19 +141,18 @@ function CreateInvoiceComponent() {
       terms: formData.terms,
       currency: formData.currency,
       notes: formData.notes || undefined,
-      lines: items
-        .filter((it) => it.description.trim() !== '')
-        .map((it, i) => ({
-          lineNumber: i + 1,
-          description: it.description,
-          quantity: it.quantity,
-          unitPrice: it.rate,
-        })),
+      lines,
     }
-    if (body.lines.length === 0) {
+    if (lines.length === 0) {
+      showError('Add at least one line item with a description.')
       return
     }
-    create.mutate(body, {
+    const parsed = createInvoiceDtoSchema.safeParse(body)
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
+    }
+    create.mutate(parsed.data, {
       onSuccess: (res) => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(res.id) } }),
     })
   }

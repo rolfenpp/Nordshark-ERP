@@ -31,7 +31,7 @@ import {
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useCreateInventoryItem, type CreateInventoryItemDto } from '@/api/inventory'
-import { z } from 'zod'
+import { inventoryCreateFormSchema, type InventoryCreateFormValues } from '@/schemas/inventory'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { showSuccess, showError } from '@/lib/toast'
@@ -40,32 +40,6 @@ import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 export const Route = createFileRoute('/_app/inventory/create')({
   component: CreateInventoryComponent,
 })
-
-const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(200, 'Name must be 200 characters or less'),
-  description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
-  category: z.string().max(100, 'Category must be 100 characters or less').optional(),
-  sku: z.string().max(100, 'SKU must be 100 characters or less').optional(),
-  quantityOnHand: z.number().min(0, 'Quantity must be 0 or greater'),
-  reorderLevel: z.number().min(0, 'Reorder level must be 0 or greater').optional(),
-  unitPrice: z.number().min(0, 'Unit price must be 0 or greater'),
-  location: z.string().optional(),
-  supplier: z.string().optional(),
-  tags: z.string().optional(),
-  isActive: z.boolean(),
-  trackExpiry: z.boolean(),
-  expiryDate: z.string().optional(),
-}).refine((data) => {
-  if (data.trackExpiry && !data.expiryDate) {
-    return false
-  }
-  return true
-}, {
-  message: 'Expiry date is required when tracking expiry',
-  path: ['expiryDate']
-})
-
-type FormData = z.infer<typeof schema>
 
 function CreateInventoryComponent() {
   const navigate = useNavigate()
@@ -92,8 +66,8 @@ function CreateInventoryComponent() {
     watch,
     setValue,
     formState: { isSubmitting }
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<InventoryCreateFormValues>({
+    resolver: zodResolver(inventoryCreateFormSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -136,7 +110,7 @@ function CreateInventoryComponent() {
     setShowAddCategoryDialog(false)
   }
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: InventoryCreateFormValues) => {
     const createData: CreateInventoryItemDto = {
       name: data.name.trim(),
       description: data.description?.trim() || undefined,
@@ -144,7 +118,7 @@ function CreateInventoryComponent() {
       sku: data.sku?.trim() || undefined,
       quantityOnHand: data.quantityOnHand,
       unitPrice: data.unitPrice,
-      reorderLevel: data.reorderLevel || undefined,
+      reorderLevel: data.reorderLevel ?? undefined,
     }
 
     createMutation.mutate(createData, {

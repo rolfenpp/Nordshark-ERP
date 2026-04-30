@@ -29,6 +29,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { useInventoryItem, useUpdateInventoryItem, type UpdateInventoryItemDto } from '@/api/inventory'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 import { EditFormRouteSkeleton } from '@/components/Skeletons'
+import { updateInventoryItemDtoSchema } from '@/schemas/inventory'
+import { showZodError } from '@/lib/zodToast'
 
 export const Route = createFileRoute('/_app/inventory/edit/$itemId')({
   component: EditInventoryComponent,
@@ -97,8 +99,13 @@ function EditInventoryComponent() {
       unitPrice: parseFloat(formData.price) || 0,
       reorderLevel: formData.minQuantity ? parseInt(formData.minQuantity, 10) : undefined,
     }
+    const parsed = updateInventoryItemDtoSchema.safeParse(body)
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
+    }
     update.mutate(
-      { id, item: body },
+      { id, item: parsed.data },
       { onSuccess: () => navigate({ to: '/inventory/$itemId', params: { itemId: String(id) } }) }
     )
   }

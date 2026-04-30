@@ -29,6 +29,8 @@ import { useProject, useUpdateProject, type CreateProjectDto } from '@/api/proje
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 import { EditFormRouteSkeleton } from '@/components/Skeletons'
+import { createProjectDtoSchema } from '@/schemas/projects'
+import { showZodError } from '@/lib/zodToast'
 
 export const Route = createLazyFileRoute('/_app/projects/edit/$projectId')({
   component: EditProjectComponent,
@@ -96,8 +98,13 @@ function EditProjectComponent() {
       budget: formData.budget ? parseFloat(formData.budget) : undefined,
       tags: formData.tags.trim() || undefined,
     }
+    const parsed = createProjectDtoSchema.safeParse(body)
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
+    }
     update.mutate(
-      { id, body },
+      { id, body: parsed.data },
       {
         onSuccess: () => navigate({ to: '/projects/$projectId', params: { projectId: String(id) } }),
       }
