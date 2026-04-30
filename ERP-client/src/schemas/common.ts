@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-/** Trim, then enforce non-empty + same pattern historically used by auth routes */
 export const trimmedEmailSchema = () =>
   z
     .string()
@@ -12,7 +11,6 @@ export const trimmedEmailSchema = () =>
         .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Enter a valid email address.'),
     )
 
-/** Client → API: blanks become undefined; remaining value must match email pattern */
 export const optionalEmailOutbound = () =>
   z.preprocess(
     (v) => {

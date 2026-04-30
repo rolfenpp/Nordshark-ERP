@@ -6,7 +6,6 @@ export const loginRequestSchema = z.object({
   password: z.string().min(1, 'Enter your password.'),
 })
 
-/** Validates register form (+ confirm password); output matches `RegisterCompanyRequest` */
 export const registerWorkspaceFormSchema = z
   .object({
     companyName: z
