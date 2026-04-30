@@ -12,15 +12,15 @@ export const LOGIN_HERO_SLIDE_INTERVAL_MS = 6500
 
 export const loginHeroSlides = [
   {
-    src: joinPublicUrl('assets', 'login', 'coding.png'),
-    alt: 'Developers collaborating on code',
-  },
-  {
     src: joinPublicUrl('assets', 'login', 'holding-ipad-login.png'),
     alt: 'Team reviewing ERP on a tablet',
   },
   {
     src: joinPublicUrl('assets', 'login', 'meeting.png'),
     alt: 'Team meeting in the office',
+  },
+  {
+    src: joinPublicUrl('assets', 'login', 'coding.png'),
+    alt: 'Developers collaborating on code',
   },
 ] as const
