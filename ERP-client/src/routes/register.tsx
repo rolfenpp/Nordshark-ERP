@@ -19,12 +19,14 @@ import { useAuth } from '@/auth/AuthProvider'
 import { NordsharkBrand } from '@/components/NordsharkBrand'
 import { AppToastContainer } from '@/components/AppToastContainer'
 import { AuthLandingLayout } from '@/components/AuthLandingLayout'
-import { showSuccess, showError } from '@/lib/toast'
+import { showSuccess } from '@/lib/toast'
 import { formatRegisterMutationError } from '@/lib/authApiErrors'
 import { DEFAULT_AFTER_AUTH, getSafeRedirectPath } from '@/lib/authRedirect'
 import { getStoredToken } from '@/lib/axios'
 import { useRegisterCompany } from '@/api/companies'
 import { useLogin } from '@/api/auth'
+import { registerWorkspaceFormSchema } from '@/schemas/auth'
+import { showZodError } from '@/lib/zodToast'
 import { colors } from '@/theme/theme'
 import {
   authLandingAlertErrorSx,
@@ -46,19 +48,6 @@ export const Route = createFileRoute('/register')({
   },
   component: RegisterRoute,
 })
-
-function basicRegisterClientValid(
-  name: string,
-  email: string,
-  password: string,
-): string | null {
-  if (!name.trim()) return 'Enter your company name.'
-  const em = email.trim()
-  if (!em) return 'Enter your admin email.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return 'Enter a valid email address.'
-  if (!password) return 'Enter a password.'
-  return null
-}
 
 function RegisterRoute() {
   const { login, ready, isAuthenticated } = useAuth()
@@ -86,25 +75,25 @@ function RegisterRoute() {
     const adminPassword = String(f.get('password') || '')
     const confirm = String(f.get('confirmPassword') || '')
 
-    const basicErr = basicRegisterClientValid(name, adminEmail, adminPassword)
-    if (basicErr) {
-      showError(basicErr)
-      return
-    }
-
-    if (adminPassword !== confirm) {
-      showError('Passwords do not match.')
+    const parsed = registerWorkspaceFormSchema.safeParse({
+      companyName: name,
+      adminEmail,
+      adminPassword,
+      confirmPassword: confirm,
+    })
+    if (!parsed.success) {
+      showZodError(parsed.error)
       return
     }
 
     registerMutation.mutate(
-      { name, adminEmail, adminPassword },
+      parsed.data,
       {
         async onSuccess(data) {
           try {
             const loginData = await loginMutation.mutateAsync({
-              email: adminEmail,
-              password: adminPassword,
+              email: parsed.data.adminEmail,
+              password: parsed.data.adminPassword,
             })
             login(loginData.token)
           } catch {

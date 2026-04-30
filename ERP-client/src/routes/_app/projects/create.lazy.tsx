@@ -30,6 +30,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { useCreateProject, type CreateProjectDto } from '@/api/projects'
 import { formYmdToApiIso } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
+import { createProjectDtoSchema } from '@/schemas/projects'
+import { showZodError } from '@/lib/zodToast'
 
 export const Route = createLazyFileRoute('/_app/projects/create')({
   component: CreateProjectComponent,
@@ -86,7 +88,12 @@ function CreateProjectComponent() {
       budget: formData.budget ? parseFloat(formData.budget) : undefined,
       tags: formData.tags.trim() || undefined,
     }
-    create.mutate(body, { onSuccess: () => navigate({ to: '/projects/' }) })
+    const parsed = createProjectDtoSchema.safeParse(body)
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
+    }
+    create.mutate(parsed.data, { onSuccess: () => navigate({ to: '/projects/' }) })
   }
 
   const renderStepContent = (step: number) => {

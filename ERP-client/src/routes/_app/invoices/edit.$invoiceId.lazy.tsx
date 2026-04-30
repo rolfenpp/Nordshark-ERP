@@ -32,10 +32,13 @@ import {
 } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useInvoice, useUpdateInvoice, type UpdateInvoiceDto } from '@/api/invoices'
+import { useInvoice, useUpdateInvoice } from '@/api/invoices'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 import { EditFormRouteSkeleton } from '@/components/Skeletons'
+import { updateInvoiceDtoSchema } from '@/schemas/invoices'
+import { showError } from '@/lib/toast'
+import { showZodError } from '@/lib/zodToast'
 
 export const Route = createLazyFileRoute('/_app/invoices/edit/$invoiceId')({
   component: EditInvoiceComponent,
@@ -101,14 +104,14 @@ function EditInvoiceComponent() {
     )
   }, [inv])
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
   }
 
-  const handleItemChange = (id: string, field: string, value: any) => {
+  const handleItemChange = (id: string, field: string, value: string | number) => {
     setItems(prev => prev.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value }
@@ -146,10 +149,21 @@ function EditInvoiceComponent() {
   }
 
   const handleSubmit = () => {
-    const body: UpdateInvoiceDto = {
+    const lines = items
+      .filter((it) => it.description.trim() !== '')
+      .map((it, i) => ({
+        lineNumber: i + 1,
+        description: it.description.trim(),
+        quantity: it.quantity,
+        unitPrice: it.rate,
+      }))
+    const issueDate = formYmdToApiIso(formData.date)
+    const dueDate = formYmdToApiIso(formData.dueDate)
+    const paidDate = formYmdToApiIso(formData.paidDate)
+    const body = {
       invoiceNumber: formData.invoiceNumber,
-      issueDate: formYmdToApiIso(formData.date)!,
-      dueDate: formYmdToApiIso(formData.dueDate)!,
+      issueDate,
+      dueDate,
       clientName: formData.client,
       clientEmail: formData.clientEmail || undefined,
       clientAddress: formData.clientAddress || undefined,
@@ -159,16 +173,20 @@ function EditInvoiceComponent() {
       currency: formData.currency,
       notes: formData.notes || undefined,
       paymentMethod: formData.paymentMethod || undefined,
-      paidDate: formYmdToApiIso(formData.paidDate),
-      lines: items.map((it, i) => ({
-        lineNumber: i + 1,
-        description: it.description,
-        quantity: it.quantity,
-        unitPrice: it.rate,
-      })),
+      paidDate,
+      lines,
+    }
+    if (lines.length === 0) {
+      showError('Add at least one line item with a description.')
+      return
+    }
+    const parsed = updateInvoiceDtoSchema.safeParse(body)
+    if (!parsed.success) {
+      showZodError(parsed.error)
+      return
     }
     update.mutate(
-      { id, body },
+      { id, body: parsed.data },
       { onSuccess: () => navigate({ to: '/invoices/$invoiceId', params: { invoiceId: String(id) } }) }
     )
   }
