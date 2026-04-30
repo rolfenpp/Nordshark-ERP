@@ -1,3 +1,4 @@
+import { authLandingHeroUrl } from '@/assets/images'
 import {
   borderRadius,
   colors,
@@ -7,7 +8,7 @@ import {
   typography,
 } from '@/theme/theme'
 
-export const AUTH_LANDING_HERO_SRC = '/holding-ipad-login.png'
+export const AUTH_LANDING_HERO_SRC = authLandingHeroUrl
 
 export const authLandingPageSx = {
   boxSizing: 'border-box',
