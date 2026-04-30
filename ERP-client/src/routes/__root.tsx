@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider'
 import { AuthProvider, useAuth } from '@/auth/AuthProvider'
 import { AIAssistant } from '@/components/AIAssistant'
 import { Box, Alert } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { ThreeDot } from 'react-loading-indicators'
 
 const queryClient = new QueryClient({
@@ -19,20 +20,25 @@ const queryClient = new QueryClient({
 })
 
 function RootComponent() {
+  const theme = useTheme()
   const { isAuthenticated, ready, error } = useAuth()
 
   if (!ready) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           height: '100vh',
-          background: 'linear-gradient(135deg, #f8f9fa 0%, rgb(148, 116, 151) 100%)'
         }}
       >
-        <ThreeDot color="rgb(148, 116, 151)" size="medium" text="" textColor="" />
+        <ThreeDot
+          color={theme.palette.primary.main}
+          size="medium"
+          text=""
+          textColor=""
+        />
       </Box>
     )
   }
