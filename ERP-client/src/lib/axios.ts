@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_ROOT } from '../config'
+import { notifySessionInvalidate } from './authSessionSync'
 
 let accessToken: string | null = null
 
@@ -46,6 +47,7 @@ http.interceptors.response.use(
           if (newToken) return http(original)
         } catch (e) {
           setAccessToken(null)
+          notifySessionInvalidate()
           waiters.forEach(w => w(null))
           waiters = []
           return Promise.reject(e)

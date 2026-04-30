@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { http, setAccessToken } from '../lib/axios'
+import { subscribeSessionInvalidate } from '../lib/authSessionSync'
 
 export type AuthContextValue = {
   isAuthenticated: boolean
@@ -45,6 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false
     }
+  }, [])
+
+  useEffect(() => {
+    return subscribeSessionInvalidate(() => {
+      setToken(null)
+      setError(null)
+    })
   }, [])
 
   const value = useMemo<AuthContextValue>(

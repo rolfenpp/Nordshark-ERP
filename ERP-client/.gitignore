@@ -39,6 +39,8 @@
 /build
 coverage/
 dist/
+playwright-report/
+test-results/
 ehthumbs.db
 env.development
 logs

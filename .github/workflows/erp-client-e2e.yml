@@ -1,0 +1,32 @@
+name: ERP client e2e
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'ERP-client/**'
+      - '.github/workflows/erp-client-e2e.yml'
+  pull_request:
+    paths:
+      - 'ERP-client/**'
+      - '.github/workflows/erp-client-e2e.yml'
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ERP-client
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ERP-client/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          CI: true
