@@ -1,8 +1,11 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { Box, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
+import { ThreeDot } from 'react-loading-indicators'
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { LOGIN_HERO_SLIDE_INTERVAL_MS, loginHeroSlides } from '@/assets/images'
+import { preloadLoginHeroSlides } from '@/lib/preloadLoginHero'
 import {
   authLandingCardSx,
   authLandingFormColumnSx,
@@ -58,9 +61,59 @@ function AuthHeroStaticImage() {
 }
 
 export function AuthLandingLayout({ children, contentMaxWidth }: AuthLandingLayoutProps) {
+  const theme = useTheme()
+  const [heroAssetsReady, setHeroAssetsReady] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const fallthrough = window.setTimeout(() => {
+      if (!cancelled) setHeroAssetsReady(true)
+    }, 30_000)
+
+    void preloadLoginHeroSlides()
+      .then(() => {
+        if (!cancelled) setHeroAssetsReady(true)
+      })
+      .catch(() => {
+        if (!cancelled) setHeroAssetsReady(true)
+      })
+      .finally(() => {
+        window.clearTimeout(fallthrough)
+      })
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(fallthrough)
+    }
+  }, [])
+
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)', {
     defaultMatches: false,
   })
+
+  if (!heroAssetsReady) {
+    return (
+      <Box
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        sx={{
+          ...authLandingPageSx,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ThreeDot
+          color={theme.palette.primary.main}
+          size="medium"
+          text=""
+          textColor=""
+          aria-label="Loading"
+        />
+      </Box>
+    )
+  }
 
   return (
     <Box sx={authLandingPageSx}>
