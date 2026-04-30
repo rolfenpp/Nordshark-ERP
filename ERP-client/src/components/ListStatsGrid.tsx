@@ -11,9 +11,8 @@ export function ListStatsGrid({ compact, children, sx }: ListStatsGridProps) {
   return (
     <Box
       sx={{
-        display: 'grid',
+        display: { xs: 'none', sm: 'grid' },
         gridTemplateColumns: {
-          xs: '1fr',
           sm: 'repeat(2, 1fr)',
           md: compact ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
         },
