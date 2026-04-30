@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material'
 import { useAuth } from '@/auth/AuthProvider'
 import { NordsharkBrand } from './NordsharkBrand'
+import { NordsharkSidebarLogo } from './NordsharkSidebarLogo'
 import { UpgradeButton } from './UpgradeButton'
 import { AppToolbarBreadcrumbs } from './AppToolbarBreadcrumbs'
 import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
@@ -188,7 +189,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <NordsharkBrand size="medium" variant="onDark" />
           </Box>
         ) : (
-          <Box sx={{ width: 40, height: 8 }} aria-hidden />
+          <NordsharkSidebarLogo />
         )}
       </Box>
 

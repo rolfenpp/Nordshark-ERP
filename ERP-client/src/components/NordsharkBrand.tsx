@@ -15,8 +15,7 @@ export function NordsharkBrand({ size = 'medium', variant = 'onLight' }: Nordsha
 
   const config = sizeConfig[size]
 
-  const multiColorGradient =
-    'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)'
+  const brandGradient = `linear-gradient(135deg, ${colors.primary[700]} 0%, ${colors.primary[500]} 45%, ${colors.primary[300]} 100%)`
 
   const textColor = variant === 'onDark' ? colors.text.primary : colors.light.textPrimary
   const wordWeight = 400
@@ -29,7 +28,7 @@ export function NordsharkBrand({ size = 'medium', variant = 'onLight' }: Nordsha
         alignItems: 'center',
         cursor: 'pointer',
         '&:hover .brand-nord': {
-          background: multiColorGradient,
+          background: brandGradient,
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -67,7 +66,7 @@ export function NordsharkBrand({ size = 'medium', variant = 'onLight' }: Nordsha
           className="brand-shark"
           sx={{
             fontWeight: wordWeight,
-            background: multiColorGradient,
+            background: brandGradient,
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
