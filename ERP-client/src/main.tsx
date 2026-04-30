@@ -7,6 +7,7 @@ import '@fontsource/poppins/600.css'
 import 'react-toastify/dist/ReactToastify.css'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { Box } from '@mui/material'
@@ -58,6 +59,9 @@ function AuthReadyGate({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      {import.meta.env.DEV && (
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+      )}
       <ThemeProvider>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={appDateLocale}>
           <AuthProvider>
