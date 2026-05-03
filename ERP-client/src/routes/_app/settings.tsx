@@ -18,24 +18,25 @@ import {
 import { Save, Notifications, Security, Palette } from '@mui/icons-material'
 import { useState } from 'react'
 import { formatDisplayDate } from '@/lib/dates'
+import { useTheme as useAppTheme } from '@/theme/ThemeProvider'
+import type { AppThemeMode } from '@/theme/theme'
 
 export const Route = createFileRoute('/_app/settings')({
   component: SettingsComponent,
 })
 
 function SettingsComponent() {
+  const { mode, setTheme } = useAppTheme()
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     sms: false
   })
-  
-  const [theme, setTheme] = useState('light')
   const [language, setLanguage] = useState('en')
   const [autoSave, setAutoSave] = useState(true)
 
   const handleSave = () => {
-    console.log('Settings saved:', { notifications, theme, language, autoSave })
+    console.log('Settings saved:', { notifications, themeMode: mode, language, autoSave })
   }
 
   return (
@@ -111,13 +112,12 @@ function SettingsComponent() {
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel>Theme</InputLabel>
                     <Select
-                      value={theme}
+                      value={mode}
                       label="Theme"
-                      onChange={(e) => setTheme(e.target.value)}
+                      onChange={(e) => setTheme(e.target.value as AppThemeMode)}
                     >
                       <MenuItem value="light">Light</MenuItem>
                       <MenuItem value="dark">Dark</MenuItem>
-                      <MenuItem value="auto">Auto</MenuItem>
                     </Select>
                   </FormControl>
                   
@@ -191,7 +191,8 @@ function SettingsComponent() {
           </Box>
 
           <Alert severity="info" sx={{ mt: 3 }}>
-            Changes will take effect after saving. Some settings may require a page refresh.
+            Theme applies immediately and is remembered in this browser. Other options here are not
+            persisted until wired up.
           </Alert>
     </Box>
   )
