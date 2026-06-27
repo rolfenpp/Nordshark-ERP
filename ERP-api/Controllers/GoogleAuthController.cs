@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
+
+namespace ErpApi;
 
 [ApiController]
 [Route("api/account")]
@@ -70,6 +71,7 @@ public class GoogleAccountController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user!);
         var claims = await _userManager.GetClaimsAsync(user!);
         var token = _jwtTokenHelper.GenerateToken(user!, roles, claims);
+        RefreshTokenCookies.Set(Response, _jwtTokenHelper, user!);
 
         return Ok(new { token });
     }

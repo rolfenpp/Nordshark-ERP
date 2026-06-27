@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
+using ErpApi;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -56,7 +57,7 @@ public class AccountController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Permissions.ManageUsers)]
     [HttpPost("users/basic")]
     public async Task<IActionResult> CreateUserBasic([FromBody] CreateUserBasicModel model)
     {
@@ -102,7 +103,7 @@ public class AccountController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Permissions.ManageUsers)]
     [HttpPost("users")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserModel model)
     {
@@ -148,7 +149,7 @@ public class AccountController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Permissions.AssignPermissions)]
     [HttpGet("users/{userId}/permissions")]
     public async Task<IActionResult> GetUserPermissions(string userId)
     {
@@ -172,7 +173,7 @@ public class AccountController : ControllerBase
         [Required] public IEnumerable<string> Permissions { get; set; } = Array.Empty<string>();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Permissions.AssignPermissions)]
     [HttpPut("users/{userId}/permissions")]
     public async Task<IActionResult> SetUserPermissions(string userId, [FromBody] SetPermissionsRequest req)
     {
@@ -212,7 +213,7 @@ public class AccountController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Permissions.ManageUsers)]
     [HttpPost("users/{userId}/invite")]
     public async Task<IActionResult> SendInvite(string userId)
     {
@@ -297,15 +298,7 @@ public class AccountController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
         var token = _jwtTokenHelper.GenerateToken(user, roles, claims);
-
-        var refresh = _jwtTokenHelper.GenerateRefreshToken(user);
-        Response.Cookies.Append("rt", refresh, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/"
-        });
+        RefreshTokenCookies.Set(Response, _jwtTokenHelper, user);
 
         return Ok(new { token, accessToken = token });
     }
@@ -336,15 +329,7 @@ public class AccountController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
         var access = _jwtTokenHelper.GenerateToken(user, roles, claims);
-
-        var nextRefresh = _jwtTokenHelper.GenerateRefreshToken(user);
-        Response.Cookies.Append("rt", nextRefresh, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/"
-        });
+        RefreshTokenCookies.Set(Response, _jwtTokenHelper, user);
 
         return Ok(new
         {
