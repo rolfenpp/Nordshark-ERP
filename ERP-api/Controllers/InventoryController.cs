@@ -1,33 +1,29 @@
-using ErpApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
+namespace ErpApi;
+
+[RequireTenant]
 [ApiController]
 [Route("api/inventory")]
 [Authorize]
-public class InventoryController : ControllerBase
+public class InventoryController : TenantApiController
 {
     private readonly ApplicationDbContext _db;
-    private readonly ITenantProvider _tenantProvider;
 
     public InventoryController(ApplicationDbContext db, ITenantProvider tenantProvider)
+        : base(tenantProvider)
     {
         _db = db;
-        _tenantProvider = tenantProvider;
     }
-
-    private int GetCompanyId() => _tenantProvider.CompanyId;
 
     [HttpGet]
     [Authorize(Policy = Permissions.ViewInventory)]
     public async Task<ActionResult<IEnumerable<InventoryItemDto>>> GetAll()
     {
-        var companyId = GetCompanyId();
-
         var items = await _db.InventoryItems
-            .Where(i => i.CompanyId == companyId)
             .OrderBy(i => i.Name)
             .Select(i => new InventoryItemDto
             {
@@ -54,10 +50,8 @@ public class InventoryController : ControllerBase
     [Authorize(Policy = Permissions.ViewInventory)]
     public async Task<ActionResult<InventoryItemDto>> GetById(int id)
     {
-        var companyId = GetCompanyId();
-
         var item = await _db.InventoryItems
-            .Where(i => i.Id == id && i.CompanyId == companyId)
+            .Where(i => i.Id == id)
             .Select(i => new InventoryItemDto
             {
                 Id = i.Id,
@@ -86,12 +80,11 @@ public class InventoryController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var companyId = GetCompanyId();
         var sku = (dto.Sku ?? string.Empty).Trim();
 
         if (!string.IsNullOrEmpty(sku))
         {
-            var exists = await _db.InventoryItems.AnyAsync(i => i.CompanyId == companyId && i.Sku == sku);
+            var exists = await _db.InventoryItems.AnyAsync(i => i.Sku == sku);
             if (exists) return Conflict("An item with this SKU already exists in your company.");
         }
 
@@ -107,7 +100,7 @@ public class InventoryController : ControllerBase
             QuantityOnHand = dto.QuantityOnHand,
             UnitPrice = dto.UnitPrice,
             ReorderLevel = dto.ReorderLevel,
-            CompanyId = companyId,
+            CompanyId = CompanyId,
             CreatedUtc = DateTime.UtcNow
         };
 
@@ -140,9 +133,7 @@ public class InventoryController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var companyId = GetCompanyId();
-
-        var entity = await _db.InventoryItems.FirstOrDefaultAsync(i => i.Id == id && i.CompanyId == companyId);
+        var entity = await _db.InventoryItems.FirstOrDefaultAsync(i => i.Id == id);
         if (entity is null) return NotFound();
 
         if (dto.Sku is not null)
@@ -152,7 +143,7 @@ public class InventoryController : ControllerBase
             {
                 if (!string.IsNullOrEmpty(newSku))
                 {
-                    var skuTaken = await _db.InventoryItems.AnyAsync(i => i.CompanyId == companyId && i.Sku == newSku && i.Id != id);
+                    var skuTaken = await _db.InventoryItems.AnyAsync(i => i.Sku == newSku && i.Id != id);
                     if (skuTaken) return Conflict("An item with this SKU already exists in your company.");
                 }
                 entity.Sku = newSku;
@@ -178,9 +169,7 @@ public class InventoryController : ControllerBase
     [Authorize(Policy = Permissions.DeleteInventory)]
     public async Task<IActionResult> Delete(int id)
     {
-        var companyId = GetCompanyId();
-
-        var entity = await _db.InventoryItems.FirstOrDefaultAsync(i => i.Id == id && i.CompanyId == companyId);
+        var entity = await _db.InventoryItems.FirstOrDefaultAsync(i => i.Id == id);
         if (entity is null) return NotFound();
 
         _db.InventoryItems.Remove(entity);

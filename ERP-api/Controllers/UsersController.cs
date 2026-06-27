@@ -3,29 +3,28 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+namespace ErpApi;
+
+[RequireTenant]
 [ApiController]
 [Route("api/users")]
 [Authorize]
-public class UsersController : ControllerBase
+public class UsersController : TenantApiController
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ITenantProvider _tenantProvider;
 
     public UsersController(UserManager<ApplicationUser> userManager, ITenantProvider tenantProvider)
+        : base(tenantProvider)
     {
         _userManager = userManager;
-        _tenantProvider = tenantProvider;
     }
 
-    private int GetCompanyId() => _tenantProvider.CompanyId;
-
     [HttpGet]
+    [Authorize(Policy = Permissions.ManageUsers)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
-        var companyId = GetCompanyId();
-
         var baseUsers = await _userManager.Users
-            .Where(u => u.CompanyId == companyId)
+            .Where(u => u.CompanyId == CompanyId)
             .OrderBy(u => u.Email)
             .Select(u => new { u.Id, u.Email, u.EmailConfirmed })
             .ToListAsync();
@@ -49,12 +48,11 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = Permissions.ManageUsers)]
     public async Task<ActionResult<UserDto>> GetById(string id)
     {
-        var companyId = GetCompanyId();
-
         var u = await _userManager.FindByIdAsync(id);
-        if (u is null || u.CompanyId != companyId) return NotFound();
+        if (u is null || u.CompanyId != CompanyId) return NotFound();
 
         var roles = await _userManager.GetRolesAsync(u);
         return Ok(new UserDto

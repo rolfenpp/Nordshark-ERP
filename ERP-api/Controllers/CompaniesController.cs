@@ -5,25 +5,26 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using ErpApi.Services;
 
+namespace ErpApi;
+
 [ApiController]
 [Route("api/companies")]
-public class CompaniesController : ControllerBase
+public class CompaniesController : TenantApiController
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly JwtTokenHelper _jwtTokenHelper;
-    private readonly ITenantProvider _tenantProvider;
 
     public CompaniesController(
         ApplicationDbContext db,
         UserManager<ApplicationUser> userManager,
         JwtTokenHelper jwtTokenHelper,
         ITenantProvider tenantProvider)
+        : base(tenantProvider)
     {
         _db = db;
         _userManager = userManager;
         _jwtTokenHelper = jwtTokenHelper;
-        _tenantProvider = tenantProvider;
     }
 
     [AllowAnonymous]
@@ -46,6 +47,7 @@ public class CompaniesController : ControllerBase
         var roles = await _userManager.GetRolesAsync(admin);
         var claims = await _userManager.GetClaimsAsync(admin);
         var token = _jwtTokenHelper.GenerateToken(admin, roles, claims);
+        RefreshTokenCookies.Set(Response, _jwtTokenHelper, admin);
 
         return Created(string.Empty, new
         {
@@ -58,14 +60,11 @@ public class CompaniesController : ControllerBase
     }
 
     [Authorize]
+    [RequireTenant]
     [HttpGet("me")]
     public async Task<IActionResult> GetMyCompany()
     {
-        var companyId = _tenantProvider.CompanyId;
-        if (companyId <= 0)
-            return NotFound("Company not found.");
-
-        var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+        var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == CompanyId);
         if (company == null) return NotFound("Company not found.");
 
         return Ok(new

@@ -2,32 +2,28 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using ErpApi;
 
+namespace ErpApi;
+
+[RequireTenant]
 [ApiController]
 [Route("api/projects")]
 [Authorize]
-public class ProjectsController : ControllerBase
+public class ProjectsController : TenantApiController
 {
     private readonly ApplicationDbContext _db;
-    private readonly ITenantProvider _tenantProvider;
 
     public ProjectsController(ApplicationDbContext db, ITenantProvider tenantProvider)
+        : base(tenantProvider)
     {
         _db = db;
-        _tenantProvider = tenantProvider;
     }
-    private int GetCompanyId() => _tenantProvider.CompanyId;
-
 
     [HttpGet]
     [Authorize(Policy = Permissions.ViewProjects)]
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAll()
     {
-        var companyId = GetCompanyId();
-
         var items = await _db.Projects
-            .Where(p => p.CompanyId == companyId)
             .OrderByDescending(p => p.CreatedUtc)
             .Select(p => new ProjectDto
             {
@@ -55,10 +51,8 @@ public class ProjectsController : ControllerBase
     [Authorize(Policy = Permissions.ViewProjects)]
     public async Task<ActionResult<ProjectDto>> GetById(int id)
     {
-        var companyId = GetCompanyId();
-
         var p = await _db.Projects
-            .Where(x => x.Id == id && x.CompanyId == companyId)
+            .Where(x => x.Id == id)
             .Select(x => new ProjectDto
             {
                 Id = x.Id,
@@ -86,8 +80,6 @@ public class ProjectsController : ControllerBase
     [Authorize(Policy = Permissions.CreateProjects)]
     public async Task<ActionResult<ProjectDto>> Create([FromBody] CreateProjectDto dto)
     {
-        var companyId = GetCompanyId();
-
         var entity = new Project
         {
             Name = dto.Name.Trim(),
@@ -101,7 +93,7 @@ public class ProjectsController : ControllerBase
             Progress = dto.Progress,
             Budget = dto.Budget,
             Tags = dto.Tags?.Trim(),
-            CompanyId = companyId,
+            CompanyId = CompanyId,
             CreatedUtc = DateTime.UtcNow
         };
 
@@ -133,9 +125,7 @@ public class ProjectsController : ControllerBase
     [Authorize(Policy = Permissions.EditProjects)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectDto dto)
     {
-        var companyId = GetCompanyId();
-
-        var entity = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.CompanyId == companyId);
+        var entity = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
         if (entity == null) return NotFound();
 
         entity.Name = dto.Name.Trim();
@@ -159,9 +149,7 @@ public class ProjectsController : ControllerBase
     [Authorize(Policy = Permissions.DeleteProjects)]
     public async Task<IActionResult> Delete(int id)
     {
-        var companyId = GetCompanyId();
-
-        var entity = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.CompanyId == companyId);
+        var entity = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
         if (entity == null) return NotFound();
 
         _db.Projects.Remove(entity);

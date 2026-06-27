@@ -27,32 +27,44 @@ public static class CompanyRegistration
         if (await db.Companies.AnyAsync(c => c.Name == name, cancellationToken))
             return (false, CompanyRegistrationFailure.CompanyNameTaken, "A company with this name already exists.", null, null);
 
-        var company = new Company { Name = name };
-        db.Companies.Add(company);
-        await db.SaveChangesAsync(cancellationToken);
-
-        var admin = new ApplicationUser
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
         {
-            UserName = email,
-            Email = email,
-            CompanyId = company.Id,
-            EmailConfirmed = true
-        };
+            var company = new Company { Name = name };
+            db.Companies.Add(company);
+            await db.SaveChangesAsync(cancellationToken);
 
-        var createResult = await userManager.CreateAsync(admin, req.AdminPassword);
-        if (!createResult.Succeeded)
-        {
-            var msg = string.Join("; ", createResult.Errors.Select(e => e.Description));
-            return (false, CompanyRegistrationFailure.IdentityError, msg, null, null);
+            var admin = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                CompanyId = company.Id,
+                EmailConfirmed = true
+            };
+
+            var createResult = await userManager.CreateAsync(admin, req.AdminPassword);
+            if (!createResult.Succeeded)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                var msg = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                return (false, CompanyRegistrationFailure.IdentityError, msg, null, null);
+            }
+
+            var roleResult = await userManager.AddToRoleAsync(admin, "Admin");
+            if (!roleResult.Succeeded)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                var msg = string.Join("; ", roleResult.Errors.Select(e => e.Description));
+                return (false, CompanyRegistrationFailure.IdentityError, msg, null, null);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+            return (true, CompanyRegistrationFailure.None, null, company, admin);
         }
-
-        var roleResult = await userManager.AddToRoleAsync(admin, "Admin");
-        if (!roleResult.Succeeded)
+        catch
         {
-            var msg = string.Join("; ", roleResult.Errors.Select(e => e.Description));
-            return (false, CompanyRegistrationFailure.IdentityError, msg, null, null);
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
-
-        return (true, CompanyRegistrationFailure.None, null, company, admin);
     }
 }

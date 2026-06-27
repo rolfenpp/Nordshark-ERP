@@ -1,34 +1,30 @@
 using System.ComponentModel.DataAnnotations;
-using ErpApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+namespace ErpApi;
+
+[RequireTenant]
 [ApiController]
 [Route("api/invoices")]
 [Authorize]
-public class InvoicesController : ControllerBase
+public class InvoicesController : TenantApiController
 {
     private readonly ApplicationDbContext _db;
-    private readonly ITenantProvider _tenantProvider;
 
     public InvoicesController(ApplicationDbContext db, ITenantProvider tenantProvider)
+        : base(tenantProvider)
     {
         _db = db;
-        _tenantProvider = tenantProvider;
     }
-
-    private int GetCompanyId() => _tenantProvider.CompanyId;
 
     [HttpGet]
     [Authorize(Policy = Permissions.ViewInvoices)]
     public async Task<ActionResult<IEnumerable<InvoiceListDto>>> GetAll()
     {
-        var companyId = GetCompanyId();
-
         var list = await _db.Invoices
             .AsNoTracking()
-            .Where(i => i.CompanyId == companyId)
             .OrderByDescending(i => i.IssueDate)
             .Select(i => new InvoiceListDto
             {
@@ -54,12 +50,10 @@ public class InvoicesController : ControllerBase
     [Authorize(Policy = Permissions.ViewInvoices)]
     public async Task<ActionResult<InvoiceDetailDto>> GetById(int id)
     {
-        var companyId = GetCompanyId();
-
         var inv = await _db.Invoices
             .AsNoTracking()
             .Include(i => i.Lines)
-            .Where(i => i.Id == id && i.CompanyId == companyId)
+            .Where(i => i.Id == id)
             .FirstOrDefaultAsync();
 
         if (inv is null) return NotFound();
@@ -111,11 +105,10 @@ public class InvoicesController : ControllerBase
         if (dto.Lines is not { Count: > 0 })
             return BadRequest("At least one line item is required.");
 
-        var companyId = GetCompanyId();
         var number = (dto.InvoiceNumber ?? string.Empty).Trim();
         if (string.IsNullOrEmpty(number)) return BadRequest("Invoice number is required.");
 
-        if (await _db.Invoices.AnyAsync(i => i.CompanyId == companyId && i.InvoiceNumber == number))
+        if (await _db.Invoices.AnyAsync(i => i.InvoiceNumber == number))
             return Conflict("An invoice with this number already exists.");
 
         var subtotal = 0m;
@@ -128,7 +121,7 @@ public class InvoicesController : ControllerBase
             subtotal += lineAmt;
             lines.Add(new InvoiceLine
             {
-                CompanyId = companyId,
+                CompanyId = CompanyId,
                 LineNumber = lineNum,
                 Description = (line.Description ?? string.Empty).Trim(),
                 Quantity = line.Quantity,
@@ -145,7 +138,7 @@ public class InvoicesController : ControllerBase
 
         var entity = new Invoice
         {
-            CompanyId = companyId,
+            CompanyId = CompanyId,
             InvoiceNumber = number,
             IssueDate = dto.IssueDate.Kind == DateTimeKind.Unspecified
                 ? DateTime.SpecifyKind(dto.IssueDate, DateTimeKind.Utc)
@@ -171,16 +164,16 @@ public class InvoicesController : ControllerBase
         _db.Invoices.Add(entity);
         await _db.SaveChangesAsync();
 
-        var body = await BuildInvoiceDetail(companyId, entity.Id, CancellationToken.None);
+        var body = await BuildInvoiceDetail(entity.Id, CancellationToken.None);
         return CreatedAtAction(nameof(GetById), new { id = entity.Id }, body);
     }
 
-    private async Task<InvoiceDetailDto> BuildInvoiceDetail(int companyId, int id, CancellationToken ct = default)
+    private async Task<InvoiceDetailDto> BuildInvoiceDetail(int id, CancellationToken ct = default)
     {
         var inv = await _db.Invoices
             .AsNoTracking()
             .Include(i => i.Lines)
-            .Where(i => i.Id == id && i.CompanyId == companyId)
+            .Where(i => i.Id == id)
             .FirstOrDefaultAsync(ct);
 
         if (inv is null) throw new InvalidOperationException("Invoice not found after save.");
@@ -230,16 +223,15 @@ public class InvoicesController : ControllerBase
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (dto.Lines is not { Count: > 0 }) return BadRequest("At least one line item is required.");
 
-        var companyId = GetCompanyId();
         var entity = await _db.Invoices
             .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.Id == id && i.CompanyId == companyId);
+            .FirstOrDefaultAsync(i => i.Id == id);
         if (entity is null) return NotFound();
 
         var newNumber = (dto.InvoiceNumber ?? string.Empty).Trim();
         if (string.IsNullOrEmpty(newNumber)) return BadRequest("Invoice number is required.");
         if (!string.Equals(entity.InvoiceNumber, newNumber, StringComparison.Ordinal) &&
-            await _db.Invoices.AnyAsync(i => i.CompanyId == companyId && i.InvoiceNumber == newNumber && i.Id != id))
+            await _db.Invoices.AnyAsync(i => i.InvoiceNumber == newNumber && i.Id != id))
             return Conflict("An invoice with this number already exists.");
 
         var oldLines = await _db.InvoiceLines.Where(l => l.InvoiceId == entity.Id).ToListAsync();
@@ -255,7 +247,7 @@ public class InvoicesController : ControllerBase
             subtotal += lineAmt;
             entity.Lines.Add(new InvoiceLine
             {
-                CompanyId = companyId,
+                CompanyId = CompanyId,
                 LineNumber = lineNum,
                 Description = (line.Description ?? string.Empty).Trim(),
                 Quantity = line.Quantity,
@@ -299,10 +291,9 @@ public class InvoicesController : ControllerBase
     [Authorize(Policy = Permissions.DeleteInvoices)]
     public async Task<IActionResult> Delete(int id)
     {
-        var companyId = GetCompanyId();
         var entity = await _db.Invoices
             .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.Id == id && i.CompanyId == companyId);
+            .FirstOrDefaultAsync(i => i.Id == id);
         if (entity is null) return NotFound();
         _db.Invoices.Remove(entity);
         await _db.SaveChangesAsync();
