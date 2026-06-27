@@ -2,9 +2,8 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
-import { ListStatsGrid } from '@/components/ListStatsGrid'
-import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { InvoicesListStatsPanel } from '@/components/invoices/InvoicesListStatsPanel'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import {
   Alert,
@@ -33,10 +32,6 @@ import {
   Edit,
   Delete,
   Visibility,
-  Receipt,
-  Warning,
-  CheckCircle,
-  Schedule,
   Download,
   Email,
 } from '@mui/icons-material'
@@ -341,10 +336,7 @@ function InvoicesIndexComponent() {
     }
   }
 
-  const totalInvoices = list.length
   const totalAmount = list.reduce((sum, invoice) => sum + invoice.total, 0)
-  const paidInvoices = list.filter((invoice) => normalizeInvoiceStatus(invoice.status) === 'paid').length
-  const overdueInvoices = list.filter((invoice) => normalizeInvoiceStatus(invoice.status) === 'overdue').length
 
   const exportButton = (
     <Button
@@ -370,17 +362,7 @@ function InvoicesIndexComponent() {
 
   return (
     <ResourceListPage>
-      <ListStatsGrid compact={compactList}>
-        <ListStatCard icon={Receipt} iconColor="primary" value={totalInvoices.toLocaleString()} label="Total Invoices" />
-        <ListStatCard icon={CheckCircle} iconColor="success" value={paidInvoices.toLocaleString()} label="Paid" />
-        <ListStatCard
-          icon={Schedule}
-          iconColor="info"
-          value={list.filter((i) => normalizeInvoiceStatus(i.status) === 'pending').length.toLocaleString()}
-          label="Pending"
-        />
-        <ListStatCard icon={Warning} iconColor="warning" value={overdueInvoices.toLocaleString()} label="Overdue" />
-      </ListStatsGrid>
+      <InvoicesListStatsPanel invoices={list} compact={compactList} />
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
