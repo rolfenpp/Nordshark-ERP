@@ -1,6 +1,15 @@
 # Root tooling (concurrently, wait-on, etc.)
 node_modules/
 
+# .NET build output (ERP-api.Tests lives at repo root)
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.user
+.vs/
+
 # Logs & env
 *.log
 npm-debug.log*
