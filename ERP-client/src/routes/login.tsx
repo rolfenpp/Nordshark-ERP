@@ -117,7 +117,7 @@ function LoginRoute() {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: { xs: 'center', md: 'flex-start' },
+              justifyContent: 'center',
             }}
           >
             <Box sx={{ lineHeight: 0, '& svg': { display: 'block' } }}>
