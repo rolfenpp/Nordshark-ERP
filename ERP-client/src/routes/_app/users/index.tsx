@@ -16,16 +16,15 @@ import {
   Select,
   MenuItem,
 } from '@mui/material'
-import { Edit, Delete, Visibility, Search, Person, AdminPanelSettings, SupervisorAccount, PersonAdd } from '@mui/icons-material'
+import { Edit, Delete, Visibility, Search } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useMemo, useState } from 'react'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
-import { ListStatsGrid } from '@/components/ListStatsGrid'
-import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { UsersListOverviewPanel } from '@/components/users/UsersListOverviewPanel'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCompactListLayout } from '@/hooks/useCompactListLayout'
@@ -201,7 +200,6 @@ function UsersComponent() {
     [compactList]
   )
 
-  const totalUsers = users.length
   const activeUsers = users.filter((u) => u.status === 'active').length
   const adminUsers = users.filter((u) => u.role === 'admin').length
   const standardUsers = users.filter((u) => u.role === 'user').length
@@ -212,17 +210,7 @@ function UsersComponent() {
 
   return (
     <ResourceListPage>
-      <ListStatsGrid compact={compactList}>
-        <ListStatCard icon={Person} iconColor="primary" value={totalUsers.toLocaleString()} label="Total Users" />
-        <ListStatCard icon={PersonAdd} iconColor="success" value={activeUsers.toLocaleString()} label="Active Users" />
-        <ListStatCard icon={AdminPanelSettings} iconColor="error" value={adminUsers.toLocaleString()} label="Admins" />
-        <ListStatCard
-          icon={SupervisorAccount}
-          iconColor="warning"
-          value={standardUsers.toLocaleString()}
-          label="Standard users"
-        />
-      </ListStatsGrid>
+      <UsersListOverviewPanel users={apiUsers} compact={compactList} />
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
