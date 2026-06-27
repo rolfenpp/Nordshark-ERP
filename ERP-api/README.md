@@ -38,4 +38,4 @@ The goal of this ERP system is to provide a **centralized platform** that improv
 Notes:
 - Public "bare" registration is disabled. Use `companies/register` to create tenants.
 - Google OAuth sign-in is allowed only for existing users; it will not auto-create accounts.
-- All data access is tenant-scoped via JWT `companyId` claim and EF Core global query filters.
+- Tenant-scoped entities (`Project`, `InventoryItem`, `Invoice`, `InvoiceLine`) are filtered automatically by EF Core global query filters using the JWT `companyId` claim (via `ITenantProvider`). Controllers reject requests when `companyId` is missing or invalid (`403 Forbidden`). User listing and admin operations require `manage_users` or `assign_permissions` claims (Admins bypass via role).
