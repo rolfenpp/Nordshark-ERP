@@ -2,9 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
-import { ListStatsGrid } from '@/components/ListStatsGrid'
-import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { InventoryListStatsPanel } from '@/components/inventory/InventoryListStatsPanel'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import {
   Alert,
@@ -29,10 +28,8 @@ import {
   Edit,
   Delete,
   Visibility,
-  Inventory as InventoryIcon,
   Warning,
   CheckCircle,
-  AttachMoney,
 } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -43,18 +40,13 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCompactListLayout } from '@/hooks/useCompactListLayout'
 import { LIST_SEARCH_DEBOUNCE_MS } from '@/lib/listBreakpoints'
 import { formatDisplayDate, parseApiDate } from '@/lib/dates'
+import { getStockTier, type InventoryStockTier } from '@/lib/inventoryStockTier'
 
 export const Route = createFileRoute('/_app/inventory/')({
   component: InventoryIndexComponent,
 })
 
-type StockStatusFilter = 'all' | 'out' | 'low' | 'inStock'
-
-function getStockTier(quantityOnHand: number, reorderLevel?: number): Exclude<StockStatusFilter, 'all'> {
-  if (quantityOnHand === 0) return 'out'
-  if (reorderLevel && quantityOnHand <= reorderLevel) return 'low'
-  return 'inStock'
-}
+type StockStatusFilter = 'all' | InventoryStockTier
 
 function getStatusDisplay(quantity: number, reorderLevel?: number) {
   const tier = getStockTier(quantity, reorderLevel)
@@ -252,7 +244,9 @@ function InventoryIndexComponent() {
 
   const totalValue = inventoryItems.reduce((sum, item) => sum + item.unitPrice * item.quantityOnHand, 0)
   const totalItems = inventoryItems.reduce((sum, item) => sum + item.quantityOnHand, 0)
-  const lowStockItems = inventoryItems.filter((item) => item.reorderLevel && item.quantityOnHand <= item.reorderLevel).length
+  const lowStockSkuCount = inventoryItems.filter(
+    (item) => getStockTier(item.quantityOnHand, item.reorderLevel) === 'low'
+  ).length
 
   const toolbar = (
       <ListPageToolbar
@@ -298,23 +292,13 @@ function InventoryIndexComponent() {
 
   return (
     <ResourceListPage>
+      <InventoryListStatsPanel items={inventoryItems} compact={compactList} />
+
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error?.message || 'Failed to load inventory. You can retry from the browser or after signing in again.'}
         </Alert>
       )}
-
-      <ListStatsGrid compact={compactList}>
-        <ListStatCard icon={InventoryIcon} iconColor="primary" value={inventoryItems.length} label="Total Items" />
-        <ListStatCard icon={InventoryIcon} iconColor="success" value={totalItems} label="Total Quantity" />
-        <ListStatCard icon={Warning} iconColor="warning" value={lowStockItems} label="Low Stock Items" />
-        <ListStatCard
-          icon={AttachMoney}
-          iconColor="info"
-          value={`$${totalValue.toLocaleString()}`}
-          label="Total Value"
-        />
-      </ListStatsGrid>
 
       {toolbar}
 
@@ -385,7 +369,7 @@ function InventoryIndexComponent() {
         <Typography variant="body2" color="text.secondary">
           Total Quantity: <strong>{totalItems.toLocaleString()}</strong>
         </Typography>
-        <Typography variant="body2" color="text.secondary">Low Stock: <strong>{lowStockItems}</strong></Typography>
+        <Typography variant="body2" color="text.secondary">Low stock SKUs: <strong>{lowStockSkuCount}</strong></Typography>
       </ListSummaryFooter>
     </ResourceListPage>
   )
