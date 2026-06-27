@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ErpApi
 {
-    public class Program
+    public partial class Program
     {
         public static void Main(string[] args)
         {
@@ -127,7 +127,14 @@ namespace ErpApi
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
+                if (app.Environment.IsEnvironment("Testing"))
+                {
+                    db.Database.EnsureCreated();
+                }
+                else
+                {
+                    db.Database.Migrate();
+                }
                 SeedRolesAsync(scope.ServiceProvider).GetAwaiter().GetResult();
             }
 
@@ -168,4 +175,6 @@ namespace ErpApi
         }
 
     }
+
+    public partial class Program { }
 }
