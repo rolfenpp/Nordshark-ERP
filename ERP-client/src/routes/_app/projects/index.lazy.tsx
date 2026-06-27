@@ -2,9 +2,8 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { ResourceListPage } from '@/components/ResourceListPage'
 import { ListPageToolbar } from '@/components/ListPageToolbar'
 import { PrimaryActionButton } from '@/components/PrimaryActionButton'
-import { ListStatsGrid } from '@/components/ListStatsGrid'
-import { ListStatCard } from '@/components/ListStatCard'
 import { ListSummaryFooter } from '@/components/ListSummaryFooter'
+import { ProjectsListTimelinePanel } from '@/components/projects/ProjectsListTimelinePanel'
 import { DataTable, type DataTableColumn } from '@/components/DataTable'
 import {
   Alert,
@@ -24,7 +23,7 @@ import {
   MenuItem,
   Tooltip,
 } from '@mui/material'
-import { Search, Edit, Delete, Visibility, Assignment, TrendingUp, Schedule, AttachMoney } from '@mui/icons-material'
+import { Search, Edit, Delete, Visibility } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useState, useMemo, useCallback } from 'react'
@@ -253,17 +252,7 @@ function ProjectsIndexComponent() {
 
   return (
     <ResourceListPage fadeDelay={200} fadeDuration={800}>
-      <ListStatsGrid compact={compactList}>
-        <ListStatCard icon={Assignment} iconColor="primary" value={projects.length} label="Total Projects" />
-        <ListStatCard icon={TrendingUp} iconColor="success" value={activeProjects} label="Active Projects" />
-        <ListStatCard icon={Schedule} iconColor="info" value={completedProjects} label="Completed" />
-        <ListStatCard
-          icon={AttachMoney}
-          iconColor="warning"
-          value={`$${(totalBudget / 1000).toFixed(0)}k`}
-          label="Total Budget"
-        />
-      </ListStatsGrid>
+      <ProjectsListTimelinePanel projects={projects} compact={compactList} onProjectClick={toProject} />
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
