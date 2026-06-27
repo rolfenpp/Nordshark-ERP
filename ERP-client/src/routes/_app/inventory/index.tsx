@@ -194,8 +194,28 @@ function InventoryIndexComponent() {
         label: 'Description',
         hideOnCompact: true,
         sortable: true,
-        sortAccessor: (it) => (it.description ? 1 : 0),
-        render: (it) => (it.description ? 'Has Description' : 'No Description'),
+        sortAccessor: (it) => (it.description || '').toLowerCase(),
+        render: (it) => {
+          const description = it.description?.trim()
+          if (!description) {
+            return (
+              <Typography variant="body2" color="text.secondary">
+                —
+              </Typography>
+            )
+          }
+          return (
+            <Tooltip title={description} placement="top-start" enterDelay={400}>
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{ maxWidth: 220, display: 'block' }}
+              >
+                {description}
+              </Typography>
+            </Tooltip>
+          )
+        },
       },
       {
         id: 'updated',
