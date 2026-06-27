@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ErpApi
 {
-    public class Project
+    public class Project : ICompanyEntity
     {
         public int Id { get; set; }
 
@@ -34,7 +34,7 @@ namespace ErpApi
         [MaxLength(500)]
         public string? Tags { get; set; }
 
-        public int CompanyId { get; set; } = 0;
+        public int CompanyId { get; set; }
 
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedUtc { get; set; }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ErpApi;
 
-public class InvoiceLine
+public class InvoiceLine : ICompanyEntity
 {
     public int Id { get; set; }
 

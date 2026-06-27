@@ -2,12 +2,19 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ErpApi;
 
+namespace ErpApi;
+
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    private readonly ITenantProvider _tenantProvider;
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ITenantProvider tenantProvider)
         : base(options)
     {
+        _tenantProvider = tenantProvider;
     }
+
+    private int CurrentCompanyId => _tenantProvider.CompanyId;
 
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Company> Companies => Set<Company>();
@@ -47,5 +54,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(i => i.Lines)
             .HasForeignKey(l => l.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Project>().HasQueryFilter(e => e.CompanyId == CurrentCompanyId);
+        builder.Entity<InventoryItem>().HasQueryFilter(e => e.CompanyId == CurrentCompanyId);
+        builder.Entity<Invoice>().HasQueryFilter(e => e.CompanyId == CurrentCompanyId);
+        builder.Entity<InvoiceLine>().HasQueryFilter(e => e.CompanyId == CurrentCompanyId);
     }
 }
