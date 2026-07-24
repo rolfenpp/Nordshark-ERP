@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ErpApi.Migrations
 {
-    public partial class FixGuestCompanyTenant : Migration
+    public partial class FixGuestCompanyTenantV2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -42,7 +42,7 @@ namespace ErpApi.Migrations
                     UPDATE "AspNetUsers"
                     SET "CompanyId" = target_company_id,
                         "EmailConfirmed" = true
-                    WHERE "NormalizedEmail" = 'GUEST@NORDSHARK.COM'
+                    WHERE LOWER("Email") = 'guest@nordshark.com'
                       AND "CompanyId" = 0;
 
                     UPDATE "InventoryItems"
@@ -65,7 +65,7 @@ namespace ErpApi.Migrations
                     SELECT u."Id", r."Id"
                     FROM "AspNetUsers" u
                     CROSS JOIN "AspNetRoles" r
-                    WHERE u."NormalizedEmail" = 'GUEST@NORDSHARK.COM'
+                    WHERE LOWER(u."Email") = 'guest@nordshark.com'
                       AND r."NormalizedName" = 'ADMIN'
                       AND NOT EXISTS (
                           SELECT 1
