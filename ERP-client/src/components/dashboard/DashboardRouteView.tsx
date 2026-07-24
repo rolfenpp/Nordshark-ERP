@@ -6,6 +6,7 @@ import { RevenueChart } from './RevenueChart'
 import { InvoiceStatusChart } from './InvoiceStatusChart'
 import { RecentActivity } from './RecentActivity'
 import { TopClients } from './TopClients'
+import { OpsBriefPanel } from './OpsBriefPanel'
 import type { InvoiceListDto } from '@/api/invoices'
 import type { ProjectDto } from '@/api/projects'
 import type { InventoryItemDto } from '@/api/inventory'
@@ -201,6 +202,8 @@ export function DashboardRouteView({
             {firstError?.message}
           </Alert>
         )}
+
+        <OpsBriefPanel />
 
         <SummaryCards
           totalInvoices={totalInvoices}

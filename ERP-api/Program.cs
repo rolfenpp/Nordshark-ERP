@@ -121,6 +121,8 @@ namespace ErpApi
             builder.Services.AddScoped<JwtTokenHelper>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ITenantProvider, HttpContextTenantProvider>();
+            builder.Services.AddHttpClient<ErpApi.Services.Ai.IGeminiAiClient, ErpApi.Services.Ai.GeminiAiClient>();
+            builder.Services.AddScoped<ErpApi.Services.Ai.IAiService, ErpApi.Services.Ai.AiService>();
 
             var app = builder.Build();
 

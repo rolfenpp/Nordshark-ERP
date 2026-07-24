@@ -39,3 +39,14 @@ Notes:
 - Public "bare" registration is disabled. Use `companies/register` to create tenants.
 - Google OAuth sign-in is allowed only for existing users; it will not auto-create accounts.
 - Tenant-scoped entities (`Project`, `InventoryItem`, `Invoice`, `InvoiceLine`) are filtered automatically by EF Core global query filters using the JWT `companyId` claim (via `ITenantProvider`). Controllers reject requests when `companyId` is missing or invalid (`403 Forbidden`). User listing and admin operations require `manage_users` or `assign_permissions` claims (Admins bypass via role).
+
+## AI (demo)
+
+Server-side Gemini endpoints under `api/ai` (JWT + tenant required):
+
+- `GET /api/ai/status` — whether `Gemini:ApiKey` / `GEMINI_API_KEY` is set
+- `POST /api/ai/help` — navigation help grounded in real product features
+- `GET /api/ai/brief` — operations brief from tenant invoices/inventory/projects (works without Gemini; narrative uses Gemini when configured)
+- `POST /api/ai/drafts/invoice` — structured invoice draft (`create_invoices` policy); user reviews in the SPA before save
+
+Configure via `Gemini:ApiKey` in appsettings / user secrets, or env `GEMINI_API_KEY` / `Gemini__ApiKey` on Render. Do not put the key in the Vite client.

@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
-import { 
-  Box, 
-  TextField, 
-  Paper, 
-  Typography, 
-  Button, 
-  Chip, 
-  IconButton, 
-  CircularProgress, 
-  useTheme, 
+import {
+  Box,
+  TextField,
+  Paper,
+  Typography,
+  Button,
+  Chip,
+  IconButton,
+  CircularProgress,
+  useTheme,
   useMediaQuery,
   Fade,
   Slide,
@@ -17,7 +17,7 @@ import {
   CardContent,
   Stack,
   Avatar,
-  Tooltip
+  Tooltip,
 } from '@mui/material'
 import {
   AutoAwesome as MagicIcon,
@@ -25,10 +25,10 @@ import {
   Delete as DeleteIcon,
   Send as SendIcon,
   History as HistoryIcon,
-  Lightbulb as LightbulbIcon
+  Lightbulb as LightbulbIcon,
 } from '@mui/icons-material'
-import { useAuth } from '@/auth/AuthProvider'
-import { askAI } from '@/lib/ai'
+import { useNavigate } from '@tanstack/react-router'
+import { useAiHelp } from '@/api/ai'
 import { aiAssistantQuestionSchema } from '@/schemas/ai'
 import { showZodError } from '@/lib/zodToast'
 
@@ -40,13 +40,13 @@ interface Message {
 }
 
 export const AIAssistant = () => {
-  const { isAuthenticated } = useAuth()
   const theme = useTheme()
+  const navigate = useNavigate()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const help = useAiHelp()
   const [isOpen, setIsOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
-  const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Message[]>([])
   const [showSuggestions, setShowSuggestions] = useState(true)
   const [displayedAnswer, setDisplayedAnswer] = useState('')
@@ -61,87 +61,80 @@ export const AIAssistant = () => {
     }
     const trimmed = parsed.data.question
 
-    setLoading(true)
-    const context = {
-      currentPage: window.location.pathname,
-      currentUser: isAuthenticated ? 'Authenticated User' : 'Guest',
-      availableFeatures: ['inventory', 'invoices', 'projects', 'users'],
-      userPermissions: isAuthenticated ? 'Standard' : 'Guest'
-    }
-    
     try {
-      const response = await askAI(trimmed, context)
-      setAnswer(response || '')
-      
-      const newMessage: Message = {
-        id: Date.now().toString(),
+      const response = await help.mutateAsync({
         question: trimmed,
-        answer: response || '',
-        timestamp: new Date()
-      }
-      setConversation(prev => [newMessage, ...prev.slice(0, 4)])
-      
+        currentRoute: window.location.pathname,
+      })
+      const text = response.answer || ''
+      setAnswer(text)
+      setConversation((prev) => [
+        {
+          id: Date.now().toString(),
+          question: trimmed,
+          answer: text,
+          timestamp: new Date(),
+        },
+        ...prev.slice(0, 4),
+      ])
       setQuestion('')
       setShowSuggestions(false)
-    } catch (error) {
+    } catch {
       setAnswer('Sorry, I encountered an error. Please try again.')
     }
-    setLoading(false)
   }
 
   const getQuickActions = () => {
     const page = window.location.pathname
     if (page.includes('inventory')) {
       return [
-        { label: "Create Item", action: () => window.location.href = '/inventory/create', icon: "📦" },
-        { label: "View Items", action: () => window.location.href = '/inventory', icon: "👁️" },
-        { label: "Import CSV", action: () => window.location.href = '/inventory', icon: "📊" }
+        { label: 'Create Item', action: () => navigate({ to: '/inventory/create' }) },
+        { label: 'View Items', action: () => navigate({ to: '/inventory' }) },
       ]
-    } else if (page.includes('invoices')) {
+    }
+    if (page.includes('invoices')) {
       return [
-        { label: "New Invoice", action: () => window.location.href = '/invoices/create', icon: "📄" },
-        { label: "View Invoices", action: () => window.location.href = '/invoices', icon: "📋" },
-        { label: "Payment Status", action: () => window.location.href = '/invoices', icon: "💰" }
+        { label: 'New Invoice', action: () => navigate({ to: '/invoices/create' }) },
+        { label: 'View Invoices', action: () => navigate({ to: '/invoices' }) },
       ]
-    } else if (page.includes('projects')) {
+    }
+    if (page.includes('projects')) {
       return [
-        { label: "New Project", action: () => window.location.href = '/projects/create', icon: "🚀" },
-        { label: "View Projects", action: () => window.location.href = '/projects', icon: "📁" },
-        { label: "Task Management", action: () => window.location.href = '/projects', icon: "✅" }
+        { label: 'New Project', action: () => navigate({ to: '/projects/create' }) },
+        { label: 'View Projects', action: () => navigate({ to: '/projects' }) },
       ]
     }
     return [
-      { label: "Inventory", action: () => window.location.href = '/inventory', icon: "📦" },
-      { label: "Invoices", action: () => window.location.href = '/invoices', icon: "📄" },
-      { label: "Projects", action: () => window.location.href = '/projects', icon: "🚀" }
+      { label: 'Inventory', action: () => navigate({ to: '/inventory' }) },
+      { label: 'Invoices', action: () => navigate({ to: '/invoices' }) },
+      { label: 'Projects', action: () => navigate({ to: '/projects' }) },
     ]
   }
 
   const quickActions = getQuickActions()
+  const loading = help.isPending
 
   useEffect(() => {
     if (answer && answer !== displayedAnswer && !isTyping) {
       setIsTyping(true)
       setDisplayedAnswer('')
       let index = 0
-      
+
       const typeWriter = () => {
         if (index < answer.length) {
-          setDisplayedAnswer(prev => prev + answer[index])
+          setDisplayedAnswer((prev) => prev + answer[index])
           index++
-          
           setTimeout(() => {
             if (responseContainerRef.current) {
               responseContainerRef.current.scrollTop = responseContainerRef.current.scrollHeight
             }
           }, 10)
-          
           setTimeout(typeWriter, 30)
         } else {
           setIsTyping(false)
         }
       }
-      
+
       typeWriter()
     }
   }, [answer])
@@ -163,9 +156,9 @@ export const AIAssistant = () => {
 
   return (
     <>
-       <Fade in={true}>
-         <Fab
-           onClick={() => setIsOpen(!isOpen)}
+      <Fade in={true}>
+        <Fab
+          onClick={() => setIsOpen(!isOpen)}
           sx={{
             position: 'fixed',
             bottom: theme.spacing(2),
@@ -183,9 +176,9 @@ export const AIAssistant = () => {
             }),
           }}
           size="large"
-                 >
-           {isOpen ? <CloseIcon /> : <MagicIcon />}
-         </Fab>
+        >
+          {isOpen ? <CloseIcon /> : <MagicIcon />}
+        </Fab>
       </Fade>
 
       <Slide direction="up" in={isOpen} mountOnEnter unmountOnExit>
@@ -227,9 +220,9 @@ export const AIAssistant = () => {
                 <IconButton
                   onClick={handleClearHistory}
                   size="small"
-                  sx={{ 
+                  sx={{
                     color: theme.palette.primary.contrastText,
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                 >
                   <DeleteIcon fontSize="small" />
@@ -239,9 +232,9 @@ export const AIAssistant = () => {
                 <IconButton
                   onClick={handleClose}
                   size="small"
-                  sx={{ 
+                  sx={{
                     color: theme.palette.primary.contrastText,
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                 >
                   <CloseIcon fontSize="small" />
@@ -261,17 +254,16 @@ export const AIAssistant = () => {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {quickActions.map((action, index) => (
+                    {quickActions.map((action) => (
                       <Chip
-                        key={index}
+                        key={action.label}
                         label={action.label}
                         onClick={action.action}
-                        icon={<span>{action.icon}</span>}
                         size="small"
                         variant="outlined"
                         sx={{
                           cursor: 'pointer',
-                          '&:hover': { 
+                          '&:hover': {
                             background: theme.palette.primary.main,
                             color: theme.palette.primary.contrastText,
                           },
@@ -367,18 +359,13 @@ export const AIAssistant = () => {
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth
-                  placeholder="Ask me anything..."
+                  placeholder="Ask how to navigate…"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
                   variant="outlined"
                   size="small"
                   disabled={loading}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: theme.shape.borderRadius,
-                    },
-                  }}
                 />
                 <Button
                   onClick={handleAsk}
@@ -397,11 +384,7 @@ export const AIAssistant = () => {
                     },
                   }}
                 >
-                  {loading ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <SendIcon fontSize="small" />
-                  )}
+                  {loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
                 </Button>
               </Box>
             </Box>

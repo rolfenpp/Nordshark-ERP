@@ -19,6 +19,10 @@ services:
         value: erp-api-users
       - key: Cors__AllowedOrigins
         value: https://erp-client-flame.vercel.app,http://localhost:5173
+      - key: Gemini__ApiKey
+        sync: false
+      - key: Gemini__Model
+        value: gemini-3.6-flash
 
 databases:
   - name: erp-db

@@ -21,7 +21,8 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  CircularProgress,
 } from '@mui/material'
 import {
   Save,
@@ -29,15 +30,17 @@ import {
   Add,
   Delete,
   AttachMoney,
+  AutoAwesome,
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { addDays, format } from 'date-fns'
 import { useCreateInvoice } from '@/api/invoices'
+import { useDraftInvoiceFromBrief } from '@/api/ai'
 import { formYmdToApiIso, formatFormYmdOrNotSet } from '@/lib/dates'
 import { FormYmdDatePicker } from '@/components/FormYmdDatePicker'
 import { createInvoiceDtoSchema } from '@/schemas/invoices'
-import { showError } from '@/lib/toast'
+import { showError, showSuccess } from '@/lib/toast'
 import { showZodError } from '@/lib/zodToast'
 
 export const Route = createLazyFileRoute('/_app/invoices/create')({
@@ -55,6 +58,11 @@ interface InvoiceItem {
 function CreateInvoiceComponent() {
   const navigate = useNavigate()
   const create = useCreateInvoice()
+  const draftAi = useDraftInvoiceFromBrief()
+  const [brief, setBrief] = useState(
+    'Invoice Acme Corp (acme@example.com) for 40 hours consulting at $150/hr and 2 licenses at $99. Net 30, 10% tax, USD.',
+  )
+  const [draftWarnings, setDraftWarnings] = useState<string[]>([])
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -68,29 +76,31 @@ function CreateInvoiceComponent() {
     currency: 'USD',
     status: 'draft' as const,
   })
-  
+
   const [items, setItems] = useState<InvoiceItem[]>([
-    { id: '1', description: '', quantity: 1, rate: 0, amount: 0 }
+    { id: '1', description: '', quantity: 1, rate: 0, amount: 0 },
   ])
 
   const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }))
   }
 
   const handleItemChange = (id: string, field: string, value: string | number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value }
-        if (field === 'quantity' || field === 'rate') {
-          updatedItem.amount = updatedItem.quantity * updatedItem.rate
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value }
+          if (field === 'quantity' || field === 'rate') {
+            updatedItem.amount = updatedItem.quantity * updatedItem.rate
+          }
+          return updatedItem
         }
-        return updatedItem
-      }
-      return item
-    }))
+        return item
+      }),
+    )
   }
 
   const addItem = () => {
@@ -101,21 +111,61 @@ function CreateInvoiceComponent() {
 
   const removeItem = (id: string) => {
     if (items.length > 1) {
-      setItems(prev => prev.filter(item => item.id !== id))
+      setItems((prev) => prev.filter((item) => item.id !== id))
     }
   }
 
-  const calculateSubtotal = () => {
-    return items.reduce((sum, item) => sum + item.amount, 0)
+  const applyAiDraft = async () => {
+    const text = brief.trim()
+    if (text.length < 8) {
+      showError('Paste a short invoice brief first.')
+      return
+    }
+    try {
+      const res = await draftAi.mutateAsync(text)
+      if (!res.ok || !res.draft) {
+        showError(res.error || 'Could not draft invoice from that brief.')
+        return
+      }
+      const d = res.draft
+      setFormData((prev) => ({
+        ...prev,
+        client: d.clientName?.trim() || prev.client,
+        clientEmail: d.clientEmail?.trim() || prev.clientEmail,
+        clientAddress: d.clientAddress?.trim() || prev.clientAddress,
+        date: d.issueDate?.slice(0, 10) || prev.date,
+        dueDate: d.dueDate?.slice(0, 10) || prev.dueDate,
+        currency: d.currency?.trim() || prev.currency,
+        terms: d.terms?.trim() || prev.terms,
+        taxRate: typeof d.taxRatePercent === 'number' ? d.taxRatePercent : prev.taxRate,
+        notes: d.notes?.trim() || prev.notes,
+      }))
+      if (d.lines?.length) {
+        setItems(
+          d.lines.map((line, i) => {
+            const qty = Math.max(1, Math.round(Number(line.quantity) || 1))
+            const rate = Math.max(0, Number(line.unitPrice) || 0)
+            return {
+              id: String(i + 1),
+              description: line.description,
+              quantity: qty,
+              rate,
+              amount: qty * rate,
+            }
+          }),
+        )
+      }
+      const notes = [...(d.warnings || []), ...(d.assumptions || [])]
+      setDraftWarnings(notes)
+      showSuccess('Draft applied — review before creating.')
+    } catch (e) {
+      showError((e as Error).message || 'Failed to draft invoice.')
+    }
   }
 
-  const calculateTax = () => {
-    return calculateSubtotal() * (formData.taxRate / 100)
-  }
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax()
-  }
+  const calculateSubtotal = () => items.reduce((sum, item) => sum + item.amount, 0)
+  const calculateTax = () => calculateSubtotal() * (formData.taxRate / 100)
+  const calculateTotal = () => calculateSubtotal() + calculateTax()
 
   const handleSubmit = () => {
     const number = formData.invoiceNumber.trim() || `INV-${Date.now()}`
@@ -168,82 +218,102 @@ function CreateInvoiceComponent() {
     <FadeInContent delay={200} duration={800}>
       <Box>
         <Paper sx={{ p: 3, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <AutoAwesome color="primary" fontSize="small" />
+            <Typography variant="h6" sx={{ fontWeight: 300 }}>
+              Draft from brief
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Paste a plain-language quote. The API drafts fields and lines; you review, then create.
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            value={brief}
+            onChange={(e) => setBrief(e.target.value)}
+            placeholder="e.g. Invoice Acme for 10 widgets at $25 and setup fee $200, Net 30…"
+          />
+          <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              variant="contained"
+              startIcon={draftAi.isPending ? <CircularProgress size={16} color="inherit" /> : <AutoAwesome />}
+              onClick={applyAiDraft}
+              disabled={draftAi.isPending}
+            >
+              {draftAi.isPending ? 'Drafting…' : 'Apply AI draft'}
+            </Button>
+          </Box>
+          {draftWarnings.length > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              {draftWarnings.join(' · ')}
+            </Alert>
+          )}
+        </Paper>
+
+        <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             Invoice Details
           </Typography>
-          
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
-            gap: 3 
-          }}>
-            <Box>
-              <TextField
-                fullWidth
-                label="Invoice Number"
-                value={formData.invoiceNumber}
-                onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
-                required
-                helperText="Auto-generated if left empty"
-              />
-            </Box>
-            <Box>
-              <FormYmdDatePicker
-                label="Invoice Date"
-                value={formData.date}
-                onChange={(v) => handleInputChange('date', v)}
-                required
-              />
-            </Box>
-            <Box>
-              <FormYmdDatePicker
-                label="Due Date"
-                value={formData.dueDate}
-                onChange={(v) => handleInputChange('dueDate', v)}
-                required
-              />
-            </Box>
-            <Box>
-              <FormControl fullWidth>
-                <InputLabel>Payment Terms</InputLabel>
-                <Select
-                  value={formData.terms}
-                  label="Payment Terms"
-                  onChange={(e) => handleInputChange('terms', e.target.value)}
-                >
-                  {terms.map((term) => (
-                    <MenuItem key={term} value={term}>{term}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl fullWidth>
-                <InputLabel>Currency</InputLabel>
-                <Select
-                  value={formData.currency}
-                  label="Currency"
-                  onChange={(e) => handleInputChange('currency', e.target.value)}
-                >
-                  {currencies.map((currency) => (
-                    <MenuItem key={currency} value={currency}>{currency}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <TextField
-                fullWidth
-                label="Tax Rate (%)"
-                value={formData.taxRate}
-                onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value) || 0)}
-                type="number"
-                InputProps={{
-                  endAdornment: '%',
-                }}
-                helperText="Tax rate applied to subtotal"
-              />
-            </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+            <TextField
+              fullWidth
+              label="Invoice Number"
+              value={formData.invoiceNumber}
+              onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+              required
+              helperText="Auto-generated if left empty"
+            />
+            <FormYmdDatePicker
+              label="Invoice Date"
+              value={formData.date}
+              onChange={(v) => handleInputChange('date', v)}
+              required
+            />
+            <FormYmdDatePicker
+              label="Due Date"
+              value={formData.dueDate}
+              onChange={(v) => handleInputChange('dueDate', v)}
+              required
+            />
+            <FormControl fullWidth>
+              <InputLabel>Payment Terms</InputLabel>
+              <Select
+                value={formData.terms}
+                label="Payment Terms"
+                onChange={(e) => handleInputChange('terms', e.target.value)}
+              >
+                {terms.map((term) => (
+                  <MenuItem key={term} value={term}>
+                    {term}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Currency</InputLabel>
+              <Select
+                value={formData.currency}
+                label="Currency"
+                onChange={(e) => handleInputChange('currency', e.target.value)}
+              >
+                {currencies.map((currency) => (
+                  <MenuItem key={currency} value={currency}>
+                    {currency}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label="Tax Rate (%)"
+              value={formData.taxRate}
+              onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value) || 0)}
+              type="number"
+              InputProps={{ endAdornment: '%' }}
+              helperText="Tax rate applied to subtotal"
+            />
           </Box>
         </Paper>
 
@@ -251,33 +321,24 @@ function CreateInvoiceComponent() {
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             Client Information
           </Typography>
-          
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
-            gap: 3 
-          }}>
-            <Box>
-              <TextField
-                fullWidth
-                label="Client Name"
-                value={formData.client}
-                onChange={(e) => handleInputChange('client', e.target.value)}
-                required
-                helperText="Company or individual name"
-              />
-            </Box>
-            <Box>
-              <TextField
-                fullWidth
-                label="Client Email"
-                value={formData.clientEmail}
-                onChange={(e) => handleInputChange('clientEmail', e.target.value)}
-                type="email"
-                required
-                helperText="For sending invoice"
-              />
-            </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+            <TextField
+              fullWidth
+              label="Client Name"
+              value={formData.client}
+              onChange={(e) => handleInputChange('client', e.target.value)}
+              required
+              helperText="Company or individual name"
+            />
+            <TextField
+              fullWidth
+              label="Client Email"
+              value={formData.clientEmail}
+              onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+              type="email"
+              required
+              helperText="For sending invoice"
+            />
             <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
               <TextField
                 fullWidth
@@ -306,24 +367,10 @@ function CreateInvoiceComponent() {
             <Typography variant="h6" component="h2" sx={{ fontWeight: 300 }}>
               Invoice Items
             </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                flexWrap: 'wrap',
-                gap: 1.5,
-                '& .MuiButton-root': {
-                  width: { xs: '100%', sm: 'auto' },
-                  minHeight: { xs: 44, sm: undefined },
-                },
-              }}
-            >
-              <Button variant="outlined" startIcon={<Add />} onClick={addItem}>
-                Add Item
-              </Button>
-            </Box>
+            <Button variant="outlined" startIcon={<Add />} onClick={addItem}>
+              Add Item
+            </Button>
           </Box>
-
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table>
               <TableHead>
@@ -353,7 +400,9 @@ function CreateInvoiceComponent() {
                         fullWidth
                         label="Qty"
                         value={item.quantity}
-                        onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)
+                        }
                         type="number"
                         required
                         size="small"
@@ -365,13 +414,13 @@ function CreateInvoiceComponent() {
                         fullWidth
                         label="Rate"
                         value={item.rate}
-                        onChange={(e) => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)
+                        }
                         type="number"
                         required
                         size="small"
-                        InputProps={{
-                          startAdornment: <AttachMoney />,
-                        }}
+                        InputProps={{ startAdornment: <AttachMoney /> }}
                         sx={{ minWidth: 100 }}
                       />
                     </TableCell>
@@ -401,34 +450,25 @@ function CreateInvoiceComponent() {
           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
             Additional Information
           </Typography>
-          
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
-            gap: 3 
-          }}>
-            <Box>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Notes"
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                helperText="Additional notes for the client"
-              />
-            </Box>
-            <Box>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Terms & Conditions"
-                value={formData.terms}
-                onChange={(e) => handleInputChange('terms', e.target.value)}
-                helperText="Payment terms and conditions"
-              />
-            </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Notes"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              helperText="Additional notes for the client"
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Terms & Conditions"
+              value={formData.terms}
+              onChange={(e) => handleInputChange('terms', e.target.value)}
+              helperText="Payment terms and conditions"
+            />
           </Box>
         </Paper>
 
@@ -445,45 +485,25 @@ function CreateInvoiceComponent() {
                 <Chip label={`${formData.taxRate}% Tax`} color="warning" />
               </Box>
               <Divider sx={{ my: 2 }} />
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Subtotal: <strong>${calculateSubtotal().toFixed(2)}</strong>
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Tax ({formData.taxRate}%): <strong>${calculateTax().toFixed(2)}</strong>
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Total: <strong>${calculateTotal().toFixed(2)}</strong>
-                  </Typography>
-                </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Subtotal: <strong>${calculateSubtotal().toFixed(2)}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tax ({formData.taxRate}%): <strong>${calculateTax().toFixed(2)}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total: <strong>${calculateTotal().toFixed(2)}</strong>
+                </Typography>
               </Box>
               <Divider sx={{ my: 2 }} />
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(2, 1fr)', 
-                gap: 2 
-              }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Invoice Date: {formatFormYmdOrNotSet(formData.date)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Due Date: {formatFormYmdOrNotSet(formData.dueDate)}
-                  </Typography>
-                </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Invoice Date: {formatFormYmdOrNotSet(formData.date)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Due Date: {formatFormYmdOrNotSet(formData.dueDate)}
+                </Typography>
               </Box>
             </CardContent>
           </Card>
@@ -498,16 +518,26 @@ function CreateInvoiceComponent() {
             '& > .MuiButton-root': { minHeight: { xs: 44, sm: 36 } },
           }}
         >
-          <Button variant="outlined" onClick={handleCancel} startIcon={<Cancel />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Button
+            variant="outlined"
+            onClick={handleCancel}
+            startIcon={<Cancel />}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleSubmit} startIcon={<Save />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            startIcon={<Save />}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Create Invoice
           </Button>
         </Box>
 
         <Alert severity="info" sx={{ mt: 3 }}>
-          The invoice will be created as a draft. You can edit it later and send it to the client when ready.
+          The invoice will be created as a draft. Review AI-filled fields before saving.
         </Alert>
       </Box>
     </FadeInContent>
