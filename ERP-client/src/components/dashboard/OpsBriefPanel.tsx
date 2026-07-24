@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -8,50 +9,99 @@ import {
   Divider,
   Stack,
   Typography,
+  useTheme,
 } from '@mui/material'
 import { AutoAwesome } from '@mui/icons-material'
-import { useAiBrief } from '@/api/ai'
+import { useAiBriefOnDemand } from '@/api/ai'
+import { plainAiText } from '@/lib/plainAiText'
 
 export function OpsBriefPanel() {
-  const { data, isLoading, isError, error, isFetching } = useAiBrief()
+  const theme = useTheme()
+  const { data, isPending, isError, error, mutate, reset } = useAiBriefOnDemand()
+  const showPanel = isPending || isError || Boolean(data)
+
+  const aiButtonSx = {
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+    },
+    '&:disabled': {
+      background: theme.palette.action.disabledBackground,
+      color: theme.palette.action.disabled,
+    },
+  }
+
+  if (!showPanel) {
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<AutoAwesome />}
+          onClick={() => mutate()}
+          sx={aiButtonSx}
+        >
+          Generate brief
+        </Button>
+      </Box>
+    )
+  }
 
   return (
     <Card sx={{ mb: 3 }}>
       <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 2, flexWrap: 'wrap' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AutoAwesome color="primary" fontSize="small" />
             <Typography variant="h6" sx={{ fontWeight: 300 }}>
               Operations brief
             </Typography>
-            {isFetching && !isLoading && <CircularProgress size={16} />}
+            {data && (
+              <Chip
+                size="small"
+                label={data.configured ? 'AI narrative' : 'Rule-based'}
+                variant="outlined"
+              />
+            )}
           </Box>
-          {data && (
-            <Chip
-              size="small"
-              label={data.configured ? 'AI narrative' : 'Rule-based'}
-              variant="outlined"
-            />
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {!isPending && (data || isError) && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => mutate()}
+                startIcon={<AutoAwesome fontSize="small" />}
+                sx={aiButtonSx}
+              >
+                Refresh
+              </Button>
+            )}
+            {!isPending && (
+              <Button size="small" color="inherit" onClick={() => reset()}>
+                Close
+              </Button>
+            )}
+          </Box>
         </Box>
 
-        {isLoading && (
+        {isPending && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2 }}>
             <CircularProgress size={22} />
             <Typography color="text.secondary">Summarizing invoices, inventory, and projects…</Typography>
           </Box>
         )}
 
-        {isError && (
+        {isError && !isPending && (
           <Alert severity="warning">
             {(error as Error)?.message || 'Could not load operations brief.'}
           </Alert>
         )}
 
-        {data && !isLoading && (
+        {data && !isPending && (
           <Stack spacing={2}>
             <Typography variant="body1" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-              {data.narrative}
+              {plainAiText(data.narrative)}
             </Typography>
 
             {data.facts.length > 0 && (

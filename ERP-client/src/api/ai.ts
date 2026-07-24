@@ -123,12 +123,18 @@ export function useAiStatus() {
   })
 }
 
-export function useAiBrief(enabled = true) {
+export function useAiBrief(enabled = false) {
   return useQuery({
     queryKey: aiKeys.brief(),
     queryFn: aiApi.brief,
     enabled,
     staleTime: 60_000,
+  })
+}
+
+export function useAiBriefOnDemand() {
+  return useMutation({
+    mutationFn: aiApi.brief,
   })
 }
 

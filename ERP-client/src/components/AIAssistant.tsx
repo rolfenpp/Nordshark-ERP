@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import {
   Box,
   TextField,
@@ -31,6 +31,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useAiHelp } from '@/api/ai'
 import { aiAssistantQuestionSchema } from '@/schemas/ai'
 import { showZodError } from '@/lib/zodToast'
+import { plainAiText } from '@/lib/plainAiText'
 
 interface Message {
   id: string
@@ -49,9 +50,6 @@ export const AIAssistant = () => {
   const [answer, setAnswer] = useState('')
   const [conversation, setConversation] = useState<Message[]>([])
   const [showSuggestions, setShowSuggestions] = useState(true)
-  const [displayedAnswer, setDisplayedAnswer] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
-  const responseContainerRef = useRef<HTMLDivElement>(null)
 
   const handleAsk = async () => {
     const parsed = aiAssistantQuestionSchema.safeParse({ question })
@@ -66,7 +64,7 @@ export const AIAssistant = () => {
         question: trimmed,
         currentRoute: window.location.pathname,
       })
-      const text = response.answer || ''
+      const text = plainAiText(response.answer || '')
       setAnswer(text)
       setConversation((prev) => [
         {
@@ -114,44 +112,15 @@ export const AIAssistant = () => {
   const quickActions = getQuickActions()
   const loading = help.isPending
 
-  useEffect(() => {
-    if (answer && answer !== displayedAnswer && !isTyping) {
-      setIsTyping(true)
-      setDisplayedAnswer('')
-      let index = 0
-
-      const typeWriter = () => {
-        if (index < answer.length) {
-          setDisplayedAnswer((prev) => prev + answer[index])
-          index++
-          setTimeout(() => {
-            if (responseContainerRef.current) {
-              responseContainerRef.current.scrollTop = responseContainerRef.current.scrollHeight
-            }
-          }, 10)
-          setTimeout(typeWriter, 30)
-        } else {
-          setIsTyping(false)
-        }
-      }
-
-      typeWriter()
-    }
-  }, [answer])
-
   const handleClose = () => {
     setIsOpen(false)
     setAnswer('')
-    setDisplayedAnswer('')
-    setIsTyping(false)
   }
 
   const handleClearHistory = () => {
     setConversation([])
     setShowSuggestions(true)
     setAnswer('')
-    setDisplayedAnswer('')
-    setIsTyping(false)
   }
 
   return (
@@ -276,8 +245,8 @@ export const AIAssistant = () => {
               </Card>
             )}
 
-            {displayedAnswer && (
-              <Box ref={responseContainerRef} sx={{ mx: 2, mb: 2, maxHeight: 300, overflow: 'auto' }}>
+            {(loading || answer) && (
+              <Box sx={{ mx: 2, mb: 2, maxHeight: 300, overflow: 'auto' }}>
                 <Card sx={{ background: theme.palette.background.default }}>
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
@@ -291,26 +260,18 @@ export const AIAssistant = () => {
                         <MagicIcon fontSize="small" />
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                          {displayedAnswer}
-                          {isTyping && (
-                            <Box
-                              component="span"
-                              sx={{
-                                display: 'inline-block',
-                                width: 2,
-                                height: 16,
-                                background: theme.palette.primary.main,
-                                ml: 0.5,
-                                animation: 'blink 1s infinite',
-                                '@keyframes blink': {
-                                  '0%, 50%': { opacity: 1 },
-                                  '51%, 100%': { opacity: 0 },
-                                },
-                              }}
-                            />
-                          )}
-                        </Typography>
+                        {loading ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
+                            <CircularProgress size={18} />
+                            <Typography variant="body2" color="text.secondary">
+                              Thinking…
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                            {answer}
+                          </Typography>
+                        )}
                       </Box>
                     </Box>
                   </CardContent>
@@ -339,9 +300,7 @@ export const AIAssistant = () => {
                       }}
                       onClick={() => {
                         setQuestion(msg.question)
-                        setAnswer(msg.answer)
-                        setDisplayedAnswer(msg.answer)
-                        setIsTyping(false)
+                        setAnswer(plainAiText(msg.answer))
                       }}
                     >
                       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>

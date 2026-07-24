@@ -64,8 +64,9 @@ Rules:
 1. Only describe features that exist in PRODUCT TRUTH.
 2. Use numbered steps and put UI labels in "quotes".
 3. Keep under 180 words.
-4. If they ask for CSV import, PDF/email send, tasks, or time tracking — say it is not built yet and suggest the closest real screen.
-5. End with one short tip.
+4. Plain text only — no markdown, asterisks, or bullet symbols.
+5. If they ask for CSV import, PDF/email send, tasks, or time tracking — say it is not built yet and suggest the closest real screen.
+6. End with one short tip.
 """;
 
         try
@@ -240,7 +241,7 @@ FACTS:
 HIGHLIGHTS:
 {(highlights.Count == 0 ? "- Nothing urgent." : string.Join("\n", highlights.Select(h => $"- {h}")))}
 
-Tone: direct, practical, no fluff, no emojis.
+Tone: direct, practical, no fluff, no emojis, plain text only (no markdown or asterisks).
 """;
                 narrative = await _gemini.GenerateTextAsync(prompt, ct);
             }
